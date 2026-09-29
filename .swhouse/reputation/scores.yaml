@@ -13,4 +13,7 @@ cycle_quality_scores:
   - cycle: "003"
     score: 4
     source: cycles/archive/cycle-003.md#step-11--evolution-master
+  - cycle: "004"
+    score: 4
+    source: cycles/archive/cycle-004.md#step-11--evolution-master
 operators: []

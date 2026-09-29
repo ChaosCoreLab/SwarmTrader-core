@@ -10,6 +10,12 @@ Inspect the behavior of the supplied fixed trader genome against an immutable EN
 
 The ArchiMate model for this use case lives as a structured data source in [`archimate/eni-replay/`](../../archimate/eni-replay/) — one markdown file per pertinent cell (Service Layer × Aspect), each with a YAML frontmatter declaring elements and relationships against [`archimate/_vocabulary.md`](../../archimate/_vocabulary.md). The diagram below and the matrix are **derived** from those cells by `scripts/gen-archimate.mjs`; do not edit them by hand.
 
+## Rendered diagram
+
+![ArchiMate view for eni-replay](assets/eni-replay.svg)
+
+The SVG above is generated directly from the cell frontmatter (`npm run archimate:svg`), with no PlantUML or external renderer. The PlantUML block below is the diagram-as-code authoritative source; the SVG is the rendered view for GitHub Pages.
+
 <!-- archimate:gen start -->
 ```plantuml
 @startuml
@@ -65,6 +71,28 @@ package "physical" {
   node "Borsa Italiana endpoint" as phys_borsa
 }
 
+app_sim_ctrl --> app_data_trainer
+app_sim_ctrl --> app_ga
+app_chart_ui --> app_sim_ctrl
+app_sim_ctrl ..> app_svc_feed
+app_sim_ctrl ..> app_svc_capture
+app_validator ..> app_svc_verify
+app_data_trainer ..> app_svc_validate
+app_ga ..> app_svc_adapt
+app_svc_capture --> app_data_trace
+app_svc_capture --> app_data_ops
+app_svc_verify --> app_data_validation
+bus_role_owner *-- bus_role_librarian : documentation governance
+bus_proc_acquire --> bus_proc_replay
+bus_proc_replay --> bus_proc_inspect
+tech_browser --> tech_vite
+tech_node --> tech_vite
+tech_browser ..> tech_svc_render
+tech_node ..> tech_svc_borsa
+tech_svc_render --> tech_art_bundle
+tech_svc_render --> tech_art_snapshot
+tech_svc_borsa --> tech_art_snapshot
+tech_svc_borsa --> tech_art_hash
 @enduml
 ```
 <!-- archimate:gen end -->

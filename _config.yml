@@ -1,0 +1,28 @@
+title: SwarmTrader Core
+description: Historical ENI replay PoC and ArchiMate documentation
+theme: minima
+baseurl: /SwarmTrader-core
+url: https://chaoscorelab.github.io
+include:
+  - docs
+exclude:
+  - ".github"
+  - ".cache"
+  - ".swhouse"
+  - "software-house-ai"
+  - "src"
+  - "scripts"
+  - "tests"
+  - "archimate"
+  - "node_modules"
+  - "package.json"
+  - "package-lock.json"
+  - "vite.config.js"
+  - "playwright.config.js"
+  - "README.md"
+  - "tsconfig.json"
+defaults:
+  - scope:
+      path: "docs"
+    values:
+      layout: default

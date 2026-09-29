@@ -71,6 +71,8 @@ function parseYamlBlock(src) {
         }
       }
       obj[key] = items;
+      // i already points to the next non-list line; do not advance again
+      continue;
     } else {
       obj[key] = scalar(rest);
     }
@@ -260,6 +262,155 @@ function emitPlantUml(cells, declared) {
   return lines.join('\n');
 }
 
+// ─── SVG emission (direct from YAML, zero dependencies) ───
+
+const LAYER_COLOR = {
+  business: '#c8e6c9',
+  application: '#bbdefb',
+  technology: '#ffe0b2',
+  physical: '#d7ccc8',
+  motivation: '#f8bbd0',
+};
+const LAYER_LABEL = {
+  business: 'Business',
+  application: 'Application',
+  technology: 'Technology',
+  physical: 'Physical',
+  motivation: 'Motivation',
+};
+// shape per type: { shape: rect|hex|folder|ellipse, label }
+const SVG_SHAPE = {
+  'business-actor': 'rect',
+  'business-role': 'rect',
+  'business-process': 'rect',
+  'business-service': 'hex',
+  'business-function': 'rect',
+  'business-object': 'folder',
+  'representation': 'rect',
+  'application-component': 'rect',
+  'application-service': 'hex',
+  'application-function': 'rect',
+  'data-object': 'folder',
+  'node': 'rect',
+  'system-software': 'rect',
+  'technology-service': 'hex',
+  'artifact': 'folder',
+  'equipment': 'rect',
+  'facility': 'rect',
+  'distribution-network': 'rect',
+  'material': 'folder',
+  'goal': 'ellipse',
+  'outcome': 'ellipse',
+  'requirement': 'ellipse',
+  'principle': 'ellipse',
+  'constraint': 'ellipse',
+  'meaning': 'note',
+  'value': 'ellipse',
+};
+const REL_LABEL = {
+  'used-by': 'used-by',
+  'realizes': 'realizes',
+  'assigned-to': 'assigned-to',
+  'flows-to': 'flows-to',
+  'composes': 'composes',
+  'specializes': 'specializes',
+  'triggers': 'triggers',
+  'accesses': 'accesses',
+};
+
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function emitSvg(cells, declared) {
+  const COL_W = 220;
+  const GAP_X = 40;
+  const BOX_W = 180;
+  const BOX_H = 44;
+  const BOX_GAP_Y = 14;
+  const PAD = 24;
+  const HEADER_H = 28;
+
+  const byLayer = new Map();
+  for (const [id, meta] of declared) {
+    const l = meta.layer;
+    if (!byLayer.has(l)) byLayer.set(l, []);
+    byLayer.get(l).push({ id, ...meta });
+  }
+  const presentLayers = LAYER_ORDER.filter((l) => byLayer.has(l) && byLayer.get(l).length);
+  const colCount = presentLayers.length;
+  const maxRows = Math.max(...presentLayers.map((l) => byLayer.get(l).length), 1);
+  const width = COL_W * colCount + GAP_X * (colCount - 1) + PAD * 2;
+  const height = PAD * 2 + HEADER_H + maxRows * (BOX_H + BOX_GAP_Y) + 60;
+
+  const pos = new Map(); // id -> {x,y,cx,cy}
+  presentLayers.forEach((layer, ci) => {
+    const els = byLayer.get(layer);
+    const colX = PAD + ci * (COL_W + GAP_X);
+    els.forEach((el, ri) => {
+      const x = colX + (COL_W - BOX_W) / 2;
+      const y = PAD + HEADER_H + ri * (BOX_H + BOX_GAP_Y);
+      pos.set(el.id, { x, y, cx: x + BOX_W / 2, cy: y + BOX_H / 2 });
+    });
+  });
+
+  const parts = [];
+  parts.push(`<?xml version="1.0" encoding="UTF-8"?>`);
+  parts.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" font-family="system-ui, sans-serif" font-size="12">`);
+  parts.push(`<style> .ell{stroke:#37474f;stroke-width:1.4} .lbl{fill:#263238} .hdr{font-weight:700;fill:#37474f;font-size:13px} .rel{stroke:#546e7a;stroke-width:1.2;fill:none} .relLbl{fill:#607d8b;font-size:10px} </style>`);
+
+  // layer columns
+  presentLayers.forEach((layer, ci) => {
+    const colX = PAD + ci * (COL_W + GAP_X);
+    const fill = LAYER_COLOR[layer] || '#eeeeee';
+    parts.push(`<rect x="${colX}" y="${PAD}" width="${COL_W}" height="${height - PAD * 2}" rx="8" fill="${fill}" fill-opacity="0.25" stroke="#b0bec5" stroke-dasharray="4 3"/>`);
+    parts.push(`<text x="${colX + COL_W / 2}" y="${PAD + 18}" text-anchor="middle" class="hdr">${esc(LAYER_LABEL[layer] || layer)}</text>`);
+  });
+
+  // elements
+  for (const [id, p] of pos) {
+    const meta = declared.get(id);
+    const shape = SVG_SHAPE[meta.type] || 'rect';
+    const label = esc(meta.name || id);
+    if (shape === 'hex') {
+      const hx = [p.x, p.x + 14, p.x + BOX_W - 14, p.x + BOX_W, p.x + BOX_W - 14, p.x + 14];
+      const hy = [p.cy, p.y, p.y, p.cy, p.y + BOX_H, p.y + BOX_H];
+      const pts = hx.map((x, i) => `${x},${hy[i]}`).join(' ');
+      parts.push(`<polygon class="ell" points="${pts}" fill="#fff"/>`);
+      parts.push(`<text x="${p.cx}" y="${p.cy + 4}" text-anchor="middle" class="lbl">${label}</text>`);
+    } else if (shape === 'ellipse') {
+      parts.push(`<ellipse class="ell" cx="${p.cx}" cy="${p.cy}" rx="${BOX_W / 2}" ry="${BOX_H / 2}" fill="#fff"/>`);
+      parts.push(`<text x="${p.cx}" y="${p.cy + 4}" text-anchor="middle" class="lbl">${label}</text>`);
+    } else if (shape === 'folder') {
+      parts.push(`<path class="ell" d="M${p.x} ${p.y} h30 v-6 h40 v6 h${BOX_W - 70} v${BOX_H} h${-BOX_W} z" fill="#fff"/>`);
+      parts.push(`<text x="${p.cx}" y="${p.cy + 6}" text-anchor="middle" class="lbl">${label}</text>`);
+    } else {
+      parts.push(`<rect class="ell" x="${p.x}" y="${p.y}" width="${BOX_W}" height="${BOX_H}" rx="4" fill="#fff"/>`);
+      parts.push(`<text x="${p.cx}" y="${p.cy + 4}" text-anchor="middle" class="lbl">${label}</text>`);
+    }
+    parts.push(`<title>${esc(meta.type)}</title>`);
+  }
+
+  // relationships
+  let relIdx = 0;
+  for (const c of cells) {
+    for (const r of c.fm.relationships || []) {
+      const a = pos.get(r.from);
+      const b = pos.get(r.to);
+      if (!a || !b) continue;
+      const dy = (relIdx % 3) * 10 - 10;
+      relIdx++;
+      parts.push(`<path class="rel" d="M${a.cx} ${a.y + BOX_H} C ${a.cx} ${a.cy + 80 + dy}, ${b.cx} ${b.cy + 80 + dy}, ${b.cx} ${b.y}" marker-end="url(#arrow)"/>`);
+      const mx = (a.cx + b.cx) / 2;
+      const my = (a.y + BOX_H + b.y) / 2 + dy;
+      parts.push(`<text x="${mx}" y="${my}" text-anchor="middle" class="relLbl">${esc(REL_LABEL[r.type] || r.type)}</text>`);
+    }
+  }
+  parts.push(`<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#546e7a"/></marker></defs>`);
+  parts.push(`</svg>`);
+  return parts.join('\n');
+}
+
 // ─── matrix emission ───
 
 const LAYERS = ['business', 'application', 'technology', 'physical'];
@@ -317,6 +468,13 @@ function main() {
 
   if (flag === '--emit' && rest[1] === 'stdout') { console.log(plant); return; }
   if (flag === '--emit' && rest[1] === 'matrix') { console.log(emitMatrix(cells)); return; }
+  if (flag === '--emit' && rest[1] === 'svg') { console.log(emitSvg(cells, declared)); return; }
+  if (flag === '--write-svg') {
+    const svgPath = rest[1] || join(ROOT, 'docs', 'architecture', 'assets', `${useCase}.svg`);
+    writeFileSync(svgPath, emitSvg(cells, declared), 'utf8');
+    console.log(`archimate: wrote SVG to ${svgPath}`);
+    return;
+  }
 
   const docPath = join(ROOT, 'docs', 'architecture', `use-case-${useCase}.md`);
   const block = plant;

@@ -8,7 +8,8 @@ last_verified: 2026-09-29
 | architecture/use-case-eni-replay.md | architecture | Fixed-genome ENI replay use case; ArchiMate diagram and matrix derived from `archimate/eni-replay/` cells | 2026-09-29 |
 | decisions/ADR-001-static-snapshot.md | decisions | Why the PoC uses a static OHLCV snapshot and no runtime backend; Consilium engine v1 choice | 2026-09-29 |
 | decisions/ADR-002-archimate-structured-source.md | decisions | ArchiMate as a cell-based structured data source with generated diagram and matrix | 2026-09-29 |
-| operations/development.md | operations | Install, build, unit/golden/e2e tests, update ENI data, run the PoC, generate ArchiMate | 2026-09-29 |
+| decisions/ADR-003-github-pages-rendering.md | decisions | GitHub Pages hosting: SVG rendered directly from YAML, Jekyll native, app under /app/ | 2026-09-29 |
+| operations/development.md | operations | Install, build, unit/golden/e2e tests, update ENI data, run the PoC, generate ArchiMate, GitHub Pages | 2026-09-29 |
 
 ## Structured sources (outside `docs/`)
 
