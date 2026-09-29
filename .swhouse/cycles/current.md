@@ -405,3 +405,11 @@ L'Owner verifica i termini di riuso Borsa e sceglie se autorizzare il versioname
 - **Punto 4:** `npm run test:e2e` (Playwright 1.63, Chromium) 12/12 PASS: 6 scenari × desktop e 390 px, valori attesi calcolati dal motore. Matrice di validazione non più provvisoria; creata la NRC con NRC-A01..A03 e NRC-H01 (validazione umana della UI).
 - Stato: `npm test` 10 PASS / 1 SKIP (golden), `npm run build` OK.
 - **Prossimo:** generazione del golden → Step 9 Scientist con esito NRC-A01..A03 → sessione umana NRC-H01 → Step 10–12.
+
+### Golden AC-04 — 2026-09-29
+- Owner ha autorizzato `npm run golden`. Riferimento Consilium clonato in `.cache/consilium-ref` a `30ae93f`, `public/src` pulito.
+- Correzione allo script: un clone `--no-checkout` il cui HEAD è già la commit fissata aveva l'indice vuoto (file risultanti "cancellati"); ora il clone nuovo esegue sempre il checkout forzato della commit.
+- Golden upstream: 2,517 frame, 70 operazioni broker, 36 posizioni chiuse, valore finale 20,295.07 €.
+- `tests/golden.test.js` PASS: stato e 4 IIR identici su ogni barra, operazioni broker, posizioni chiuse e capitale finale identici. Le 74 voci del ledger UI sono 38 buy + 36 sell; il broker registra 70 voci (le chiusure automatiche non hanno prezzo/quantità, chiavi omesse nel JSON e normalizzate nel test).
+- `npm test` 11/11 PASS. **AC-04 soddisfatto.** NRC-A01, NRC-A02, NRC-A03 tutti PASS.
+- **Prossimo:** Step 9 Scientist → sessione umana NRC-H01 → Step 10–12.

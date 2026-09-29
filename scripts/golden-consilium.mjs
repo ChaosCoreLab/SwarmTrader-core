@@ -26,6 +26,8 @@ function ensureReference() {
   if (!existsSync(REF_DIR)) {
     console.log(`Cloning Consilium into ${REF_DIR}...`);
     git('clone', '--filter=blob:none', '--no-checkout', CONSILIUM_REPO, REF_DIR);
+    // A --no-checkout clone has an empty index even when HEAD is already the pinned commit.
+    git('-C', REF_DIR, 'checkout', '--force', '--detach', CONSILIUM_COMMIT);
   }
   const head = git('-C', REF_DIR, 'rev-parse', 'HEAD');
   if (head !== CONSILIUM_COMMIT) git('-C', REF_DIR, 'checkout', '--detach', CONSILIUM_COMMIT);

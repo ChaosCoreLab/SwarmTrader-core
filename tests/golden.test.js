@@ -38,7 +38,8 @@ test('step-by-step replay matches the upstream Consilium Life.cycle golden trace
       price: operation.price,
       quantity: operation.quantity,
     })));
-  assert.deepEqual(operations, golden.operations);
+  // Automatic closes carry undefined price/quantity in the broker log; the golden JSON drops those keys.
+  assert.deepEqual(JSON.parse(JSON.stringify(operations)), golden.operations);
 
   const closed = controller.trace.flatMap((frame) => frame.operations.filter((operation) => operation.side === 'sell'));
   assert.deepEqual(
