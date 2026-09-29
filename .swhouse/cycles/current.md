@@ -397,3 +397,11 @@ L'Owner verifica i termini di riuso Borsa e sceglie se autorizzare il versioname
 3. ADR-001 addendum: scelta motore v1 vs v2.
 4. Playwright e2e desktop/mobile; matrice validazione non più provvisoria; item H nella NRC per la validazione umana della UI.
 5. Step 9 → validazione umana → Step 10–12.
+
+### Avanzamento del piano di ripresa — 2026-09-29
+- **Punto 1:** commit `54a8925` su `poc/cycle-001` (snapshot incluso, `.gitattributes` forza LF sui JSON dati).
+- **Punto 2:** test di equivalenza adapter ↔ `Individual.fromJSON` upstream PASS. `scripts/golden-consilium.mjs` e `tests/golden.test.js` scritti; **golden non ancora generato**: `npm run golden` scarica ed esegue il codice Consilium dal repository GitLab e richiede un'esecuzione autorizzata dall'Owner. Finché manca il file il test è SKIP, quindi AC-04 resta aperto.
+- **Punto 3:** addendum ADR-001 "Consilium engine v1, not v2" scritto.
+- **Punto 4:** `npm run test:e2e` (Playwright 1.63, Chromium) 12/12 PASS: 6 scenari × desktop e 390 px, valori attesi calcolati dal motore. Matrice di validazione non più provvisoria; creata la NRC con NRC-A01..A03 e NRC-H01 (validazione umana della UI).
+- Stato: `npm test` 10 PASS / 1 SKIP (golden), `npm run build` OK.
+- **Prossimo:** generazione del golden → Step 9 Scientist con esito NRC-A01..A03 → sessione umana NRC-H01 → Step 10–12.

@@ -26,3 +26,7 @@ Use an explicit offline Node refresh script to produce a locally validated, hash
 - Replays remain deterministic for the same snapshot, genome and pinned engine.
 - A fresh clone replays the versioned snapshot directly; `data:update` is needed only to refresh the data window.
 - The vendor fork must preserve the MIT license and document any browser-only dead-code removals.
+
+## Addendum 2026-09-29 — Consilium engine v1, not v2
+
+Consilium `30ae93f` ships two engines. `algorithm_v2.js` consumes snake_case genomes and multiplies margins as-is (`avgPriceIIR * margin_percent_1`). `algorithm.js` (v1) uses fractional camelCase fields. The GA that produces snake_case genomes such as the PoC one (`public/browser-worker.worker.js`) imports the v1 engine and loads each genome with `Individual.fromJSON(genome, 10000)`, which divides every percentage field by 100. The PoC therefore uses v1 and `src/engine/genome.js` mirrors `Individual.fromJSON`; `tests/engine.test.js` asserts field-by-field equality and `tests/golden.test.js` compares the full replay with the upstream `Life.cycle()` trace.

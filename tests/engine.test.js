@@ -5,6 +5,7 @@ import { createConsiliumGenome, FIXED_GENOME } from '../src/engine/genome.js';
 import { CUTOFF_DATE, DATA_PERIOD, DataTrainer, START_DATE, SYMBOL } from '../src/engine/dataTrainer.js';
 import { FitnessValidator } from '../src/engine/fitnessValidator.js';
 import { SimulationController } from '../src/engine/simulationController.js';
+import { Individual } from '../src/vendor/consilium/individual.js';
 
 function makeSnapshot(bars) {
   return {
@@ -35,6 +36,16 @@ test('genome adapter preserves IIR and converts all percentage fields to fractio
   assert.equal(genome.states.SW.action, 'buy');
   assert.ok(Object.isFrozen(genome.states.SW._S));
   assert.ok(Object.isFrozen(genome));
+});
+
+test('genome adapter matches Consilium Individual.fromJSON, the GA worker loader for snake_case genomes', () => {
+  const adapted = createConsiliumGenome();
+  const upstream = Individual.fromJSON(structuredClone(FIXED_GENOME), 10_000).genoma;
+
+  for (const field of Object.keys(upstream).filter((key) => key !== 'states')) {
+    assert.equal(adapted[field], upstream[field], field);
+  }
+  assert.deepEqual(structuredClone(adapted.states), structuredClone(upstream.states));
 });
 
 test('genome adapter rejects missing states and invalid conditions', () => {

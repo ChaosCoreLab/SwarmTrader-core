@@ -44,12 +44,32 @@ npm.cmd run preview
 
 The build output is static under `dist/`; no Node server is required during replay. Tests include a full replay of the local ENI snapshot and representative invalid-data and trade-invariant cases.
 
+## Golden reference trace
+
+```powershell
+npm.cmd run golden
+```
+
+`scripts/golden-consilium.mjs` clones Consilium into `.cache/consilium-ref` (or uses `CONSILIUM_REF_DIR`), checks out the pinned commit `30ae93fca6a9a2eab59123a87f0ffdfbe993db45`, refuses a dirty `public/src`, and runs the **unmodified** upstream modules: the genome is read from `human-interaction/01-first-poc.md`, converted by upstream `Individual.fromJSON`, and fed by upstream `Life.cycle()`. It writes `tests/golden/eni-fixed-genome.golden.json` (per-bar state and IIR, broker operations, closed positions, final capital).
+
+`tests/golden.test.js` then replays the same snapshot through `SimulationController` (step-by-step `Life.feed()`, project genome adapter) and requires exact equality. The test is skipped, not failed, while the golden file is absent. Regenerate the golden only when the snapshot or the pinned engine commit changes, and commit it together with that change.
+
 ## Browser smoke check
 
-1. Open the local UI at desktop size and at 390 px viewport width.
-2. Confirm snapshot coverage and bar count.
-3. Enable/disable IIR and state overlays; advance a bar and reset.
-4. Confirm the event ledger uses Broker fills and no console errors appear.
+```powershell
+npm.cmd run test:e2e
+```
+
+`playwright.config.js` starts the Vite dev server on port 5173 (or reuses a running one) and runs `tests/e2e/*.spec.js` in Chromium at desktop size and at 390 px width. Expected values are not hard-coded: the spec replays the same snapshot through `SimulationController` in Node and formats them like the UI. It covers:
+
+1. Snapshot coverage, bar count, and hash prefix; chart rendered.
+2. Each step shows exactly the engine frame (state, date, IIR, total value); reset returns to the first bar.
+3. Replay past the first trade (fake clock): the ledger lists exactly the Broker operations up to the paused bar.
+4. IIR and state overlays toggle without altering the simulation.
+5. No horizontal overflow; a tampered snapshot is rejected with a visible error.
+6. No console errors or page errors in any test.
+
+First run on a new machine: `npx.cmd playwright install chromium`. The human counterpart of this check is NRC-H01 in `.swhouse/memory/validation/non_regression_checklist.md`.
 
 ## Data and financial disclaimer
 

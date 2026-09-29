@@ -11,7 +11,9 @@
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
     "test": "node --test",
-    "data:update": "node scripts/fetch-eni-data.mjs"
+    "data:update": "node scripts/fetch-eni-data.mjs",
+    "golden": "node scripts/golden-consilium.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@fontsource-variable/ibm-plex-sans": "^5.2.6",
@@ -19,6 +21,7 @@
     "lightweight-charts": "^5.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "vite": "^7.0.0"
   },
   "allowScripts": {
