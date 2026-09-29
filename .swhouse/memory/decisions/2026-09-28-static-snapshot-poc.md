@@ -22,4 +22,4 @@ Consilium's existing browser stock provider depends on its Express endpoint; dir
 - The fixed-genome adapter maps percentage values to Consilium fractional values and must stay covered by tests.
 
 ## Confidence
-Medium — implementation, browser replay and data schema are verified; an independent Consilium golden trace remains open.
+High — implementation, browser replay and data schema are verified; the upstream Consilium golden trace matches exactly (2026-09-29, see `2026-09-29-consilium-v1-golden-reference.md`).

@@ -1,9 +1,11 @@
 ---
 cycle: 001
 status: closed
-decision: DEFERRED
-closed: 2026-09-28
 opened: 2026-09-28
+reopened: 2026-09-29
+reopened_from: archive/cycle-001.md (DEFERRED)
+decision: ACCEPTED WITH CONDITIONS
+closed: 2026-09-29
 problem: "Valutare la completezza, fattibilita e verificabilita dei requisiti del primo PoC SwarmTrader"
 ---
 
@@ -374,3 +376,131 @@ L'Owner verifica i termini di riuso Borsa e sceglie se autorizzare il versioname
 
 ---
 *Cycle 001 closed by ARBITER — 2026-09-28; decision DEFERRED.*
+---
+
+## Reopen — 2026-09-29
+
+**[COORDINATOR]:** Ciclo 001 riaperto secondo la re-evaluation condition dello Step 12; l'archivio DEFERRED è conservato in `cycles/archive/cycle-001.md`. Si riprende dallo Step 9.
+
+### Decisioni dell'Owner
+- **AC-02 / D1:** l'Owner conferma che i termini di Borsa Italiana consentono il riuso: lo snapshot `public/data/eni-ohlcv.json` viene versionato nel repository. AC-02 resta invariato.
+- **Golden AC-04:** approvato il confronto con il riferimento Consilium `30ae93f` sullo stesso snapshot.
+- **Smoke browser:** approvato Playwright come devDependency per rendere ripetibile la verifica UI (`npm run test:e2e`).
+
+### Evidenze nuove dalla revisione dello stato
+- Test `npm test` 9/9 PASS e `npm run build` OK rieseguiti il 29/09/2026; snapshot locale 2,517 barre 2016-09-29 → 2026-09-28, `dataSha256 9468…4506`.
+- Upstream contiene due motori: `algorithm_v2.js` usa i margini senza divisione per 100, `algorithm.js` (v1) usa frazioni. Il GA che produce genomi snake_case (`public/browser-worker.worker.js`) importa il motore v1 e costruisce l'individuo con `Individual.fromJSON(genoma, 10000)`, che divide per 100 tutti i campi percentuali. L'adapter `src/engine/genome.js` è coerente con questo percorso; va fissato da test di equivalenza e documentato in ADR.
+- Gap di processo: il ciclo non era stato archiviato (corretto ora), il lavoro non era committato, lo smoke Playwright non era persistito.
+
+### Piano di ripresa
+1. Versionare snapshot e codice su branch `poc/cycle-001`.
+2. Golden: test di equivalenza adapter ↔ `Individual.fromJSON` upstream; script di replay con moduli upstream non modificati (`Life.cycle()`) e confronto frame-per-frame con il controller incrementale.
+3. ADR-001 addendum: scelta motore v1 vs v2.
+4. Playwright e2e desktop/mobile; matrice validazione non più provvisoria; item H nella NRC per la validazione umana della UI.
+5. Step 9 → validazione umana → Step 10–12.
+
+### Avanzamento del piano di ripresa — 2026-09-29
+- **Punto 1:** commit `54a8925` su `poc/cycle-001` (snapshot incluso, `.gitattributes` forza LF sui JSON dati).
+- **Punto 2:** test di equivalenza adapter ↔ `Individual.fromJSON` upstream PASS. `scripts/golden-consilium.mjs` e `tests/golden.test.js` scritti; **golden non ancora generato**: `npm run golden` scarica ed esegue il codice Consilium dal repository GitLab e richiede un'esecuzione autorizzata dall'Owner. Finché manca il file il test è SKIP, quindi AC-04 resta aperto.
+- **Punto 3:** addendum ADR-001 "Consilium engine v1, not v2" scritto.
+- **Punto 4:** `npm run test:e2e` (Playwright 1.63, Chromium) 12/12 PASS: 6 scenari × desktop e 390 px, valori attesi calcolati dal motore. Matrice di validazione non più provvisoria; creata la NRC con NRC-A01..A03 e NRC-H01 (validazione umana della UI).
+- Stato: `npm test` 10 PASS / 1 SKIP (golden), `npm run build` OK.
+- **Prossimo:** generazione del golden → Step 9 Scientist con esito NRC-A01..A03 → sessione umana NRC-H01 → Step 10–12.
+
+### Golden AC-04 — 2026-09-29
+- Owner ha autorizzato `npm run golden`. Riferimento Consilium clonato in `.cache/consilium-ref` a `30ae93f`, `public/src` pulito.
+- Correzione allo script: un clone `--no-checkout` il cui HEAD è già la commit fissata aveva l'indice vuoto (file risultanti "cancellati"); ora il clone nuovo esegue sempre il checkout forzato della commit.
+- Golden upstream: 2,517 frame, 70 operazioni broker, 36 posizioni chiuse, valore finale 20,295.07 €.
+- `tests/golden.test.js` PASS: stato e 4 IIR identici su ogni barra, operazioni broker, posizioni chiuse e capitale finale identici. Le 74 voci del ledger UI sono 38 buy + 36 sell; il broker registra 70 voci (le chiusure automatiche non hanno prezzo/quantità, chiavi omesse nel JSON e normalizzate nel test).
+- `npm test` 11/11 PASS. **AC-04 soddisfatto.** NRC-A01, NRC-A02, NRC-A03 tutti PASS.
+- **Prossimo:** Step 9 Scientist → sessione umana NRC-H01 → Step 10–12.
+
+## Step 9 — Scientist (ripresa 2026-09-29)
+
+**Confidence:** High
+**Assumptions:**
+- Il riferimento Consilium alla commit `30ae93f`, eseguito senza modifiche, è la verità attesa per AC-04.
+- Lo snapshot versionato (`dataSha256 9468…4506`) è lo stesso usato da golden, test e UI.
+
+### Claims verified
+| Claim | Method | Result | Confidence |
+|-------|--------|--------|-----------|
+| Adapter genoma = loader upstream | Test di equivalenza con `Individual.fromJSON(genoma, 10000)` | Tutti i campi e gli stati identici | High |
+| Replay identico all'upstream (AC-04) | `npm run golden` (moduli upstream puliti, `Life.cycle()`, genoma letto dal requisito PO) + `tests/golden.test.js` | 2,517 frame con stato e 4 IIR identici; 70 operazioni broker, 36 posizioni chiuse, capitale/valore finale identici | High |
+| Snapshot riproducibile da clone (AC-02) | Snapshot versionato, `.gitattributes` LF, hash verificato in test e browser | Hash coincide; test golden verifica lo stesso hash | High |
+| Non regressione automatica | NRC-A01, NRC-A02: `npm test`; NRC-A03: `npm run test:e2e` | 11/11 PASS; 12/12 PASS (desktop + 390 px) | High |
+| UI validata da persona (NRC-H01) | Sessione Owner secondo la procedura in 8 passi | Esito Owner 2026-09-29: "molto bene", nessun problema segnalato | High |
+| Build statico | `npm run build` | OK | High |
+
+### Verification details
+Il primo run del golden si è fermato sul guard "sorgente non pulito": artefatto di un clone `--no-checkout` con indice vuoto, corretto nello script e registrato in `memory/errors/`. Il test golden normalizza via JSON perché le chiusure automatiche hanno prezzo/quantità `undefined` nel log broker. Le 74 voci del ledger UI sono 38 buy + 36 sell; il broker registra 70 voci, stessi eventi con altra granularità.
+
+**Finding (Minor):** l'etichetta "Posizione" dell'ispettore usa `trader.isHolding()`, vero solo in stato HOPING. In 1,211 frame su 2,517 (dal 18/05/2020) mostra "Nessuna" mentre il broker ha azioni aperte; a fine replay 828 azioni, 20,286 €. Il motore è fedele all'upstream (golden `final.holding: false`); il difetto è solo di presentazione, i valori totale/cassa/posizione mostrati sono corretti. Non corretto in questo ciclo perché successivo alla validazione umana.
+
+### Claims not verified
+| Claim | Reason not verified | Future verification plan |
+|-------|---------------------|--------------------------|
+| Browser diversi da Chromium | Suite e2e configurata solo su Chromium | Aggiungere progetti Firefox/WebKit se la UI diventa distribuita |
+
+### Overall verdict
+**Solution is:** verified.
+**Recommended action:** accept; tracciare il finding sull'etichetta "Posizione".
+
+## Step 10 — Librarian (ripresa 2026-09-29)
+
+**[LIBRARIAN]:**
+- **Decisione:** `memory/decisions/2026-09-29-consilium-v1-golden-reference.md` (motore v1, golden upstream). Aggiornata la confidence di `2026-09-28-static-snapshot-poc.md` a High.
+- **Pattern:** `memory/patterns/upstream-golden-replay.md`.
+- **Failure log:** `memory/errors/2026-09-29-golden-no-checkout-clone.md`.
+- **Knowledge:** `memory/knowledge/consilium-holding-semantics.md` (`isHolding()` ≠ posizione aperta).
+- **Validazione:** matrice non provvisoria; NRC con NRC-A01..A03 e NRC-H01, tutti PASS in questo ciclo.
+- **NRC (Art. 25):** nessun bug segnalato da persona corretto in questo ciclo; il finding "Posizione" non è ancora corretto. Al fix va aggiunto un item Type-A (e2e che confronta l'etichetta con `broker.hasPositions()`).
+- **Documentazione:** `development.md` (golden, e2e), ADR-001 addendum motore v1, `docs/MAP.md` aggiornati al 29/09/2026.
+
+**Stato:** Step 10 completato.
+
+## Step 11 — Evolution Master (ripresa 2026-09-29)
+
+**[EVOLUTION_MASTER]:**
+
+**Cycle quality score:** 4/5 — la riapertura ha chiuso entrambi i punti DEFERRED con evidenza forte: decisione Owner documentata per AC-02 e golden da codice upstream non modificato per AC-04. La revisione ha scoperto anche la divergenza v1/v2, che la prima passata non aveva visto. Lo smoke browser è diventato una suite ripetibile. Non 5/5: la prima chiusura aveva lasciato ciclo non archiviato e lavoro non committato, e il finding sull'etichetta "Posizione" è emerso solo dopo la validazione umana, non da un test.
+
+**Process observations:**
+- Il DEFERRED con re-evaluation condition esplicita ha reso la ripresa meccanica: preservarlo come prassi.
+- I test e2e dovrebbero confrontare ogni etichetta derivata con la fonte di verità del broker, non con un flag dello stesso motore: l'e2e confrontava `holding` con `trace.holding` e non poteva vedere il difetto.
+- Manca ancora il ruolo VALIDATOR in `instance.yaml`; l'Owner ha fatto da validatore. Proposta invariata: preflight dei ruoli all'apertura del ciclo.
+
+**Stato:** Step 11 completato.
+
+## Step 12 — Arbiter (ripresa 2026-09-29)
+
+**[ARBITER]:**
+
+**Decision:** ACCEPTED WITH CONDITIONS
+
+### Acceptance criteria review
+| Criterion | Status | Notes |
+|-----------|--------|-------|
+| AC-01 | Met | UI statica, nessun backend a runtime; build OK. |
+| AC-02 | Met | Snapshot Borsa versionato (riuso confermato dall'Owner), hash verificato in browser e test. |
+| AC-03 | Met | Genoma immutabile, adapter identico a `Individual.fromJSON`, replay deterministico. |
+| AC-04 | Met | Golden upstream `30ae93f`: identità esatta su 2,517 frame, operazioni, posizioni chiuse e capitale finale. |
+| AC-05 | Met | Grafico, IIR, marker e ledger derivati dal broker; e2e verifica ledger = operazioni del motore. |
+| AC-06 | Met | Step, reset, play/pause, overlay: e2e 12/12 e validazione Owner. |
+| AC-07 | Met | FitnessValidator valido sull'intero replay. |
+| AC-08 | Met | Setup, golden, e2e, limiti documentati e indicizzati. |
+| AC-09 | Met | Use case ArchiMate invariato. |
+| AC-10 | Met | Link bidirezionali doc ↔ codice, inclusi i nuovi test. |
+
+### Evidence assessment
+**Confidence in solution:** High.
+**Evidence quality:** confronto esatto con codice upstream non modificato, suite automatiche ripetibili, validazione umana dell'Owner.
+
+### Rationale
+Le due condizioni della decisione DEFERRED sono soddisfatte: AC-02 per decisione dell'Owner sui termini Borsa, AC-04 per identità esatta con il riferimento Consilium. Tutti i criteri sono Met e i controlli NRC passano. Resta un difetto Minor di sola presentazione che non altera i dati né i valori monetari mostrati: non blocca l'accettazione ma va tracciato.
+
+### Conditions
+- **C1 (Minor):** l'etichetta "Posizione" dell'ispettore deve riflettere le posizioni aperte del broker (`broker.hasPositions()`), non `trader.isHolding()`. Da correggere nel prossimo ciclo, con un nuovo item NRC Type-A e2e. Riferimento: `memory/knowledge/consilium-holding-semantics.md`.
+
+---
+*Cycle 001 closed by ARBITER — 2026-09-29; decision ACCEPTED WITH CONDITIONS.*

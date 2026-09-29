@@ -1,15 +1,16 @@
 version: 1
-last_updated: 2026-09-28
+last_updated: 2026-09-29
 total_cycles: 1
 cycles_by_status:
-  decided: 0
-  deferred: 1
+  decided: 1
+  deferred: 0
   escalated: 0
-average_cycle_duration_days: null
+# Cycle 001: DEFERRED 2026-09-28, reopened and ACCEPTED WITH CONDITIONS 2026-09-29 (condition C1 open).
+average_cycle_duration_days: 2
 memory_entries:
-  decisions: 1
-  patterns: 1
-  errors: 1
-  knowledge: 0
+  decisions: 2
+  patterns: 2
+  errors: 2
+  knowledge: 1
 knowledge_reuse_rate: null
 evidence_rate: null
