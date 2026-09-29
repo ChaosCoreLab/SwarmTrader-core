@@ -127,6 +127,7 @@ La condizione C1 è risolta con evidenza automatica e umana, senza toccare il mo
 
 ### Follow-up
 - Ciclo successivo proposto: O1 (coerenza arrotondata liquidità + posizione = totale) e O2 (volumi IIR senza decimali), con asserzione e2e sulla coerenza aritmetica.
+- **Decisione Owner (2026-09-29):** O1 e O2 accettati come limiti noti di presentazione; non verranno corretti. Nessun ciclo successivo.
 
 ---
 *Cycle 002 closed by ARBITER — 2026-09-29; decision ACCEPTED.*
