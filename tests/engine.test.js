@@ -171,6 +171,22 @@ test('SimulationController replays the downloaded ENI snapshot without truncatio
   assert.ok(operations.some((operation) => operation.side === 'sell'), 'expected at least one sell or automatic close');
 });
 
+test('positionOpen follows the shares held according to the ledger, not trader.isHolding()', async () => {
+  const snapshotUrl = new URL('../public/data/eni-ohlcv.json', import.meta.url);
+  const controller = new SimulationController(JSON.parse(await readFile(snapshotUrl, 'utf8')));
+  await controller.start();
+  await controller.playToEnd();
+
+  let shares = 0;
+  let hiddenByIsHolding = 0;
+  controller.trace.forEach((frame, index) => {
+    for (const operation of frame.operations) shares += operation.side === 'buy' ? operation.quantity : -operation.quantity;
+    assert.equal(frame.positionOpen, shares > 0, `frame ${index} (${frame.time})`);
+    if (!frame.holding && shares > 0) hiddenByIsHolding += 1;
+  });
+  assert.ok(hiddenByIsHolding > 0, 'the snapshot must still exercise the isHolding() gap this test guards');
+});
+
 test('identical genome and snapshot produce a byte-identical broker/state trace', async () => {
   const snapshotUrl = new URL('../public/data/eni-ohlcv.json', import.meta.url);
   const snapshot = JSON.parse(await readFile(snapshotUrl, 'utf8'));

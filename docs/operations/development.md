@@ -64,7 +64,7 @@ npm.cmd run test:e2e
 
 1. Snapshot coverage, bar count, and hash prefix; chart rendered.
 2. Each step shows exactly the engine frame (state, date, IIR, total value); reset returns to the first bar.
-3. Replay past the first trade (fake clock): the ledger lists exactly the Broker operations up to the paused bar.
+3. Replay past the first trade (fake clock): the ledger lists exactly the Broker operations up to the paused bar, and "Posizione" reflects the shares held per the ledger. The pause lands in a bar range where Consilium `trader.isHolding()` is false with shares held, so the label must use `frame.positionOpen`.
 4. IIR and state overlays toggle without altering the simulation.
 5. No horizontal overflow; a tampered snapshot is rejected with a visible error.
 6. No console errors or page errors in any test.

@@ -412,7 +412,7 @@ function renderFrame() {
   ui.stateChip.style.setProperty('--state-color', STATE_COLORS[frame.state] ?? '#65736f');
   ui.traderState.textContent = controller.complete ? 'Replay completo' : 'Replay in corso';
   ui.activeDate.textContent = formatDate(frame.time);
-  ui.holding.textContent = frame.holding ? 'Aperta' : 'Nessuna';
+  ui.holding.textContent = frame.positionOpen ? 'Aperta' : 'Nessuna';
   ui.iir[0].textContent = formatPrice(frame.iirPrice1);
   ui.iir[1].textContent = formatPrice(frame.iirPrice2);
   ui.iirVolume[0].textContent = formatVolume(frame.iirVolume1);

@@ -11,6 +11,8 @@ const formatDate = (date) => new Intl.DateTimeFormat('it-IT', { day: '2-digit', 
 let snapshot;
 let trace;
 let firstTradeIndex;
+let sharesHeld;
+let pauseTarget;
 
 test.beforeAll(async () => {
   snapshot = JSON.parse(await readFile(new URL('../../public/data/eni-ohlcv.json', import.meta.url), 'utf8'));
@@ -19,6 +21,24 @@ test.beforeAll(async () => {
   await controller.playToEnd();
   trace = controller.trace;
   firstTradeIndex = trace.findIndex((frame) => frame.operations.length > 0);
+  // Position truth comes from the ledger (bought minus sold shares), not from an engine flag.
+  let shares = 0;
+  sharesHeld = trace.map((frame) => {
+    for (const operation of frame.operations) shares += operation.side === 'buy' ? operation.quantity : -operation.quantity;
+    return shares;
+  });
+  // Pause inside the first run of >= 100 bars where trader.isHolding() is false while shares are held
+  // (cycle 002, NRC-A04): wide enough to absorb playback overshoot, early enough for the test timeout.
+  const runs = [];
+  trace.forEach((frame, index) => {
+    const hidden = !frame.holding && sharesHeld[index] > 0;
+    const run = runs.at(-1);
+    if (hidden && run && run[1] === index - 1) run[1] = index;
+    else if (hidden) runs.push([index, index]);
+  });
+  const wide = runs.find(([start, end]) => end - start >= 100);
+  if (!wide) throw new Error('snapshot no longer has a long isHolding() gap; revisit NRC-A04');
+  pauseTarget = wide[0] + 20;
 });
 
 // Console errors or uncaught exceptions fail every test: a UI that "looks right" while throwing is not a valid run.
@@ -70,7 +90,8 @@ test('step shows exactly the engine frame, and reset returns to the first bar', 
   await expect(page.locator('#trade-count')).toHaveText('0 EVENTI');
 });
 
-test('replay reaches the first trade and the ledger shows the broker fill', async ({ page }) => {
+test('replay past the first trade: ledger shows the broker fills and Posizione shows held shares', async ({ page }) => {
+  test.setTimeout(120_000);
   await page.clock.install();
   await page.goto('/');
   await expect(page.locator('#run-state')).toHaveAttribute('data-state', 'ready');
@@ -80,8 +101,8 @@ test('replay reaches the first trade and the ledger shows the broker fill', asyn
   const framesShown = async () => Number((await page.locator('#frame-index').textContent()).split(' / ')[0].replace(/\D/g, ''));
   await expect(async () => {
     await page.clock.runFor(60 * 50);
-    expect(await framesShown()).toBeGreaterThan(firstTradeIndex);
-  }).toPass({ timeout: 60_000 });
+    expect(await framesShown()).toBeGreaterThan(pauseTarget);
+  }).toPass({ timeout: 100_000 });
   await page.locator('#play-button').click();
   await expect(page.locator('#run-state b')).toHaveText('In pausa');
 
@@ -100,7 +121,7 @@ test('replay reaches the first trade and the ledger shows the broker fill', asyn
     await expect(cells.nth(4)).toHaveText(integer.format(operation.quantity));
   }
   expect(expected[0]).toMatchObject({ side: 'buy', time: trace[firstTradeIndex].time });
-  await expect(page.locator('#holding-state')).toHaveText(trace[shown - 1].holding ? 'Aperta' : 'Nessuna');
+  await expect(page.locator('#holding-state')).toHaveText(sharesHeld[shown - 1] > 0 ? 'Aperta' : 'Nessuna');
 });
 
 test('IIR and state overlays toggle without changing the simulation', async ({ page }) => {

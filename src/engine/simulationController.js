@@ -131,7 +131,9 @@ export class SimulationController {
       capital: individual.trader.getCapital(),
       portfolioValue: individual.trader.getPortfolioValue(),
       totalValue: individual.trader.getTotalValue(),
+      // isHolding() is a trader-state flag (HOPING only); positionOpen reports shares actually held.
       holding: individual.trader.isHolding(),
+      positionOpen: individual.trader.broker.hasPositions(),
     };
   }
 }
