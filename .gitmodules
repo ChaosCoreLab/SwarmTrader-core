@@ -1,0 +1,3 @@
+[submodule "software-house-ai"]
+	path = software-house-ai
+	url = https://github.com/simpego81/software-house-ai
