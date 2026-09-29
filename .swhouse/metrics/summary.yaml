@@ -1,16 +1,18 @@
 version: 1
 last_updated: 2026-09-29
-total_cycles: 2
+total_cycles: 4
 cycles_by_status:
-  decided: 2
-  deferred: 0
+  decided: 3
+  deferred: 1
   escalated: 0
 # Cycle 001: DEFERRED 2026-09-28, reopened and ACCEPTED WITH CONDITIONS 2026-09-29 (condition C1).
-# Cycle 002: Track S, resolved C1, ACCEPTED 2026-09-29; follow-up O1/O2 proposed.
+# Cycle 002: Track S, resolved C1, ACCEPTED 2026-09-29; follow-up O1/O2 accepted as known limits by Owner.
+# Cycle 003: Track F, ArchiMate cell-based structured source + generator, ACCEPTED 2026-09-29.
+# Cycle 004: Track F, GitHub Pages rendering (SVG from YAML + Jekyll + app), DEFERRED 2026-09-29 (PENDING_HUMAN: first deploy).
 average_cycle_duration_days: 1.5
 memory_entries:
   decisions: 2
-  patterns: 2
+  patterns: 3
   errors: 2
   knowledge: 1
 knowledge_reuse_rate: null

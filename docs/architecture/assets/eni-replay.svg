@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1048" height="1006" viewBox="0 0 1048 1006" font-family="system-ui, sans-serif" font-size="12">
+<style> .ell{stroke:#37474f;stroke-width:1.4} .lbl{fill:#263238} .hdr{font-weight:700;fill:#37474f;font-size:13px} .rel{stroke:#546e7a;stroke-width:1.2;fill:none} .relLbl{fill:#607d8b;font-size:10px} </style>
+<rect x="24" y="24" width="220" height="958" rx="8" fill="#c8e6c9" fill-opacity="0.25" stroke="#b0bec5" stroke-dasharray="4 3"/>
+<text x="134" y="42" text-anchor="middle" class="hdr">Business</text>
+<rect x="284" y="24" width="220" height="958" rx="8" fill="#bbdefb" fill-opacity="0.25" stroke="#b0bec5" stroke-dasharray="4 3"/>
+<text x="394" y="42" text-anchor="middle" class="hdr">Application</text>
+<rect x="544" y="24" width="220" height="958" rx="8" fill="#ffe0b2" fill-opacity="0.25" stroke="#b0bec5" stroke-dasharray="4 3"/>
+<text x="654" y="42" text-anchor="middle" class="hdr">Technology</text>
+<rect x="804" y="24" width="220" height="958" rx="8" fill="#d7ccc8" fill-opacity="0.25" stroke="#b0bec5" stroke-dasharray="4 3"/>
+<text x="914" y="42" text-anchor="middle" class="hdr">Physical</text>
+<rect class="ell" x="44" y="52" width="180" height="44" rx="4" fill="#fff"/>
+<text x="134" y="78" text-anchor="middle" class="lbl">Operator</text>
+<title>business-actor</title>
+<rect class="ell" x="44" y="110" width="180" height="44" rx="4" fill="#fff"/>
+<text x="134" y="136" text-anchor="middle" class="lbl">Product Owner</text>
+<title>business-role</title>
+<rect class="ell" x="44" y="168" width="180" height="44" rx="4" fill="#fff"/>
+<text x="134" y="194" text-anchor="middle" class="lbl">Librarian</text>
+<title>business-role</title>
+<rect class="ell" x="44" y="226" width="180" height="44" rx="4" fill="#fff"/>
+<text x="134" y="252" text-anchor="middle" class="lbl">Acquire approved snapshot</text>
+<title>business-process</title>
+<rect class="ell" x="44" y="284" width="180" height="44" rx="4" fill="#fff"/>
+<text x="134" y="310" text-anchor="middle" class="lbl">Replay fixed genome</text>
+<title>business-process</title>
+<rect class="ell" x="44" y="342" width="180" height="44" rx="4" fill="#fff"/>
+<text x="134" y="368" text-anchor="middle" class="lbl">Inspect and document results</text>
+<title>business-process</title>
+<ellipse class="ell" cx="134" cy="422" rx="90" ry="22" fill="#fff"/>
+<text x="134" y="426" text-anchor="middle" class="lbl">Reproducible inspection of historical behavior</text>
+<title>goal</title>
+<ellipse class="ell" cx="134" cy="480" rx="90" ry="22" fill="#fff"/>
+<text x="134" y="484" text-anchor="middle" class="lbl">No profitability promise</text>
+<title>value</title>
+<ellipse class="ell" cx="134" cy="538" rx="90" ry="22" fill="#fff"/>
+<text x="134" y="542" text-anchor="middle" class="lbl">Immutable approved snapshot</text>
+<title>requirement</title>
+<path class="ell" d="M44 574 h30 v-6 h40 v6 h110 v44 h-180 z" fill="#fff"/>
+<text x="134" y="602" text-anchor="middle" class="lbl">Acceptance criteria</text>
+<title>business-object</title>
+<path class="ell" d="M44 632 h30 v-6 h40 v6 h110 v44 h-180 z" fill="#fff"/>
+<text x="134" y="660" text-anchor="middle" class="lbl">Historical OHLCV snapshot</text>
+<title>business-object</title>
+<path class="ell" d="M44 690 h30 v-6 h40 v6 h110 v44 h-180 z" fill="#fff"/>
+<text x="134" y="718" text-anchor="middle" class="lbl">Replay findings</text>
+<title>business-object</title>
+<rect class="ell" x="304" y="52" width="180" height="44" rx="4" fill="#fff"/>
+<text x="394" y="78" text-anchor="middle" class="lbl">SimulationController</text>
+<title>application-component</title>
+<rect class="ell" x="304" y="110" width="180" height="44" rx="4" fill="#fff"/>
+<text x="394" y="136" text-anchor="middle" class="lbl">DataTrainer</text>
+<title>application-component</title>
+<rect class="ell" x="304" y="168" width="180" height="44" rx="4" fill="#fff"/>
+<text x="394" y="194" text-anchor="middle" class="lbl">FixedGenomeGA</text>
+<title>application-component</title>
+<rect class="ell" x="304" y="226" width="180" height="44" rx="4" fill="#fff"/>
+<text x="394" y="252" text-anchor="middle" class="lbl">FitnessValidator</text>
+<title>application-component</title>
+<rect class="ell" x="304" y="284" width="180" height="44" rx="4" fill="#fff"/>
+<text x="394" y="310" text-anchor="middle" class="lbl">Chart UI</text>
+<title>application-component</title>
+<polygon class="ell" points="304,364 318,342 470,342 484,364 470,386 318,386" fill="#fff"/>
+<text x="394" y="368" text-anchor="middle" class="lbl">Validate snapshot</text>
+<title>application-service</title>
+<polygon class="ell" points="304,422 318,400 470,400 484,422 470,444 318,444" fill="#fff"/>
+<text x="394" y="426" text-anchor="middle" class="lbl">Adapt genome</text>
+<title>application-service</title>
+<polygon class="ell" points="304,480 318,458 470,458 484,480 470,502 318,502" fill="#fff"/>
+<text x="394" y="484" text-anchor="middle" class="lbl">Feed bars</text>
+<title>application-service</title>
+<polygon class="ell" points="304,538 318,516 470,516 484,538 470,560 318,560" fill="#fff"/>
+<text x="394" y="542" text-anchor="middle" class="lbl">Capture state/IIR/trades</text>
+<title>application-service</title>
+<polygon class="ell" points="304,596 318,574 470,574 484,596 470,618 318,618" fill="#fff"/>
+<text x="394" y="600" text-anchor="middle" class="lbl">Verify invariants</text>
+<title>application-service</title>
+<path class="ell" d="M304 632 h30 v-6 h40 v6 h110 v44 h-180 z" fill="#fff"/>
+<text x="394" y="660" text-anchor="middle" class="lbl">StockData</text>
+<title>data-object</title>
+<path class="ell" d="M304 690 h30 v-6 h40 v6 h110 v44 h-180 z" fill="#fff"/>
+<text x="394" y="718" text-anchor="middle" class="lbl">genome</text>
+<title>data-object</title>
+<path class="ell" d="M304 748 h30 v-6 h40 v6 h110 v44 h-180 z" fill="#fff"/>
+<text x="394" y="776" text-anchor="middle" class="lbl">trace frames</text>
+<title>data-object</title>
+<path class="ell" d="M304 806 h30 v-6 h40 v6 h110 v44 h-180 z" fill="#fff"/>
+<text x="394" y="834" text-anchor="middle" class="lbl">broker operations</text>
+<title>data-object</title>
+<path class="ell" d="M304 864 h30 v-6 h40 v6 h110 v44 h-180 z" fill="#fff"/>
+<text x="394" y="892" text-anchor="middle" class="lbl">validation result</text>
+<title>data-object</title>
+<rect class="ell" x="564" y="52" width="180" height="44" rx="4" fill="#fff"/>
+<text x="654" y="78" text-anchor="middle" class="lbl">Browser runtime</text>
+<title>node</title>
+<rect class="ell" x="564" y="110" width="180" height="44" rx="4" fill="#fff"/>
+<text x="654" y="136" text-anchor="middle" class="lbl">Node.js offline toolchain</text>
+<title>node</title>
+<rect class="ell" x="564" y="168" width="180" height="44" rx="4" fill="#fff"/>
+<text x="654" y="194" text-anchor="middle" class="lbl">npm/Vite toolchain</text>
+<title>system-software</title>
+<polygon class="ell" points="564,248 578,226 730,226 744,248 730,270 578,270" fill="#fff"/>
+<text x="654" y="252" text-anchor="middle" class="lbl">Local static fetch and render</text>
+<title>technology-service</title>
+<polygon class="ell" points="564,306 578,284 730,284 744,306 730,328 578,328" fill="#fff"/>
+<text x="654" y="310" text-anchor="middle" class="lbl">Borsa POST (explicit update only)</text>
+<title>technology-service</title>
+<path class="ell" d="M564 342 h30 v-6 h40 v6 h110 v44 h-180 z" fill="#fff"/>
+<text x="654" y="370" text-anchor="middle" class="lbl">public/data/eni-ohlcv.json</text>
+<title>artifact</title>
+<path class="ell" d="M564 400 h30 v-6 h40 v6 h110 v44 h-180 z" fill="#fff"/>
+<text x="654" y="428" text-anchor="middle" class="lbl">SHA-256 manifest</text>
+<title>artifact</title>
+<path class="ell" d="M564 458 h30 v-6 h40 v6 h110 v44 h-180 z" fill="#fff"/>
+<text x="654" y="486" text-anchor="middle" class="lbl">bundled JS/CSS/fonts</text>
+<title>artifact</title>
+<rect class="ell" x="824" y="52" width="180" height="44" rx="4" fill="#fff"/>
+<text x="914" y="78" text-anchor="middle" class="lbl">Operator workstation</text>
+<title>equipment</title>
+<rect class="ell" x="824" y="110" width="180" height="44" rx="4" fill="#fff"/>
+<text x="914" y="136" text-anchor="middle" class="lbl">Borsa Italiana endpoint</text>
+<title>facility</title>
+<path class="rel" d="M394 96 C 394 144, 394 202, 394 110" marker-end="url(#arrow)"/>
+<text x="394" y="93" text-anchor="middle" class="relLbl">used-by</text>
+<path class="rel" d="M394 96 C 394 154, 394 270, 394 168" marker-end="url(#arrow)"/>
+<text x="394" y="132" text-anchor="middle" class="relLbl">used-by</text>
+<path class="rel" d="M394 328 C 394 396, 394 164, 394 52" marker-end="url(#arrow)"/>
+<text x="394" y="200" text-anchor="middle" class="relLbl">used-by</text>
+<path class="rel" d="M394 96 C 394 144, 394 550, 394 458" marker-end="url(#arrow)"/>
+<text x="394" y="267" text-anchor="middle" class="relLbl">realizes</text>
+<path class="rel" d="M394 96 C 394 154, 394 618, 394 516" marker-end="url(#arrow)"/>
+<text x="394" y="306" text-anchor="middle" class="relLbl">realizes</text>
+<path class="rel" d="M394 270 C 394 338, 394 686, 394 574" marker-end="url(#arrow)"/>
+<text x="394" y="432" text-anchor="middle" class="relLbl">realizes</text>
+<path class="rel" d="M394 154 C 394 202, 394 434, 394 342" marker-end="url(#arrow)"/>
+<text x="394" y="238" text-anchor="middle" class="relLbl">realizes</text>
+<path class="rel" d="M394 212 C 394 270, 394 502, 394 400" marker-end="url(#arrow)"/>
+<text x="394" y="306" text-anchor="middle" class="relLbl">realizes</text>
+<path class="rel" d="M394 560 C 394 628, 394 860, 394 748" marker-end="url(#arrow)"/>
+<text x="394" y="664" text-anchor="middle" class="relLbl">accesses</text>
+<path class="rel" d="M394 560 C 394 608, 394 898, 394 806" marker-end="url(#arrow)"/>
+<text x="394" y="673" text-anchor="middle" class="relLbl">accesses</text>
+<path class="rel" d="M394 618 C 394 676, 394 966, 394 864" marker-end="url(#arrow)"/>
+<text x="394" y="741" text-anchor="middle" class="relLbl">accesses</text>
+<path class="rel" d="M134 154 C 134 222, 134 280, 134 168" marker-end="url(#arrow)"/>
+<text x="134" y="171" text-anchor="middle" class="relLbl">composes</text>
+<path class="rel" d="M134 270 C 134 318, 134 376, 134 284" marker-end="url(#arrow)"/>
+<text x="134" y="267" text-anchor="middle" class="relLbl">flows-to</text>
+<path class="rel" d="M134 328 C 134 386, 134 444, 134 342" marker-end="url(#arrow)"/>
+<text x="134" y="335" text-anchor="middle" class="relLbl">flows-to</text>
+<path class="rel" d="M654 96 C 654 164, 654 280, 654 168" marker-end="url(#arrow)"/>
+<text x="654" y="142" text-anchor="middle" class="relLbl">used-by</text>
+<path class="rel" d="M654 154 C 654 202, 654 260, 654 168" marker-end="url(#arrow)"/>
+<text x="654" y="151" text-anchor="middle" class="relLbl">used-by</text>
+<path class="rel" d="M654 96 C 654 154, 654 328, 654 226" marker-end="url(#arrow)"/>
+<text x="654" y="161" text-anchor="middle" class="relLbl">realizes</text>
+<path class="rel" d="M654 154 C 654 222, 654 396, 654 284" marker-end="url(#arrow)"/>
+<text x="654" y="229" text-anchor="middle" class="relLbl">realizes</text>
+<path class="rel" d="M654 270 C 654 318, 654 550, 654 458" marker-end="url(#arrow)"/>
+<text x="654" y="354" text-anchor="middle" class="relLbl">accesses</text>
+<path class="rel" d="M654 270 C 654 328, 654 444, 654 342" marker-end="url(#arrow)"/>
+<text x="654" y="306" text-anchor="middle" class="relLbl">accesses</text>
+<path class="rel" d="M654 328 C 654 396, 654 454, 654 342" marker-end="url(#arrow)"/>
+<text x="654" y="345" text-anchor="middle" class="relLbl">accesses</text>
+<path class="rel" d="M654 328 C 654 376, 654 492, 654 400" marker-end="url(#arrow)"/>
+<text x="654" y="354" text-anchor="middle" class="relLbl">accesses</text>
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#546e7a"/></marker></defs>
+</svg>

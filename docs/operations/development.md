@@ -71,6 +71,21 @@ npm.cmd run test:e2e
 
 First run on a new machine: `npx.cmd playwright install chromium`. The human counterpart of this check is NRC-H01 in `.swhouse/memory/validation/non_regression_checklist.md`.
 
+## Generate ArchiMate views
+
+```powershell
+npm.cmd run archimate:gen
+npm.cmd run archimate:check
+```
+
+`scripts/gen-archimate.mjs` reads the cell files under `archimate/<use-case>/`, validates elements and relationships against `archimate/_vocabulary.md`, and injects the PlantUML diagram block and the Service Layer × Aspect matrix into `docs/architecture/use-case-<use-case>.md` between idempotent markers. `archimate:check` regenerates and fails if the committed block differs from the source (drift detection). `archimate:svg` writes a standalone SVG (rendered directly from the YAML, no PlantUML/Java) used by GitHub Pages. See ADR-002 and `docs/MAP.md` for the structured source pattern.
+
+## GitHub Pages
+
+A GitHub Actions workflow (`.github/workflows/pages.yml`) builds the PoC app with the Pages base path (`GH_PAGES=1`), generates the ArchiMate SVG, builds the Jekyll site, and deploys to GitHub Pages. The site is served at `https://chaoscorelab.github.io/SwarmTrader-core/`: the landing page links to the app (`/app/`) and the documentation (`docs/`). The app build uses `vite.config.js` with `base` derived from the `GH_PAGES` env var; locally the base is `/`.
+
+First deployment requires enabling Pages in the repository settings (Source: GitHub Actions). The first published site is a `PENDING_HUMAN` target — the Owner must confirm visual rendering after the initial deploy.
+
 ## Data and financial disclaimer
 
 The PoC is historical analysis only. It does not execute real trades or claim profitability. Borsa Italiana reuse of the snapshot was confirmed by the Owner on 29/09/2026; keep the source attribution in the snapshot metadata.
