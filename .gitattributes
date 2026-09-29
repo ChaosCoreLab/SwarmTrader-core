@@ -1,0 +1,2 @@
+# Keep the versioned market snapshot byte-stable across platforms
+public/data/*.json text eol=lf

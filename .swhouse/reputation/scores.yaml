@@ -1,0 +1,9 @@
+version: 1
+last_updated: 2026-09-29
+# Per-intervention voting (reputation.md v0.1) is suspended: single-model deployment
+# (all roles on `copilot`), self-voting is prohibited. Active metric: Cycle Quality Score (Step 11).
+cycle_quality_scores:
+  - cycle: "001"
+    score: 3
+    source: cycles/archive/cycle-001.md#step-11--evolution-master
+operators: []

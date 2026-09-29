@@ -1,0 +1,32 @@
+framework_version: "0.1.0"
+framework_repo: "https://github.com/simpego81/software-house-ai"
+
+instance:
+  machine: "windows-workstation"
+  operator: "U422756"
+
+agents:
+  - role: ARCHITECT
+    provider: copilot
+  - role: EXPLORER
+    provider: copilot
+  - role: CRITIC
+    provider: copilot
+  - role: DESTROYER
+    provider: copilot
+  - role: BUILDER
+    provider: copilot
+  - role: OPTIMIZER
+    provider: copilot
+  - role: LIBRARIAN
+    provider: copilot
+  - role: SCIENTIST
+    provider: copilot
+  - role: PRODUCT_OWNER
+    provider: copilot
+  - role: COORDINATOR
+    provider: copilot
+  - role: EVOLUTION_MASTER
+    provider: copilot
+  - role: ARBITER
+    provider: copilot
