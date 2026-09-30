@@ -1,0 +1,6 @@
+- id: eni-replay
+  title: Replay ENI with Fixed Genome
+  summary: Deterministic replay of a fixed trader genome over an immutable ENI OHLCV snapshot.
+  status: active
+  path: /docs/architecture/use-case-eni-replay/
+  order: 1

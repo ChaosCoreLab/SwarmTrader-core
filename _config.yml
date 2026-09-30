@@ -1,6 +1,5 @@
 title: SwarmTrader Core
-description: Historical ENI replay PoC and ArchiMate documentation
-theme: minima
+description: Historical ENI replay PoC and ArchiMate architecture documentation
 permalink: pretty
 baseurl: /SwarmTrader-core
 url: https://chaoscorelab.github.io
@@ -21,13 +20,23 @@ exclude:
   - "README.md"
   - "tsconfig.json"
   - "index.html"
+  - "Gemfile"
+  - "Gemfile.lock"
 defaults:
-  - scope:
-      path: "docs"
-    values:
-      layout: default
   - scope:
       path: ""
       type: pages
     values:
       layout: home
+  - scope:
+      path: "docs/architecture"
+    values:
+      layout: doc
+  - scope:
+      path: "docs/decisions"
+    values:
+      layout: doc
+  - scope:
+      path: "docs/operations"
+    values:
+      layout: doc

@@ -1,11 +1,15 @@
 ---
 title: "Use Case: Replay ENI with Fixed Genome"
-layout: default
+layout: use-case
+last_verified: 2026-09-30
+status: active
+archimate_svg: eni-replay
+value:
+  who: "Investors and technical evaluators who need to verify that a trading-genome replay is reproducible and traceable, not a black box."
+  problem: "Deterministic replay of a fixed trader genome over an immutable ENI daily OHLCV snapshot, with every chart marker traceable to the Consilium engine frame that produced it."
+  impact: "A verifiable, auditable artifact demonstrating the engine works as specified; every fill maps to a broker operation and every state to an algorithm transition."
+  not_solving: "An unprovable demo and opaque architecture; no way to distinguish a genuine replay from a curated narrative."
 ---
-
-# Use Case: Replay ENI with Fixed Genome
-
-last_verified: 2026-09-29
 
 ## Goal
 
@@ -13,13 +17,49 @@ Inspect the behavior of the supplied fixed trader genome against an immutable EN
 
 ## ArchiMate source
 
-The ArchiMate model for this use case lives as a structured data source in [`archimate/eni-replay/`](../../archimate/eni-replay/) — one markdown file per pertinent cell (Service Layer × Aspect), each with a YAML frontmatter declaring elements and relationships against [`archimate/_vocabulary.md`](../../archimate/_vocabulary.md). The diagram below and the matrix are **derived** from those cells by `scripts/gen-archimate.mjs`; do not edit them by hand.
+The ArchiMate model for this use case lives as a structured data source in [`archimate/eni-replay/`](../../../archimate/eni-replay/) — one markdown file per pertinent cell (Service Layer × Aspect), each with a YAML frontmatter declaring elements and relationships against [`archimate/_vocabulary.md`](../../../archimate/_vocabulary.md). The diagram above and the matrix below are **derived** from those cells by `scripts/gen-archimate.mjs`; do not edit them by hand.
 
-## Rendered diagram
+The diagram above is rendered directly from the cell frontmatter (`npm run archimate:svg`), with no PlantUML or external renderer. Use the layer tabs to focus one layer at a time; hover an element for its type; click an element to jump to its cell detail.
 
-![ArchiMate view for eni-replay](assets/eni-replay.svg)
+## Service Layer × Aspect matrix (derived)
 
-The SVG above is generated directly from the cell frontmatter (`npm run archimate:svg`), with no PlantUML or external renderer. The PlantUML block below is the diagram-as-code authoritative source; the SVG is the rendered view for GitHub Pages.
+<!-- archimate:matrix start -->
+| Service Layer | Motivation | Active structure | Behaviour | Passive structure |
+|---------------|------------|-----------------|-----------|-------------------|
+| Business | Reproducible inspection of historical behavior, No profitability promise, Immutable approved snapshot | Operator, Product Owner, Librarian | Acquire approved snapshot, Replay fixed genome, Inspect and document results | Acceptance criteria, Historical OHLCV snapshot, Replay findings |
+| Application | — | SimulationController, DataTrainer, FixedGenomeGA, FitnessValidator, Chart UI | Validate snapshot, Adapt genome, Feed bars, Capture state/IIR/trades, Verify invariants | StockData, genome, trace frames, broker operations, validation result |
+| Technology | — | Browser runtime, Node.js offline toolchain, npm/Vite toolchain | Local static fetch and render, Borsa POST (explicit update only) | public/data/eni-ohlcv.json, SHA-256 manifest, bundled JS/CSS/fonts |
+| Physical | — | Operator workstation, Borsa Italiana endpoint | — | — |
+<!-- archimate:matrix end -->
+
+## Preconditions
+
+- The local snapshot exists and its SHA-256, schema, cutoff and bars validate.
+- The fixed genome maps to the Consilium `Genoma` model without mutating source values.
+- `FitnessValidator` has no blocking errors.
+
+## Main flow
+
+1. The operator opens the browser UI; the embedded snapshot loads and its hash is checked.
+2. The UI shows actual date coverage, bar count, and source metadata.
+3. Starting replay creates one Individual via `FixedGenomeGA`, then loads the in-memory stream.
+4. Each step feeds exactly one bar to `Life`; state, IIR, portfolio and broker operations are captured.
+5. The chart overlays IIR and actual Broker buy/sell/stop/take-profit fills; the optional state layer marks transitions.
+6. At EOF, `FitnessValidator` checks the complete trace and the UI reports completion or visible errors.
+
+## Failure paths
+
+- Missing/corrupt snapshot or hash mismatch: show an error; keep controls disabled.
+- Invalid OHLCV or date coverage: reject before creating the Individual.
+- `Life.feed()` fails before EOF: stop replay and show an error; never label it complete.
+- Borsa endpoint unavailable during refresh: preserve the last valid snapshot atomically; no browser runtime request is made.
+
+## Technical depth
+
+- [Simulator overview](../simulator-overview/) — components, data flow, replay lifecycle.
+- [ADR-001: Static snapshot](../../decisions/ADR-001-static-snapshot/) — why a static snapshot and no runtime backend.
+- [ADR-002: ArchiMate structured source](../../decisions/ADR-002-archimate-structured-source/) — the cell-based pattern.
+- Source: [`src/engine/simulationController.js`](../../../src/engine/simulationController.js) · [`src/engine/snapshotValidator.js`](../../../src/engine/snapshotValidator.js)
 
 <!-- archimate:gen start -->
 ```plantuml
@@ -101,36 +141,3 @@ tech_svc_borsa --> tech_art_hash
 @enduml
 ```
 <!-- archimate:gen end -->
-
-## Service Layer × Aspect matrix (derived)
-
-<!-- archimate:matrix start -->
-| Service Layer | Motivation | Active structure | Behaviour | Passive structure |
-|---------------|------------|-----------------|-----------|-------------------|
-| Business | Reproducible inspection of historical behavior, No profitability promise, Immutable approved snapshot | Operator, Product Owner, Librarian | Acquire approved snapshot, Replay fixed genome, Inspect and document results | Acceptance criteria, Historical OHLCV snapshot, Replay findings |
-| Application | — | SimulationController, DataTrainer, FixedGenomeGA, FitnessValidator, Chart UI | Validate snapshot, Adapt genome, Feed bars, Capture state/IIR/trades, Verify invariants | StockData, genome, trace frames, broker operations, validation result |
-| Technology | — | Browser runtime, Node.js offline toolchain, npm/Vite toolchain | Local static fetch and render, Borsa POST (explicit update only) | public/data/eni-ohlcv.json, SHA-256 manifest, bundled JS/CSS/fonts |
-| Physical | — | Operator workstation, Borsa Italiana endpoint | — | — |
-<!-- archimate:matrix end -->
-
-## Preconditions
-
-- The local snapshot exists and its SHA-256, schema, cutoff and bars validate.
-- The fixed genome maps to the Consilium `Genoma` model without mutating source values.
-- `FitnessValidator` has no blocking errors.
-
-## Main flow
-
-1. The operator opens the browser UI; the static snapshot loads and its hash is checked.
-2. The UI shows actual date coverage, bar count, and source metadata.
-3. Starting replay creates one Individual via `FixedGenomeGA`, then loads the in-memory stream.
-4. Each step feeds exactly one bar to `Life`; state, IIR, portfolio and broker operations are captured.
-5. The chart overlays IIR and actual Broker buy/sell/stop/take-profit fills; the optional state layer marks transitions.
-6. At EOF, `FitnessValidator` checks the complete trace and the UI reports completion or visible errors.
-
-## Failure paths
-
-- Missing/corrupt snapshot or hash mismatch: show an error; keep controls disabled.
-- Invalid OHLCV or date coverage: reject before creating the Individual.
-- `Life.feed()` fails before EOF: stop replay and show an error; never label it complete.
-- Borsa endpoint unavailable during refresh: preserve the last valid snapshot atomically; no browser runtime request is made.

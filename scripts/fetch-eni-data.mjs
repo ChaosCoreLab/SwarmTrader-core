@@ -9,7 +9,7 @@ const START_DATE = '2016-09-29';
 const CUTOFF_DATE = '2026-09-28';
 const MAX_RESPONSE_BYTES = 5_000_000;
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const OUTPUT = path.join(ROOT, 'public', 'data', 'eni-ohlcv.json');
+const OUTPUT = path.join(ROOT, 'src', 'data', 'eni-ohlcv.json');
 
 function normalizeRows(rows) {
   if (!Array.isArray(rows)) {

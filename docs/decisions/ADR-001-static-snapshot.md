@@ -1,6 +1,6 @@
 ---
 title: "ADR-001: Static Snapshot and Browser Replay"
-layout: default
+layout: doc
 ---
 
 # ADR-001: Static Snapshot and Browser Replay

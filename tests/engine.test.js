@@ -5,6 +5,7 @@ import { createConsiliumGenome, FIXED_GENOME } from '../src/engine/genome.js';
 import { CUTOFF_DATE, DATA_PERIOD, DataTrainer, START_DATE, SYMBOL } from '../src/engine/dataTrainer.js';
 import { FitnessValidator } from '../src/engine/fitnessValidator.js';
 import { SimulationController } from '../src/engine/simulationController.js';
+import { validateSnapshot } from '../src/engine/snapshotValidator.js';
 import { Individual } from '../src/vendor/consilium/individual.js';
 
 function makeSnapshot(bars) {
@@ -154,7 +155,7 @@ test('SimulationController replays one market bar per step and validates at EOF'
 });
 
 test('SimulationController replays the downloaded ENI snapshot without truncation', async () => {
-  const snapshotUrl = new URL('../public/data/eni-ohlcv.json', import.meta.url);
+  const snapshotUrl = new URL('../src/data/eni-ohlcv.json', import.meta.url);
   const snapshot = JSON.parse(await readFile(snapshotUrl, 'utf8'));
   const controller = new SimulationController(snapshot);
 
@@ -172,7 +173,7 @@ test('SimulationController replays the downloaded ENI snapshot without truncatio
 });
 
 test('positionOpen follows the shares held according to the ledger, not trader.isHolding()', async () => {
-  const snapshotUrl = new URL('../public/data/eni-ohlcv.json', import.meta.url);
+  const snapshotUrl = new URL('../src/data/eni-ohlcv.json', import.meta.url);
   const controller = new SimulationController(JSON.parse(await readFile(snapshotUrl, 'utf8')));
   await controller.start();
   await controller.playToEnd();
@@ -188,7 +189,7 @@ test('positionOpen follows the shares held according to the ledger, not trader.i
 });
 
 test('identical genome and snapshot produce a byte-identical broker/state trace', async () => {
-  const snapshotUrl = new URL('../public/data/eni-ohlcv.json', import.meta.url);
+  const snapshotUrl = new URL('../src/data/eni-ohlcv.json', import.meta.url);
   const snapshot = JSON.parse(await readFile(snapshotUrl, 'utf8'));
   const first = new SimulationController(snapshot);
   const second = new SimulationController(snapshot);
@@ -200,4 +201,30 @@ test('identical genome and snapshot produce a byte-identical broker/state trace'
 
   assert.deepEqual(second.trace, first.trace);
   assert.equal(second.validation.valid, true);
+});
+test('validateSnapshot accepts the real ENI snapshot', async () => {
+  const snapshotUrl = new URL('../src/data/eni-ohlcv.json', import.meta.url);
+  const snapshot = JSON.parse(await readFile(snapshotUrl, 'utf8'));
+  const validated = await validateSnapshot(snapshot);
+  assert.equal(validated, snapshot);
+});
+
+test('validateSnapshot rejects a tampered snapshot with the hash error', async () => {
+  const snapshotUrl = new URL('../src/data/eni-ohlcv.json', import.meta.url);
+  const snapshot = JSON.parse(await readFile(snapshotUrl, 'utf8'));
+  const tampered = structuredClone(snapshot);
+  tampered.bars[10].close += 0.01;
+  await assert.rejects(() => validateSnapshot(tampered), /Hash snapshot non valido/);
+});
+
+test('validateSnapshot rejects an empty bars array', async () => {
+  await assert.rejects(() => validateSnapshot({ bars: [], cutoffDate: '2026-09-28', dataSha256: 'x' }), /non contiene barre/);
+});
+
+test('validateSnapshot rejects a wrong cutoff date', async () => {
+  const snapshotUrl = new URL('../src/data/eni-ohlcv.json', import.meta.url);
+  const snapshot = JSON.parse(await readFile(snapshotUrl, 'utf8'));
+  const wrong = structuredClone(snapshot);
+  wrong.cutoffDate = '2026-09-27';
+  await assert.rejects(() => validateSnapshot(wrong), /Cutoff snapshot non valido/);
 });

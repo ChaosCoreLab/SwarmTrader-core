@@ -1,6 +1,6 @@
 ---
 title: "ADR-002: ArchiMate as structured data source"
-layout: default
+layout: doc
 ---
 
 # ADR-002: ArchiMate as structured data source

@@ -1,6 +1,8 @@
 ---
 title: "Simulator Overview"
-layout: default
+layout: doc
+last_verified: 2026-09-30
+mermaid: true
 ---
 
 # Simulator Overview

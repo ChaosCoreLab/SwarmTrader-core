@@ -8,3 +8,5 @@ public/data/eni-ohlcv.json.tmp
 test-results/
 playwright-report/
 .vite/
+github.PAT.txt
+*.PAT.txt

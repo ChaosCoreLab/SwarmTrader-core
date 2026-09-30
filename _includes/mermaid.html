@@ -1,0 +1,10 @@
+<script defer src="https://cdn.jsdelivr.net/npm/mermaid@11.4.0/dist/mermaid.min.js" onerror="this.onerror=null;console.error('mermaid: CDN load failed — fenced code below is the authoritative source');var fb=document.createElement('p');fb.className='mermaid-fallback';fb.textContent='Diagram rendering unavailable. The fenced code block below is the authoritative source.';document.body.appendChild(fb);"></script>
+<script>
+  window.addEventListener('DOMContentLoaded', function () {
+    if (window.mermaid) {
+      mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+    } else {
+      console.error('mermaid: library not available — diagrams render as code blocks (authoritative source)');
+    }
+  });
+</script>

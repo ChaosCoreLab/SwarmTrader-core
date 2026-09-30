@@ -1,11 +1,12 @@
 ---
 title: "Development and Operations"
-layout: default
+layout: doc
+last_verified: 2026-09-30
 ---
 
 # Development and Operations
 
-last_verified: 2026-09-29
+last_verified: 2026-09-30
 
 ## Requirements
 
@@ -27,7 +28,7 @@ With npm versions that gate lifecycle scripts, review and approve only the `esbu
 npm.cmd run data:update
 ```
 
-The script requests daily OHLCV from Borsa Italiana for `ENI.MTA`, validates row shape, ordering, finite numeric values and OHLC bounds, filters inclusive dates 29/09/2016–28/09/2026, and atomically writes `public/data/eni-ohlcv.json`. It prints actual bar count, first/last dates and SHA-256. If the endpoint is unavailable or malformed, it fails without replacing the prior snapshot.
+The script requests daily OHLCV from Borsa Italiana for `ENI.MTA`, validates row shape, ordering, finite numeric values and OHLC bounds, filters inclusive dates 29/09/2016–28/09/2026, and atomically writes `src/data/eni-ohlcv.json`. It prints actual bar count, first/last dates and SHA-256. If the endpoint is unavailable or malformed, it fails without replacing the prior snapshot. The snapshot is embedded into the app bundle at build time (`import` in `src/main.js`), so there is no runtime fetch and no base-path dependency.
 
 The data asset is versioned in Git (Owner confirmed Borsa Italiana reuse terms on 29/09/2026). Commit a refreshed snapshot only together with its new hash and coverage in the cycle log.
 
@@ -83,7 +84,7 @@ npm.cmd run archimate:gen
 npm.cmd run archimate:check
 ```
 
-`scripts/gen-archimate.mjs` reads the cell files under `archimate/<use-case>/`, validates elements and relationships against `archimate/_vocabulary.md`, and injects the PlantUML diagram block and the Service Layer × Aspect matrix into `docs/architecture/use-case-<use-case>.md` between idempotent markers. `archimate:check` regenerates and fails if the committed block differs from the source (drift detection). `archimate:svg` writes a standalone SVG (rendered directly from the YAML, no PlantUML/Java) used by GitHub Pages. See ADR-002 and `docs/MAP.md` for the structured source pattern.
+`scripts/gen-archimate.mjs` reads the cell files under `archimate/<use-case>/`, validates elements and relationships against `archimate/_vocabulary.md`, and injects the PlantUML diagram block and the Service Layer × Aspect matrix into `docs/architecture/use-case-<use-case>.md` between idempotent markers. `archimate:check` regenerates and fails if the committed block differs from the source (drift detection). `archimate:svg` writes a responsive interactive SVG to `_includes/use-cases/<use-case>.svg` (rendered directly from the YAML, no PlantUML/Java), inlined into the use-case page via Jekyll `{% include %}`. See ADR-002, ADR-004 and `docs/MAP.md` for the structured source pattern.
 
 ## GitHub Pages
 
