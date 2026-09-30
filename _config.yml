@@ -1,6 +1,7 @@
 title: SwarmTrader Core
 description: Historical ENI replay PoC and ArchiMate documentation
 theme: minima
+permalink: pretty
 baseurl: /SwarmTrader-core
 url: https://chaoscorelab.github.io
 exclude:
