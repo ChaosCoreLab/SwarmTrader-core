@@ -1,0 +1,262 @@
+/* ─── ArchiMate browser renderer (ported from tr4d3rz reference) ─── */
+/* Scope: .archimate-browser. The Jekyll site has its own site-header, so the
+   fragment starts at the legend bar. Courier/monospace aesthetic for the
+   diagram area, sharp boxes, layer tints, hover/dim/highlight states. */
+
+.archimate-browser {
+  font-family: 'Courier New', monospace;
+  background: #f1f5f9;
+  color: #1e293b;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 1.5rem 0;
+}
+
+/* ─── Legend bar ─── */
+.archimate-browser .legend {
+  background: #fafbfc;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 7px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.7rem;
+  color: #475569;
+}
+.archimate-browser .legend-label {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+}
+.archimate-browser .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.archimate-browser .l-box {
+  width: 11px;
+  height: 8px;
+  border-radius: 1px;
+  display: inline-block;
+}
+.archimate-browser .l-line {
+  width: 22px;
+  height: 2px;
+  border-radius: 1px;
+  display: inline-block;
+}
+.archimate-browser .l-dash {
+  width: 22px;
+  height: 0;
+  display: inline-block;
+}
+
+/* ─── Diagram wrapper (scroll container + SVG anchor) ─── */
+.archimate-browser .diagram-wrapper {
+  position: relative;
+  overflow: auto;
+  background: white;
+  padding: 10px;
+}
+.archimate-browser #rel-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 5;
+  overflow: visible;
+}
+
+/* ─── Grid table ─── */
+.archimate-browser .arch-grid {
+  border-collapse: separate;
+  border-spacing: 6px;
+  min-width: 900px;
+  position: relative;
+  z-index: 1;
+}
+.archimate-browser .arch-grid thead th {
+  background: #f8fafc;
+  padding: 7px 12px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ─── Layer labels ─── */
+.archimate-browser .layer-label {
+  width: 82px;
+  min-width: 82px;
+  max-width: 82px;
+  padding: 6px 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-align: center;
+  border-radius: 4px;
+  vertical-align: middle;
+}
+.archimate-browser .layer-Motivation  { background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd; }
+.archimate-browser .layer-Business    { background: #fef9c3; color: #854d0e; border: 1px solid #fde68a; }
+.archimate-browser .layer-Application { background: #dbeafe; color: #1e3a8a; border: 1px solid #93c5fd; }
+.archimate-browser .layer-Technology  { background: #dcfce7; color: #14532d; border: 1px solid #86efac; }
+
+/* ─── Grid cells ─── */
+.archimate-browser .grid-cell {
+  border: 1px dashed #cbd5e1;
+  padding: 8px 6px;
+  min-height: 90px;
+  vertical-align: top;
+  background: #fafbfc;
+  border-radius: 4px;
+  width: 22%;
+}
+
+/* ─── ArchiMate element boxes ─── */
+.archimate-browser .arch-box {
+  border: 1.5px solid #94a3b8;
+  background: white;
+  padding: 5px 22px 5px 7px;
+  border-radius: 2px;          /* ArchiMate uses sharp corners */
+  font-size: 0.7rem;
+  text-align: left;
+  cursor: pointer;
+  margin-bottom: 5px;
+  position: relative;
+  min-height: 28px;
+  line-height: 1.35;
+  transition: box-shadow 0.1s, transform 0.1s;
+  user-select: none;
+}
+.archimate-browser .arch-box:hover {
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+  transform: translateY(-1px);
+  z-index: 3;
+}
+
+/* Layer tints applied via data-layer attribute */
+.archimate-browser .arch-box[data-layer="Motivation"]  { border-color: #7c3aed; background: #f5f3ff; color: #3b0764; }
+.archimate-browser .arch-box[data-layer="Business"]    { border-color: #b45309; background: #fffbeb; color: #451a03; }
+.archimate-browser .arch-box[data-layer="Application"] { border-color: #1e40af; background: #eff6ff; color: #172554; }
+.archimate-browser .arch-box[data-layer="Technology"]  { border-color: #166534; background: #f0fdf4; color: #052e16; }
+
+/* Interaction states */
+.archimate-browser .arch-box.dimmed {
+  opacity: 0.18 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+.archimate-browser .arch-box.highlight {
+  box-shadow: 0 0 0 2.5px var(--hl-color, #6366f1), 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  z-index: 4;
+}
+.archimate-browser .arch-box[data-layer="Motivation"].highlight  { --hl-color: #7c3aed; }
+.archimate-browser .arch-box[data-layer="Business"].highlight    { --hl-color: #b45309; }
+.archimate-browser .arch-box[data-layer="Application"].highlight { --hl-color: #1e40af; }
+.archimate-browser .arch-box[data-layer="Technology"].highlight  { --hl-color: #166534; }
+
+/* ─── Type icon (top-right corner) ─── */
+.archimate-browser .type-icon {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 16px;
+  height: 16px;
+  opacity: 0.65;
+  pointer-events: none;
+}
+.archimate-browser .type-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ─── Type rows: same-type elements sit side-by-side ─── */
+.archimate-browser .type-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-bottom: 4px;
+}
+.archimate-browser .type-row:last-child { margin-bottom: 0; }
+.archimate-browser .type-row .arch-box {
+  flex: 1 1 80px;
+  min-width: 70px;
+  margin-bottom: 0;
+}
+
+/* ─── Modal overlay ─── */
+.archimate-browser #overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  z-index: 40;
+}
+.archimate-browser #modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  max-width: 560px;
+  width: 92%;
+  z-index: 50;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+  overflow-y: auto;
+  max-height: 80vh;
+}
+.archimate-browser .badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-right: 4px;
+}
+.archimate-browser .badge-Motivation  { background: #ede9fe; color: #5b21b6; }
+.archimate-browser .badge-Business    { background: #fef9c3; color: #854d0e; }
+.archimate-browser .badge-Application { background: #dbeafe; color: #1e3a8a; }
+.archimate-browser .badge-Technology  { background: #dcfce7; color: #14532d; }
+.archimate-browser .m-field { margin-bottom: 12px; }
+.archimate-browser .m-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+.archimate-browser .m-value {
+  font-size: 0.82rem;
+  color: #334155;
+  line-height: 1.55;
+}
+.archimate-browser .m-mono {
+  font-family: monospace;
+  font-size: 0.74rem;
+  color: #475569;
+  white-space: pre-wrap;
+}
+
+/* ─── Reduced motion: no hover transform, arrows still draw ─── */
+@media (prefers-reduced-motion: reduce) {
+  .archimate-browser .arch-box,
+  .archimate-browser .arch-box:hover,
+  .archimate-browser .arch-box.highlight {
+    transition: none;
+    transform: none;
+  }
+}

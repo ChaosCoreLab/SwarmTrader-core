@@ -1,6 +1,7 @@
 ---
 layout: default
 ---
+<link rel="stylesheet" href="{{ '/assets/css/archimate-browser.css' | relative_url }}">
 <div class="doc-shell">
   {% include use-case-nav.html %}
   <article class="doc-content use-case">
@@ -27,13 +28,10 @@ layout: default
 
     <section class="archimate-section">
       <h2>ArchiMate diagram</h2>
-      <div class="layer-tabs" id="layer-tabs"></div>
-      <div class="archimate-view archimate-svg" id="archimate-view">
-        {% case page.archimate_svg %}
-        {% when 'eni-replay' %}{% include use-cases/eni-replay.svg %}
-        {% else %}<p class="mermaid-fallback">ArchiMate diagram not available for this use case.</p>
-        {% endcase %}
-      </div>
+      {% case page.archimate_svg %}
+      {% when 'eni-replay' %}{% include use-cases/eni-replay.html %}
+      {% else %}<p class="mermaid-fallback">ArchiMate diagram not available for this use case.</p>
+      {% endcase %}
     </section>
 
     {{ content }}
@@ -44,4 +42,4 @@ layout: default
     </nav>
   </article>
 </div>
-<script src="{{ '/assets/js/use-case.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/archimate-browser.js' | relative_url }}" defer></script>

@@ -19,7 +19,7 @@ Inspect the behavior of the supplied fixed trader genome against an immutable EN
 
 The ArchiMate model for this use case lives as a structured data source in [`archimate/eni-replay/`](../../../archimate/eni-replay/) — one markdown file per pertinent cell (Service Layer × Aspect), each with a YAML frontmatter declaring elements and relationships against [`archimate/_vocabulary.md`](../../../archimate/_vocabulary.md). The diagram above and the matrix below are **derived** from those cells by `scripts/gen-archimate.mjs`; do not edit them by hand.
 
-The diagram above is rendered directly from the cell frontmatter (`npm run archimate:svg`), with no PlantUML or external renderer. Use the layer tabs to focus one layer at a time; hover an element for its type; click an element to jump to its cell detail.
+The diagram above is an interactive ArchiMate browser rendered from the cell frontmatter (`npm run archimate:html`), with no PlantUML or external renderer. Hover an element to highlight its relationships; click any element for its role, technology and relationships detail.
 
 ## Service Layer × Aspect matrix (derived)
 
