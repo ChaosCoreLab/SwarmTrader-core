@@ -3,7 +3,7 @@ cycle: 005
 status: closed
 opened: 2026-09-30
 closed: 2026-09-30
-decision: ACCEPTED WITH CONDITIONS
+decision: ACCEPTED
 problem: "Fix app data 404 on Pages (embed snapshot) + stakeholder-grade documentation UI with visible interactive ArchiMate"
 track: F
 ---
@@ -108,3 +108,9 @@ Score: 4 — Track F justified; three Explore agents + Plan agent produced a wel
 Decision: ACCEPTED WITH CONDITIONS.
 Rationale: all local AC met (16/16 tests, build, archimate:check, responsive SVG, layout system, ADR-004, framework protocol). The production target github-pages remains PENDING_HUMAN until the next deploy is visually confirmed (frontend-checklist browser observation). Condition C1: the Owner confirms after the next Pages deploy that (a) the app at /app/ loads the embedded snapshot and replays, (b) the use-case page shows the ArchiMate diagram legibly and responsively with working layer tabs, (c) the landing page is stakeholder-presentable, (d) no console errors. This also closes the cycle-004 PENDING_HUMAN. Re-opening: append a Human Verification record; no new cycle if VERIFIED.
 Status: decided (accepted with conditions).
+
+## Human Verification — 2026-09-30
+Performed by: Owner (U422756)
+Target: github-pages (condition C1)
+Result: VERIFIED
+Notes: Owner confirmed "tutto ok" after inspecting the published site. (a) The PoC app at /app/ loads the embedded snapshot and replays (no 404). (b) The use-case page shows the ArchiMate browser redesigned to match the tr4d3rz-docs reference — grid with layer tints, type icons, hover dim/highlight, click-to-modal with Role/Technology/Relationships, legend with canonical relation order and marker glyphs. (c) The landing page is stakeholder-presentable. (d) No console errors reported. Condition C1 met; cycle 005 → ACCEPTED.

@@ -2,15 +2,15 @@ version: 1
 last_updated: 2026-09-30
 total_cycles: 5
 cycles_by_status:
-  decided: 4
-  deferred: 1
+  decided: 5
+  deferred: 0
   escalated: 0
-# Cycle 001: DEFERRED 2026-09-28, reopened ACCEPTED WITH CONDITIONS 2026-09-29 (C1).
+# Cycle 001: DEFERRED 2026-09-28, reopened ACCEPTED WITH CONDITIONS 2026-09-29 (C1, resolved cycle 002).
 # Cycle 002: Track S, resolved C1, ACCEPTED 2026-09-29; O1/O2 accepted as known limits.
 # Cycle 003: Track F, ArchiMate cell-based structured source + generator, ACCEPTED 2026-09-29.
-# Cycle 004: Track F, GitHub Pages rendering, DEFERRED 2026-09-29 (PENDING_HUMAN first deploy).
-# Cycle 005: Track F, embed snapshot + stakeholder UI, ACCEPTED WITH CONDITIONS 2026-09-30 (C1: visual confirmation).
-average_cycle_duration_days: 1.6
+# Cycle 004: Track F, GitHub Pages rendering, DEFERRED 2026-09-29, ACCEPTED 2026-09-30 (PENDING_HUMAN resolved by cycle 005).
+# Cycle 005: Track F, embed snapshot + stakeholder UI + ArchiMate browser redesign, ACCEPTED 2026-09-30 (C1: Owner visual confirmation).
+average_cycle_duration_days: 1.8
 memory_entries:
   decisions: 2
   patterns: 4

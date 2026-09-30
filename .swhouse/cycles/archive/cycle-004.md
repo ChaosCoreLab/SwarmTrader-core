@@ -3,7 +3,7 @@ cycle: 004
 status: closed
 opened: 2026-09-29
 closed: 2026-09-29
-decision: DEFERRED
+decision: ACCEPTED
 problem: "Renderizzare i diagrammi ArchiMate su GitHub Pages: site = app PoC + documentazione (Jekyll nativo); rendering dei blocchi PlantUML (pre-render SVG in CI) o alternativa SVG diretto dalla base dati YAML"
 track: F
 ---
@@ -294,3 +294,9 @@ Aggiunto target `github-pages` (PENDING_HUMAN al primo deploy).
 **Re-opening mechanism:** questo ciclo si riapre aggiungendo la Human Verification record al file archiviato; lo status passa a ACCEPTED senza nuovo ciclo se VERIFIED.
 
 **Status:** decided (deferred)
+
+## Human Verification — 2026-09-30
+Performed by: Owner (U422756)
+Target: github-pages
+Result: VERIFIED
+Notes: Owner confirmed the published site at https://chaoscorelab.github.io/SwarmTrader-core/ — landing, app, and docs render correctly. The PoC app loads data and replays; the use-case page shows the ArchiMate diagram. Resolved by cycle 005 (data embed + UI redesign).
