@@ -1,3 +1,8 @@
+---
+title: "ADR-001: Static Snapshot and Browser Replay"
+layout: default
+---
+
 # ADR-001: Static Snapshot and Browser Replay
 
 last_verified: 2026-09-29

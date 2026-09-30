@@ -1,3 +1,8 @@
+---
+title: "ADR-003: GitHub Pages rendering for ArchiMate and the PoC app"
+layout: default
+---
+
 # ADR-003: GitHub Pages rendering for ArchiMate and the PoC app
 
 Date: 2026-09-29

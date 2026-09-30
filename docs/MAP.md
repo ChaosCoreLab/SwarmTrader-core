@@ -1,3 +1,8 @@
+---
+title: "Documentation Map"
+layout: default
+---
+
 # Documentation Map
 
 last_verified: 2026-09-29

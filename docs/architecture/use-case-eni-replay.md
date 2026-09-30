@@ -1,3 +1,8 @@
+---
+title: "Use Case: Replay ENI with Fixed Genome"
+layout: default
+---
+
 # Use Case: Replay ENI with Fixed Genome
 
 last_verified: 2026-09-29

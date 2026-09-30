@@ -1,3 +1,8 @@
+---
+title: "ADR-002: ArchiMate as structured data source"
+layout: default
+---
+
 # ADR-002: ArchiMate as structured data source
 
 Date: 2026-09-29

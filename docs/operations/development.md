@@ -1,3 +1,8 @@
+---
+title: "Development and Operations"
+layout: default
+---
+
 # Development and Operations
 
 last_verified: 2026-09-29
