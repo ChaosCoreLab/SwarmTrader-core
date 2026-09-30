@@ -1,0 +1,24 @@
+architecture:
+  - id: simulator-overview
+    title: Simulator Overview
+    path: /docs/architecture/simulator-overview/
+  - id: use-case-eni-replay
+    title: Use case — ENI Replay
+    path: /docs/architecture/use-case-eni-replay/
+decisions:
+  - id: ADR-001-static-snapshot
+    title: ADR-001 Static Snapshot
+    path: /docs/decisions/ADR-001-static-snapshot/
+  - id: ADR-002-archimate-structured-source
+    title: ADR-002 ArchiMate Structured Source
+    path: /docs/decisions/ADR-002-archimate-structured-source/
+  - id: ADR-003-github-pages-rendering
+    title: ADR-003 GitHub Pages Rendering
+    path: /docs/decisions/ADR-003-github-pages-rendering/
+  - id: ADR-004-stakeholder-docs-ui
+    title: ADR-004 Stakeholder Docs UI
+    path: /docs/decisions/ADR-004-stakeholder-docs-ui/
+operations:
+  - id: development
+    title: Development & Operations
+    path: /docs/operations/development/

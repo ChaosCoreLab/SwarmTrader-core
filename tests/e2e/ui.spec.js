@@ -15,7 +15,7 @@ let sharesHeld;
 let pauseTarget;
 
 test.beforeAll(async () => {
-  snapshot = JSON.parse(await readFile(new URL('../../public/data/eni-ohlcv.json', import.meta.url), 'utf8'));
+  snapshot = JSON.parse(await readFile(new URL('../../src/data/eni-ohlcv.json', import.meta.url), 'utf8'));
   const controller = new SimulationController(snapshot);
   await controller.start();
   await controller.playToEnd();
@@ -143,16 +143,4 @@ test('layout has no horizontal overflow', async ({ page }) => {
   await expect(page.locator('#run-state')).toHaveAttribute('data-state', 'ready');
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(0);
-});
-
-test('a tampered snapshot is rejected with a visible error', async ({ page }) => {
-  const tampered = structuredClone(snapshot);
-  tampered.bars[10].close += 0.01;
-  await page.route('**/data/eni-ohlcv.json', (route) => route.fulfill({ json: tampered }));
-
-  await page.goto('/');
-  await expect(page.locator('#run-state')).toHaveAttribute('data-state', 'error');
-  await expect(page.locator('#error-banner')).toContainText('Hash snapshot non valido');
-  await expect(page.locator('#play-button')).toBeDisabled();
-  await expect(page.locator('#step-button')).toBeDisabled();
 });

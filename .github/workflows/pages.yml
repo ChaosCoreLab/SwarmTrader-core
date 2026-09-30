@@ -30,6 +30,9 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Test
+        run: npm test
+
       - name: Build PoC app (Pages base)
         env:
           GH_PAGES: '1'

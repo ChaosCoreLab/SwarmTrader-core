@@ -1,6 +1,6 @@
 ---
 title: "ADR-003: GitHub Pages rendering for ArchiMate and the PoC app"
-layout: default
+layout: doc
 ---
 
 # ADR-003: GitHub Pages rendering for ArchiMate and the PoC app

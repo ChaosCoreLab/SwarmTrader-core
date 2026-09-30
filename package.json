@@ -16,7 +16,7 @@
     "test:e2e": "playwright test",
     "archimate:gen": "node scripts/gen-archimate.mjs eni-replay",
     "archimate:check": "node scripts/gen-archimate.mjs eni-replay --check",
-    "archimate:svg": "node scripts/gen-archimate.mjs eni-replay --write-svg docs/architecture/assets/eni-replay.svg"
+    "archimate:svg": "node scripts/gen-archimate.mjs eni-replay --write-svg _includes/use-cases/eni-replay.svg"
   },
   "dependencies": {
     "@fontsource-variable/ibm-plex-sans": "^5.2.6",

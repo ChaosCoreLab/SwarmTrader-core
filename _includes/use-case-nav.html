@@ -1,0 +1,38 @@
+<aside class="doc-nav">
+  <h2>Documentation</h2>
+  {% assign uc = site.data.use_cases %}
+  {% if uc and uc.size > 0 %}
+  <nav class="uc-nav-group">
+    <h3>Use cases</h3>
+    <ul>
+      {% for c in uc %}
+      <li><a href="{{ c.path | relative_url }}" class="{% if page.url contains c.id %}is-current{% endif %}">{{ c.title }}</a></li>
+      {% endfor %}
+    </ul>
+  </nav>
+  {% endif %}
+  <nav class="uc-nav-group">
+    <h3>Architecture</h3>
+    <ul>
+      {% for d in site.data.docs.architecture %}
+      <li><a href="{{ d.path | relative_url }}" class="{% if page.url contains d.id %}is-current{% endif %}">{{ d.title }}</a></li>
+      {% endfor %}
+    </ul>
+  </nav>
+  <nav class="uc-nav-group">
+    <h3>Decisions</h3>
+    <ul>
+      {% for d in site.data.docs.decisions %}
+      <li><a href="{{ d.path | relative_url }}" class="{% if page.url contains d.id %}is-current{% endif %}">{{ d.title }}</a></li>
+      {% endfor %}
+    </ul>
+  </nav>
+  <nav class="uc-nav-group">
+    <h3>Operations</h3>
+    <ul>
+      {% for d in site.data.docs.operations %}
+      <li><a href="{{ d.path | relative_url }}" class="{% if page.url contains d.id %}is-current{% endif %}">{{ d.title }}</a></li>
+      {% endfor %}
+    </ul>
+  </nav>
+</aside>

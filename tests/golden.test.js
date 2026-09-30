@@ -8,7 +8,7 @@ import { INITIAL_CAPITAL } from '../src/engine/fixedGenomeGA.js';
 import { SimulationController } from '../src/engine/simulationController.js';
 
 const GOLDEN = new URL('./golden/eni-fixed-genome.golden.json', import.meta.url);
-const SNAPSHOT = new URL('../public/data/eni-ohlcv.json', import.meta.url);
+const SNAPSHOT = new URL('../src/data/eni-ohlcv.json', import.meta.url);
 const missing = existsSync(GOLDEN) ? false : 'golden trace missing: run `npm run golden` (see docs/operations/development.md)';
 
 test('step-by-step replay matches the upstream Consilium Life.cycle golden trace (AC-04)', { skip: missing }, async () => {

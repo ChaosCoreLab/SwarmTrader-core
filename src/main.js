@@ -9,6 +9,8 @@ import {
   LineSeries,
 } from 'lightweight-charts';
 import { SimulationController } from './engine/simulationController.js';
+import { validateSnapshot } from './engine/snapshotValidator.js';
+import eniSnapshot from './data/eni-ohlcv.json' with { type: 'json' };
 import './style.css';
 
 const app = document.querySelector('#app');
@@ -220,21 +222,11 @@ function formatDate(date) {
     .format(new Date(`${date}T00:00:00.000Z`));
 }
 
-async function sha256(value) {
-  const bytes = new TextEncoder().encode(value);
-  const digest = await crypto.subtle.digest('SHA-256', bytes);
-  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
-}
-
 async function loadSnapshot() {
-  const response = await fetch('/data/eni-ohlcv.json', { cache: 'no-store' });
-  if (!response.ok) throw new Error(`Snapshot ENI non disponibile (HTTP ${response.status}). Esegui npm run data:update.`);
-  const loaded = await response.json();
-  if (!Array.isArray(loaded.bars) || loaded.bars.length === 0) throw new Error('Lo snapshot ENI non contiene barre OHLCV.');
-  if (loaded.cutoffDate !== '2026-09-28') throw new Error('Cutoff snapshot non valido: è richiesto il 28/09/2026.');
-  const actualHash = await sha256(JSON.stringify(loaded.bars));
-  if (actualHash !== loaded.dataSha256) throw new Error('Hash snapshot non valido: i dati potrebbero essere incompleti o modificati.');
-  return loaded;
+  // The snapshot is embedded at build time (imported as a JSON module) so there
+  // is no runtime fetch and no base-path dependency. Validation (shape, cutoff,
+  // SHA-256 integrity) runs on the imported object.
+  return validateSnapshot(eniSnapshot);
 }
 
 function initializeChart() {
