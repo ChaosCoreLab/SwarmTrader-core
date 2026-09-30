@@ -20,6 +20,7 @@ exclude:
   - "playwright.config.js"
   - "README.md"
   - "tsconfig.json"
+  - "index.html"
 defaults:
   - scope:
       path: "docs"
