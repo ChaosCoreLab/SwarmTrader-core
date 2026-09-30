@@ -1,11 +1,12 @@
 ---
 cycle: 005
-status: open
+status: closed
 opened: 2026-09-30
+closed: 2026-09-30
+decision: ACCEPTED WITH CONDITIONS
 problem: "Fix app data 404 on Pages (embed snapshot) + stakeholder-grade documentation UI with visible interactive ArchiMate"
 track: F
 ---
-
 ## Step 1 — COORDINATOR: Open the Problem
 
 **Agent:** claude-opus-5-5
@@ -75,3 +76,35 @@ Recommended A1: embed JSON import + snapshotValidator; custom Jekyll layouts (no
 ## Step 6 — DESTROYER
 - Tamper e2e test breaks (no fetch) → replace with validateSnapshot unit test.
 - public/data removal → data:update script + tests updated together.
+
+## Step 7 — BUILDER
+
+Implemented Parts A–E (see commit). Self-Test:
+```
+Component: snapshot embedding + validator
+  npm test → pass 16, fail 0 (12 + 4 new validateSnapshot)
+  GH_PAGES=1 npm run build → ✓ built, dist/data absent (embedded), bundle 503KB
+  Result: PASS
+Component: SVG generator (responsive + interactive)
+  npm run archimate:svg → wrote _includes/use-cases/eni-replay.svg (width=100%, viewBox, data-* attrs)
+  npm run archimate:check → ok
+  Result: PASS
+```
+Confidence: Medium-High (local verified; published site pending deploy).
+
+## Step 8 — OPTIMIZER
+No deps added (system font, no webfont). JSON import inlines 230KB (~30KB gzip) — fine. Layout system is minimal. Nothing to remove.
+
+## Step 9 — SCIENTIST
+AC-01..AC-09 verified locally (tests, build, archimate:check). NRC-A01..A04: 16/16 pass; e2e path updated. Production target github-pages: PENDING_HUMAN (next deploy). Frontend-checklist: browser observation pending publish. Open: visual confirmation of published site.
+
+## Step 10 — LIBRARIAN
+New: ADR-004, pattern jekyll-stakeholder-docs, framework protocol documentation-presentation.md. Updated: MAP, operations, validation matrix (unchanged target). Memory: cycle 005 links to 004 (PENDING_HUMAN closure). Close checklist: metrics updated at close; memory entry present; no failures (PAT file was staged by accident, caught and removed before commit, never committed — logged as a near-miss lesson).
+
+## Step 11 — EVOLUTION MASTER
+Score: 4 — Track F justified; three Explore agents + Plan agent produced a well-grounded plan; AskUserQuestion fixed two key decisions (interactivity level, visual identity) before build; the accidental PAT staging was caught by the Self-Test/stage inspection before commit (a real security near-miss, caught). Not 5: published-site verification still pending.
+
+## Step 12 — ARBITER
+Decision: ACCEPTED WITH CONDITIONS.
+Rationale: all local AC met (16/16 tests, build, archimate:check, responsive SVG, layout system, ADR-004, framework protocol). The production target github-pages remains PENDING_HUMAN until the next deploy is visually confirmed (frontend-checklist browser observation). Condition C1: the Owner confirms after the next Pages deploy that (a) the app at /app/ loads the embedded snapshot and replays, (b) the use-case page shows the ArchiMate diagram legibly and responsively with working layer tabs, (c) the landing page is stakeholder-presentable, (d) no console errors. This also closes the cycle-004 PENDING_HUMAN. Re-opening: append a Human Verification record; no new cycle if VERIFIED.
+Status: decided (accepted with conditions).
