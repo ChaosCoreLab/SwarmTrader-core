@@ -3,8 +3,6 @@ description: Historical ENI replay PoC and ArchiMate documentation
 theme: minima
 baseurl: /SwarmTrader-core
 url: https://chaoscorelab.github.io
-include:
-  - docs
 exclude:
   - ".github"
   - ".cache"
@@ -26,3 +24,8 @@ defaults:
       path: "docs"
     values:
       layout: default
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: home
