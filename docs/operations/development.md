@@ -84,7 +84,7 @@ npm.cmd run archimate:gen
 npm.cmd run archimate:check
 ```
 
-`scripts/gen-archimate.mjs` reads the cell files under `archimate/<use-case>/`, validates elements and relationships against `archimate/_vocabulary.md`, and injects the PlantUML diagram block and the Service Layer × Aspect matrix into `docs/architecture/use-case-<use-case>.md` between idempotent markers. `archimate:check` regenerates and fails if the committed block differs from the source (drift detection). `archimate:svg` writes a responsive interactive SVG to `_includes/use-cases/<use-case>.svg` (rendered directly from the YAML, no PlantUML/Java), inlined into the use-case page via Jekyll `{% include %}`. See ADR-002, ADR-004 and `docs/MAP.md` for the structured source pattern.
+`scripts/gen-archimate.mjs` reads the cell files under `archimate/<use-case>/`, validates elements and relationships against `archimate/_vocabulary.md`, and injects the PlantUML diagram block and the Service Layer × Aspect matrix into `docs/architecture/use-case-<use-case>.md` between idempotent markers. `archimate:check` regenerates and fails if the committed block differs from the source (drift detection). `archimate:svg` writes a responsive interactive SVG to `_includes/use-cases/<use-case>.svg` (rendered directly from the YAML, no PlantUML/Java), inlined into the use-case page via Jekyll `{% raw %}{% include %}{% endraw %}`. See ADR-002, ADR-004 and `docs/MAP.md` for the structured source pattern.
 
 ## GitHub Pages
 
