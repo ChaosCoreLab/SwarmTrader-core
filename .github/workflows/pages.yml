@@ -49,9 +49,8 @@ jobs:
 
       - name: Build site
         run: |
-          mkdir -p _site
-          cp -r dist _site/app
           jekyll build --destination _site
+          cp -r dist _site/app
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
