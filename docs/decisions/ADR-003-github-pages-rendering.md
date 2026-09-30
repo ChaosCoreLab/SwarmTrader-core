@@ -26,7 +26,7 @@ Host the site with **Jekyll native GitHub Pages** (no non-allowlisted plugins). 
 - Direct SVG generation avoids Java/Docker in CI (heavy, slow) and any external render service (Kroki), keeping the pipeline self-contained and fast.
 - The SVG is derived from the same YAML source as the PlantUML block, so there is one source of truth; drift between the two is impossible by construction (both come from `gen-archimate.mjs`).
 - Jekyll native keeps the markdown docs (already written for the framework) as the source of pages, with no extra generator dependency.
-- Serving the app under `/app/` isolates the Vite `index.html` from Jekyll Liquid processing (avoids `{{ }}` conflicts).
+- Serving the app under `/app/` isolates the Vite `index.html` from Jekyll Liquid processing (avoids double-curly conflicts).
 
 ## Consequences
 

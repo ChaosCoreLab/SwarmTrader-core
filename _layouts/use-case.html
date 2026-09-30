@@ -29,8 +29,10 @@ layout: default
       <h2>ArchiMate diagram</h2>
       <div class="layer-tabs" id="layer-tabs"></div>
       <div class="archimate-view archimate-svg" id="archimate-view">
-        {% assign svg_include = 'use-cases/' | append: page.archimate_svg | append: '.svg' %}
-        {% include {{ svg_include }} %}
+        {% case page.archimate_svg %}
+        {% when 'eni-replay' %}{% include use-cases/eni-replay.svg %}
+        {% else %}<p class="mermaid-fallback">ArchiMate diagram not available for this use case.</p>
+        {% endcase %}
       </div>
     </section>
 
