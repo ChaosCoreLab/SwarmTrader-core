@@ -4,9 +4,11 @@ dist/
 .env
 .env.*
 !.env.example
-public/data/eni-ohlcv.json.tmp
+src/data/eni-ohlcv.json.tmp
 test-results/
 playwright-report/
 .vite/
 github.PAT.txt
 *.PAT.txt
+.swhouse/instance.local.yaml
+.claude/settings.local.json

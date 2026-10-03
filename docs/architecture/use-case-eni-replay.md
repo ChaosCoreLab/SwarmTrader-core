@@ -28,7 +28,7 @@ The diagram above is an interactive ArchiMate browser rendered from the cell fro
 |---------------|------------|-----------------|-----------|-------------------|
 | Business | Reproducible inspection of historical behavior, No profitability promise, Immutable approved snapshot | Operator, Product Owner, Librarian | Acquire approved snapshot, Replay fixed genome, Inspect and document results | Acceptance criteria, Historical OHLCV snapshot, Replay findings |
 | Application | — | SimulationController, DataTrainer, FixedGenomeGA, FitnessValidator, Chart UI | Validate snapshot, Adapt genome, Feed bars, Capture state/IIR/trades, Verify invariants | StockData, genome, trace frames, broker operations, validation result |
-| Technology | — | Browser runtime, Node.js offline toolchain, npm/Vite toolchain | Local static fetch and render, Borsa POST (explicit update only) | public/data/eni-ohlcv.json, SHA-256 manifest, bundled JS/CSS/fonts |
+| Technology | — | Browser runtime, Node.js offline toolchain, npm/Vite toolchain | Local static load and render, Borsa POST (explicit update only) | src/data/eni-ohlcv.json, SHA-256 manifest, bundled JS/CSS/fonts |
 | Physical | — | Operator workstation, Borsa Italiana endpoint | — | — |
 <!-- archimate:matrix end -->
 
@@ -104,9 +104,9 @@ package "technology" {
   node "Browser runtime" as tech_browser
   node "Node.js offline toolchain" as tech_node
   node "npm/Vite toolchain" as tech_vite
-  hexagon "Local static fetch and render" as tech_svc_render
+  hexagon "Local static load and render" as tech_svc_render
   hexagon "Borsa POST (explicit update only)" as tech_svc_borsa
-  artifact "public/data/eni-ohlcv.json" as tech_art_snapshot
+  artifact "src/data/eni-ohlcv.json" as tech_art_snapshot
   artifact "SHA-256 manifest" as tech_art_hash
   artifact "bundled JS/CSS/fonts" as tech_art_bundle
 }

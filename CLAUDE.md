@@ -1,3 +1,7 @@
+# SwarmTrader-core
+
+Static browser PoC replaying a fixed Consilium genome over an embedded ENI daily OHLCV snapshot. Start from `docs/MAP.md` for architecture, ADRs and operations; commands are in `docs/operations/development.md`.
+
 ## Software House AI
 
 This project operates under the **Software House AI** framework.
@@ -29,3 +33,7 @@ At the start of every session, follow `software-house-ai/protocols/session.md`:
 6. Announce as COORDINATOR: `[COORDINATOR]: Session resumed. [one-line status.]`
 
 Use the file-based protocols for cycle work. Prefix role output during formal cycles and keep cycle state in `.swhouse/cycles/current.md`.
+
+Cycle skills: `/open-cycle`, `/close-cycle`, `/vote`, `/query-memory` (`.claude/skills/`). They wrap the framework's skill definitions; where a skill and `software-house-ai/protocols/operational-cycle.md` disagree (track-specific steps, steps per session), the protocol and the operator's instruction prevail.
+
+This file and `.github/copilot-instructions.md` carry the same framework rules for two different agents. Change them together.

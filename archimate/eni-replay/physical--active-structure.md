@@ -7,7 +7,7 @@ elements:
     type: equipment
     name: Operator workstation
     role: Hosts the browser runtime where the operator opens the static UI, loads the embedded ENI snapshot, and steps or plays through the fixed-genome replay; no runtime backend runs on it.
-    tech: "Local browser loading public/data/eni-ohlcv.json; UI entry point src/main.js; static bundle, no runtime backend (ADR-001)"
+    tech: "Local browser running the bundle with the embedded src/data/eni-ohlcv.json snapshot; UI entry point src/main.js; static bundle, no runtime backend (ADR-001)"
   - id: phys_borsa
     type: facility
     name: Borsa Italiana endpoint

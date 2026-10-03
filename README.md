@@ -4,18 +4,20 @@ PoC statico per riprodurre nel browser il trader virtuale Consilium su uno snaps
 
 ## Avvio rapido
 
-```powershell
-npm.cmd install
-npm.cmd run dev
+```sh
+npm install
+npm run dev
 ```
 
-Aprire `http://127.0.0.1:5173/`. Lo snapshot ENI (`public/data/eni-ohlcv.json`) è versionato; `npm.cmd run data:update` serve solo per aggiornarlo dalla fonte Borsa Italiana.
+Aprire `http://127.0.0.1:5173/`. Lo snapshot ENI (`src/data/eni-ohlcv.json`) è versionato; `npm run data:update` serve solo per aggiornarlo dalla fonte Borsa Italiana.
+
+I comandi valgono su Linux, macOS e Windows `cmd`; in Windows PowerShell usare `npm.cmd` al posto di `npm`.
 
 ## Verifica
 
-```powershell
-npm.cmd test
-npm.cmd run build
+```sh
+npm test
+npm run build
 ```
 
 ## Documentazione

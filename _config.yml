@@ -18,6 +18,7 @@ exclude:
   - "vite.config.js"
   - "playwright.config.js"
   - "README.md"
+  - "CLAUDE.md"
   - "tsconfig.json"
   - "index.html"
   - "Gemfile"

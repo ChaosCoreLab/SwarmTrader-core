@@ -7,7 +7,7 @@ elements:
     type: business-actor
     name: Operator
     role: Opens the browser UI, triggers the replay and inspects the chart markers and broker fills against the immutable ENI snapshot.
-    tech: "Browser runtime at src/main.js; drives SimulationController.start()/step() against public/data/eni-ohlcv.json"
+    tech: "Browser runtime at src/main.js; drives SimulationController.start()/step() against src/data/eni-ohlcv.json"
   - id: bus_role_owner
     type: business-role
     name: Product Owner

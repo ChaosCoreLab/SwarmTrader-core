@@ -4,7 +4,10 @@
 		{
 			"label": "SwarmTrader build",
 			"type": "shell",
-			"command": "npm.cmd",
+			"command": "npm",
+			"windows": {
+				"command": "npm.cmd"
+			},
 			"args": [
 				"run",
 				"build"
@@ -21,7 +24,10 @@
 		{
 			"label": "SwarmTrader update ENI snapshot",
 			"type": "shell",
-			"command": "npm.cmd",
+			"command": "npm",
+			"windows": {
+				"command": "npm.cmd"
+			},
 			"args": [
 				"run",
 				"data:update"
@@ -38,7 +44,10 @@
 		{
 			"label": "SwarmTrader unit tests",
 			"type": "shell",
-			"command": "npm.cmd",
+			"command": "npm",
+			"windows": {
+				"command": "npm.cmd"
+			},
 			"args": [
 				"test",
 				"--",
@@ -56,7 +65,10 @@
 		{
 			"label": "SwarmTrader unit tests",
 			"type": "shell",
-			"command": "npm.cmd",
+			"command": "npm",
+			"windows": {
+				"command": "npm.cmd"
+			},
 			"args": [
 				"test",
 				"--",
@@ -69,7 +81,10 @@
 		{
 			"label": "SwarmTrader unit tests",
 			"type": "shell",
-			"command": "npm.cmd",
+			"command": "npm",
+			"windows": {
+				"command": "npm.cmd"
+			},
 			"args": [
 				"test",
 				"--",
@@ -82,7 +97,10 @@
 		{
 			"label": "SwarmTrader build",
 			"type": "shell",
-			"command": "npm.cmd",
+			"command": "npm",
+			"windows": {
+				"command": "npm.cmd"
+			},
 			"args": [
 				"run",
 				"build"
@@ -94,7 +112,10 @@
 		{
 			"label": "SwarmTrader dev server",
 			"type": "shell",
-			"command": "npm.cmd",
+			"command": "npm",
+			"windows": {
+				"command": "npm.cmd"
+			},
 			"args": [
 				"run",
 				"dev"
