@@ -287,3 +287,9 @@ Il contenuto è completo e verificato per esecuzione su Linux: riferimenti corre
 
 **Responsabile:** Owner (U422756) per la condizione 1; operatore Luca per la condizione 2.
 **Riapertura:** appendere a `cycles/archive/cycle-006.md` il blocco `## Human Verification — [data]` (Performed by / Target / Result / Notes) per ciascuna condizione. Con entrambe VERIFIED lo stato diventa `ACCEPTED`; se una fallisce si apre un ciclo Sprint che referenzia `cycle-006`.
+
+## Human Verification — 2026-10-03
+Performed by: Luca
+Target: AC-07 — skill Claude Code (condizione 2 dello Step 12)
+Result: VERIFIED
+Notes: nuova sessione aperta dall'app Claude sul branch `cycle-006-docs-platforms-instance`. Esito positivo riferito dall'operatore su tutti i punti della procedura: (1) le quattro skill `/open-cycle`, `/close-cycle`, `/vote`, `/query-memory` compaiono nell'elenco; (2) `/query-memory "instance"` eseguita in sola lettura; (3) avvio di sessione come COORDINATOR con istanza `ubuntu-workstation`. `/open-cycle` non è stata eseguita, per non aprire un ciclo. Resta aperta la condizione 1 (target `github-pages`, verificabile solo dopo il merge su `main`): la decisione rimane DEFERRED.
