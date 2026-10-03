@@ -17,7 +17,7 @@ elements:
     type: requirement
     name: Immutable approved snapshot
     role: Mandates an immutable, SHA-256-verified ENI OHLCV snapshot with the approved 2026-09-28 cutoff as the sole replay input; sourced offline from Borsa Italiana and never mutated at runtime.
-    tech: "public/data/eni-ohlcv.json; validated by src/engine/snapshotValidator.js (REQUIRED_CUTOFF_DATE='2026-09-28', dataSha256); written by scripts/fetch-eni-data.mjs; versioned in Git, Owner-confirmed Borsa Italiana reuse 2026-09-29."
+    tech: "src/data/eni-ohlcv.json; validated by src/engine/snapshotValidator.js (REQUIRED_CUTOFF_DATE='2026-09-28', dataSha256); written by scripts/fetch-eni-data.mjs; versioned in Git, Owner-confirmed Borsa Italiana reuse 2026-09-29."
 last_verified: 2026-09-29
 ---
 

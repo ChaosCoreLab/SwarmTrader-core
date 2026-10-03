@@ -5,9 +5,9 @@ aspect: behaviour
 elements:
   - id: tech_svc_render
     type: technology-service
-    name: Local static fetch and render
+    name: Local static load and render
     role: Serves the bundled app and the embedded ENI snapshot to the browser with no runtime backend, so the replay UI loads, validates the SHA-256 hash and renders candles, IIR and broker fills purely from local static assets.
-    tech: "Vite-bundled ES modules at src/main.js; fetch('data/eni-ohlcv.json') validated by src/engine/snapshotValidator.js; chart render in the Browser runtime"
+    tech: "Vite-bundled ES modules at src/main.js; snapshot imported as a JSON module from src/data/eni-ohlcv.json (no runtime fetch), validated by src/engine/snapshotValidator.js; chart render in the Browser runtime"
   - id: tech_svc_borsa
     type: technology-service
     name: Borsa POST (explicit update only)
@@ -25,7 +25,7 @@ last_verified: 2026-09-29
 
 # Technology / Behaviour
 
-The browser realizes local static fetch+render; Node realizes the Borsa POST, performed only during an explicit data update.
+The browser realizes local static load+render; Node realizes the Borsa POST, performed only during an explicit data update.
 
 ## Riferimenti
 - [fetch-eni-data.mjs](../../scripts/fetch-eni-data.mjs)

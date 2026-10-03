@@ -12,7 +12,7 @@ elements:
     type: business-object
     name: Historical OHLCV snapshot
     role: Immutable ENI daily OHLCV snapshot consumed by the replay; bars are date, open, high, low, close, volume with no duplicates or post-cutoff records, so the same genome on the same data reproduces the same run.
-    tech: "public/data/eni-ohlcv.json; SHA-256 + cutoff validated by validateSnapshot() in src/engine/snapshotValidator.js (REQUIRED_CUTOFF_DATE='2026-09-28'); acquired offline by scripts/fetch-eni-data.mjs"
+    tech: "src/data/eni-ohlcv.json; SHA-256 + cutoff validated by validateSnapshot() in src/engine/snapshotValidator.js (REQUIRED_CUTOFF_DATE='2026-09-28'); acquired offline by scripts/fetch-eni-data.mjs"
   - id: bus_obj_findings
     type: business-object
     name: Replay findings

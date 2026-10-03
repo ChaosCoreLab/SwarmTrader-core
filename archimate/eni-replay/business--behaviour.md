@@ -6,8 +6,8 @@ elements:
   - id: bus_proc_acquire
     type: business-process
     name: Acquire approved snapshot
-    role: The operator runs the offline fetch script to download ENI OHLCV from Borsa Italiana and validate its SHA-256, cutoff date and schema before the snapshot is committed to Git and loaded by the browser.
-    tech: "scripts/fetch-eni-data.mjs → public/data/eni-ohlcv.json; validated by src/engine/snapshotValidator.js (REQUIRED_CUTOFF_DATE 2026-09-28, SHA-256)"
+    role: The operator runs the offline fetch script to download ENI OHLCV from Borsa Italiana and validate its SHA-256, cutoff date and schema before the snapshot is committed to Git and embedded in the app bundle.
+    tech: "scripts/fetch-eni-data.mjs → src/data/eni-ohlcv.json; validated by src/engine/snapshotValidator.js (REQUIRED_CUTOFF_DATE 2026-09-28, SHA-256)"
   - id: bus_proc_replay
     type: business-process
     name: Replay fixed genome

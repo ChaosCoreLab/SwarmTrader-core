@@ -5,9 +5,9 @@ aspect: passive-structure
 elements:
   - id: tech_art_snapshot
     type: artifact
-    name: public/data/eni-ohlcv.json
-    role: "Immutable ENI daily OHLCV snapshot embedded in the PoC; the browser fetches it locally and DataTrainer reads it into an in-memory StockStream, so no runtime backend is needed."
-    tech: "JSON at public/data/eni-ohlcv.json; written atomically by scripts/fetch-eni-data.mjs as {bars, cutoffDate:'2026-09-28', dataSha256}; consumed by DataTrainer in src/engine/dataTrainer.js"
+    name: src/data/eni-ohlcv.json
+    role: "Immutable ENI daily OHLCV snapshot embedded in the PoC bundle at build time; DataTrainer reads it into an in-memory StockStream, so no runtime backend is needed."
+    tech: "JSON at src/data/eni-ohlcv.json; written atomically by scripts/fetch-eni-data.mjs as {bars, cutoffDate:'2026-09-28', dataSha256}; consumed by DataTrainer in src/engine/dataTrainer.js"
   - id: tech_art_hash
     type: artifact
     name: SHA-256 manifest
