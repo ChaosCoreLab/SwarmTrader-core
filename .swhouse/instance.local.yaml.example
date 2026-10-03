@@ -1,0 +1,4 @@
+# Copy to .swhouse/instance.local.yaml (ignored by git) to work under an
+# alternative instance profile on this machine. `profile` is the name of a file
+# in .swhouse/instances/ without the .yaml extension.
+profile: ubuntu-workstation

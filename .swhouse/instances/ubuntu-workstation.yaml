@@ -1,0 +1,34 @@
+# Alternative instance profile. Selected by `profile: ubuntu-workstation` in the
+# untracked .swhouse/instance.local.yaml — see docs/operations/development.md.
+framework_version: "0.1.0"
+framework_repo: "https://github.com/simpego81/software-house-ai"
+
+instance:
+  machine: "ubuntu-workstation"
+  operator: "Luca"
+
+agents:
+  - role: ARCHITECT
+    provider: claude
+  - role: EXPLORER
+    provider: claude
+  - role: CRITIC
+    provider: claude
+  - role: DESTROYER
+    provider: claude
+  - role: BUILDER
+    provider: claude
+  - role: OPTIMIZER
+    provider: claude
+  - role: LIBRARIAN
+    provider: claude
+  - role: SCIENTIST
+    provider: claude
+  - role: PRODUCT_OWNER
+    provider: claude
+  - role: COORDINATOR
+    provider: claude
+  - role: EVOLUTION_MASTER
+    provider: claude
+  - role: ARBITER
+    provider: claude
