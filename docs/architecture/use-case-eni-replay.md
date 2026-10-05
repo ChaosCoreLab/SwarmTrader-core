@@ -1,48 +1,45 @@
 ---
 title: "Use Case: Replay ENI with Fixed Genome"
 layout: use-case
-last_verified: 2026-09-30
+last_verified: 2026-10-05
 status: active
-archimate_svg: eni-replay
+archimate_model: eni-replay
 value:
-  who: "Investors and technical evaluators who need to verify that a trading-genome replay is reproducible and traceable, not a black box."
-  problem: "Deterministic replay of a fixed trader genome over an immutable ENI daily OHLCV snapshot, with every chart marker traceable to the Consilium engine frame that produced it."
-  impact: "A verifiable, auditable artifact demonstrating the engine works as specified; every fill maps to a broker operation and every state to an algorithm transition."
-  not_solving: "An unprovable demo and opaque architecture; no way to distinguish a genuine replay from a curated narrative."
+  who: "An analyst who needs to see how a supplied trader genome would have behaved on real market history before trusting it."
+  problem: "Replay the supplied fixed genome bar by bar over ten years of ENI daily prices from Borsa Italiana, with every trade traceable to the engine step that produced it."
+  impact: "A replay the analyst can inspect step by step: every buy and sell maps to a broker operation and every state to an algorithm transition."
+  not_solving: "The genome stays a black box; there is no way to tell a genuine replay from a curated narrative."
 ---
 
 ## Goal
 
-Inspect the behavior of the supplied fixed trader genome against an immutable ENI daily OHLCV snapshot, with every chart marker traceable to the Consilium engine frame that produced it.
+Inspect how the supplied fixed genome would have traded ENI on its daily price history, with every chart marker traceable to the Consilium engine step that produced it. Historical analysis only: no real trades, no profitability claim.
 
 ## ArchiMate source
 
-The ArchiMate model for this use case lives as a structured data source in [`archimate/eni-replay/`](../../../archimate/eni-replay/) — one markdown file per pertinent cell (Service Layer × Aspect), each with a YAML frontmatter declaring elements and relationships against [`archimate/_vocabulary.md`](../../../archimate/_vocabulary.md). The diagram above and the matrix below are **derived** from those cells by `scripts/gen-archimate.mjs`; do not edit them by hand.
+The model is written in four Markdown files, one per layer, in [`archimate/eni-replay/`](https://github.com/ChaosCoreLab/SwarmTrader-core/tree/main/archimate/eni-replay): `motivationlayer.md`, `businesslayer.md`, `applicationlayer.md` and `technologylayer.md`. The diagram above and the matrix below are generated from those files by `scripts/gen-archimate.mjs`; do not edit them by hand. To change an element, click it in the diagram and follow **✎ Edit this element**, or edit the layer file and preview it with `npm run archimate:watch`.
 
-The diagram above is an interactive ArchiMate browser rendered from the cell frontmatter (`npm run archimate:html`), with no PlantUML or external renderer. Hover an element to highlight its relationships; click any element for its role, technology and relationships detail.
-
-## Service Layer × Aspect matrix (derived)
+## Layer × Aspect matrix (derived)
 
 <!-- archimate:matrix start -->
-| Service Layer | Motivation | Active structure | Behaviour | Passive structure |
-|---------------|------------|-----------------|-----------|-------------------|
-| Business | Reproducible inspection of historical behavior, No profitability promise, Immutable approved snapshot | Operator, Product Owner, Librarian | Acquire approved snapshot, Replay fixed genome, Inspect and document results | Acceptance criteria, Historical OHLCV snapshot, Replay findings |
-| Application | — | SimulationController, DataTrainer, FixedGenomeGA, FitnessValidator, Chart UI | Validate snapshot, Adapt genome, Feed bars, Capture state/IIR/trades, Verify invariants | StockData, genome, trace frames, broker operations, validation result |
-| Technology | — | Browser runtime, Node.js offline toolchain, npm/Vite toolchain | Local static fetch and render, Borsa POST (explicit update only) | public/data/eni-ohlcv.json, SHA-256 manifest, bundled JS/CSS/fonts |
-| Physical | — | Operator workstation, Borsa Italiana endpoint | — | — |
+| Layer | Active structure | Behaviour | Passive structure | Motivation |
+|---|---|---|---|---|
+| Motivation | — | — | — | Need to evaluate a trader genome, Inspect how the supplied fixed genome would have traded ENI, Historical analysis only |
+| Business | Analyst, Borsa Italiana | Acquire ENI market history, Replay supplied fixed genome, Inspect replay | ENI price history (historical OHLCV snapshot), Supplied fixed genome, Replay findings | — |
+| Application | Replay engine (SimulationController), Market data loader (DataTrainer), Consistency checker (FitnessValidator), Replay screen (Chart UI) | Advance one trading day, Record decisions and trades, Check replay consistency, Display replay | ENI trading days in memory (StockData), Fixed genome, engine format (Genoma), Day-by-day replay record (trace), Broker operations, Consistency check result | — |
+| Technology | Web browser, GitHub Pages, Node.js toolchain, Borsa Italiana chart service | Static hosting, Price data refresh | ENI price file (src/data/eni-ohlcv.json), Published app files (dist/) | — |
 <!-- archimate:matrix end -->
 
 ## Preconditions
 
-- The local snapshot exists and its SHA-256, schema, cutoff and bars validate.
-- The fixed genome maps to the Consilium `Genoma` model without mutating source values.
-- `FitnessValidator` has no blocking errors.
+- The ENI snapshot has been acquired from Borsa Italiana and is embedded in the app.
+- The supplied fixed genome maps to the Consilium `Genoma` model without changing its values.
 
 ## Main flow
 
-1. The operator opens the browser UI; the embedded snapshot loads and its hash is checked.
+1. The analyst opens the browser UI; the embedded snapshot loads.
 2. The UI shows actual date coverage, bar count, and source metadata.
-3. Starting replay creates one Individual via `FixedGenomeGA`, then loads the in-memory stream.
+3. Starting the replay creates one trader from the supplied fixed genome, then loads the in-memory bar stream.
 4. Each step feeds exactly one bar to `Life`; state, IIR, portfolio and broker operations are captured.
 5. The chart overlays IIR and actual Broker buy/sell/stop/take-profit fills; the optional state layer marks transitions.
 6. At EOF, `FitnessValidator` checks the complete trace and the UI reports completion or visible errors.
@@ -58,8 +55,8 @@ The diagram above is an interactive ArchiMate browser rendered from the cell fro
 
 - [Simulator overview](../simulator-overview/) — components, data flow, replay lifecycle.
 - [ADR-001: Static snapshot](../../decisions/ADR-001-static-snapshot/) — why a static snapshot and no runtime backend.
-- [ADR-002: ArchiMate structured source](../../decisions/ADR-002-archimate-structured-source/) — the cell-based pattern.
-- Source: [`src/engine/simulationController.js`](../../../src/engine/simulationController.js) · [`src/engine/snapshotValidator.js`](../../../src/engine/snapshotValidator.js)
+- [ADR-005: ArchiMate source in one file per layer](../../decisions/ADR-005-archimate-per-layer-source/) — how the model is written, checked and edited.
+- Source: [`src/engine/simulationController.js`](https://github.com/ChaosCoreLab/SwarmTrader-core/blob/main/src/engine/simulationController.js) · [`src/engine/dataTrainer.js`](https://github.com/ChaosCoreLab/SwarmTrader-core/blob/main/src/engine/dataTrainer.js) · [`src/engine/fitnessValidator.js`](https://github.com/ChaosCoreLab/SwarmTrader-core/blob/main/src/engine/fitnessValidator.js)
 
 <!-- archimate:gen start -->
 ```plantuml
@@ -67,77 +64,101 @@ The diagram above is an interactive ArchiMate browser rendered from the cell fro
 archimate
 skinparam linetype ortho
 
+package "motivation" {
+  usecase "Need to evaluate a trader genome" as mot_driver_evaluate
+  usecase "Inspect how the supplied fixed genome would have traded ENI" as mot_goal_inspect
+  usecase "Historical analysis only" as mot_con_historical
+}
+
 package "business" {
-  rectangle "Operator" as bus_actor_operator
-  rectangle "Product Owner" as bus_role_owner
-  rectangle "Librarian" as bus_role_librarian
-  rectangle "Acquire approved snapshot" as bus_proc_acquire
-  rectangle "Replay fixed genome" as bus_proc_replay
-  rectangle "Inspect and document results" as bus_proc_inspect
-  usecase "Reproducible inspection of historical behavior" as bus_goal_inspect
-  usecase "No profitability promise" as bus_val_noprofit
-  usecase "Immutable approved snapshot" as bus_req_snapshot
-  folder "Acceptance criteria" as bus_obj_acceptance
-  folder "Historical OHLCV snapshot" as bus_obj_snapshot
+  rectangle "Analyst" as bus_role_analyst
+  rectangle "Borsa Italiana" as bus_actor_borsa
+  rectangle "Acquire ENI market history" as bus_proc_acquire
+  rectangle "Replay supplied fixed genome" as bus_proc_replay
+  rectangle "Inspect replay" as bus_proc_inspect
+  folder "ENI price history (historical OHLCV snapshot)" as bus_obj_snapshot
+  folder "Supplied fixed genome" as bus_obj_genome
   folder "Replay findings" as bus_obj_findings
 }
 
 package "application" {
-  component "SimulationController" as app_sim_ctrl
-  component "DataTrainer" as app_data_trainer
-  component "FixedGenomeGA" as app_ga
-  component "FitnessValidator" as app_validator
-  component "Chart UI" as app_chart_ui
-  hexagon "Validate snapshot" as app_svc_validate
-  hexagon "Adapt genome" as app_svc_adapt
-  hexagon "Feed bars" as app_svc_feed
-  hexagon "Capture state/IIR/trades" as app_svc_capture
-  hexagon "Verify invariants" as app_svc_verify
-  folder "StockData" as app_data_stockdata
-  folder "genome" as app_data_genome
-  folder "trace frames" as app_data_trace
-  folder "broker operations" as app_data_ops
-  folder "validation result" as app_data_validation
+  component "Replay engine (SimulationController)" as app_sim_ctrl
+  component "Market data loader (DataTrainer)" as app_data_trainer
+  component "Consistency checker (FitnessValidator)" as app_validator
+  component "Replay screen (Chart UI)" as app_chart_ui
+  hexagon "Advance one trading day" as app_svc_feed
+  hexagon "Record decisions and trades" as app_svc_capture
+  hexagon "Check replay consistency" as app_svc_verify
+  hexagon "Display replay" as app_svc_display
+  folder "ENI trading days in memory (StockData)" as app_data_stockdata
+  folder "Fixed genome, engine format (Genoma)" as app_data_genome
+  folder "Day-by-day replay record (trace)" as app_data_trace
+  folder "Broker operations" as app_data_ops
+  folder "Consistency check result" as app_data_validation
 }
 
 package "technology" {
-  node "Browser runtime" as tech_browser
-  node "Node.js offline toolchain" as tech_node
-  node "npm/Vite toolchain" as tech_vite
-  hexagon "Local static fetch and render" as tech_svc_render
-  hexagon "Borsa POST (explicit update only)" as tech_svc_borsa
-  artifact "public/data/eni-ohlcv.json" as tech_art_snapshot
-  artifact "SHA-256 manifest" as tech_art_hash
-  artifact "bundled JS/CSS/fonts" as tech_art_bundle
+  node "Web browser" as tech_browser
+  node "GitHub Pages" as tech_pages
+  node "Node.js toolchain" as tech_node
+  node "Borsa Italiana chart service" as tech_borsa
+  hexagon "Static hosting" as tech_svc_hosting
+  hexagon "Price data refresh" as tech_svc_refresh
+  artifact "ENI price file (src/data/eni-ohlcv.json)" as tech_art_snapshot
+  artifact "Published app files (dist/)" as tech_art_bundle
 }
 
-package "physical" {
-  node "Operator workstation" as phys_workstation
-  node "Borsa Italiana endpoint" as phys_borsa
-}
-
-app_sim_ctrl --> app_data_trainer
-app_sim_ctrl --> app_ga
-app_chart_ui --> app_sim_ctrl
-app_sim_ctrl ..> app_svc_feed
-app_sim_ctrl ..> app_svc_capture
-app_validator ..> app_svc_verify
-app_data_trainer ..> app_svc_validate
-app_ga ..> app_svc_adapt
-app_svc_capture --> app_data_trace
-app_svc_capture --> app_data_ops
-app_svc_verify --> app_data_validation
-bus_role_owner *-- bus_role_librarian : documentation governance
-bus_proc_acquire --> bus_proc_replay
-bus_proc_replay --> bus_proc_inspect
-tech_browser --> tech_vite
-tech_node --> tech_vite
-tech_browser ..> tech_svc_render
-tech_node ..> tech_svc_borsa
-tech_svc_render --> tech_art_bundle
-tech_svc_render --> tech_art_snapshot
-tech_svc_borsa --> tech_art_snapshot
-tech_svc_borsa --> tech_art_hash
+app_sim_ctrl *-- app_data_trainer : composes
+app_sim_ctrl *-- app_validator : composes
+app_sim_ctrl ..> app_svc_feed : realizes
+app_sim_ctrl ..> app_svc_capture : realizes
+app_validator ..> app_svc_verify : realizes
+app_chart_ui ..> app_svc_display : realizes
+app_sim_ctrl --> app_chart_ui : serves
+app_data_trainer ..> app_data_stockdata : writes
+app_svc_feed ..> app_data_stockdata : reads
+app_sim_ctrl ..> app_data_genome : reads
+app_svc_capture ..> app_data_ops : reads
+app_svc_capture ..> app_data_trace : writes
+app_svc_verify ..> app_data_trace : reads
+app_svc_verify ..> app_data_validation : writes
+app_svc_display ..> app_data_trace : reads
+app_data_stockdata ..> bus_obj_snapshot : realizes
+app_data_genome ..> bus_obj_genome : realizes
+app_data_trace ..> bus_obj_findings : realizes
+app_data_ops ..> bus_obj_findings : realizes
+app_data_validation ..> bus_obj_findings : realizes
+app_svc_feed --> bus_proc_replay : serves
+app_svc_capture --> bus_proc_replay : serves
+app_svc_verify --> bus_proc_replay : serves
+app_svc_display --> bus_proc_inspect : serves
+bus_role_analyst --> bus_proc_replay : assigned-to
+bus_role_analyst --> bus_proc_inspect : assigned-to
+bus_actor_borsa -- bus_proc_acquire : provides market data
+bus_proc_acquire --> bus_proc_replay : flows-to
+bus_proc_replay --> bus_proc_inspect : flows-to
+bus_proc_acquire ..> bus_obj_snapshot : accesses
+bus_proc_replay ..> bus_obj_snapshot : accesses
+bus_proc_replay ..> bus_obj_genome : accesses
+bus_proc_replay ..> bus_obj_findings : accesses
+bus_proc_inspect ..> bus_obj_findings : accesses
+bus_proc_inspect ..> mot_goal_inspect : realizes
+mot_driver_evaluate ..> mot_goal_inspect : influences
+mot_con_historical ..> mot_goal_inspect : influences
+tech_pages ..> tech_svc_hosting : realizes
+tech_pages --> tech_art_bundle : stores
+tech_svc_hosting --> tech_browser : serves
+tech_browser --> tech_art_bundle : runs
+tech_node ..> tech_svc_refresh : realizes
+tech_borsa --> tech_svc_refresh : serves
+tech_svc_refresh ..> tech_art_snapshot : writes
+tech_art_bundle o-- tech_art_snapshot : embeds at build
+tech_art_snapshot ..> app_data_stockdata : realizes
+tech_art_bundle ..> app_chart_ui : realizes
+tech_art_bundle ..> app_sim_ctrl : realizes
+tech_art_bundle ..> app_data_trainer : realizes
+tech_art_bundle ..> app_validator : realizes
+tech_svc_refresh --> bus_proc_acquire : serves
 @enduml
 ```
 <!-- archimate:gen end -->

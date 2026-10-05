@@ -1,13 +1,13 @@
 ---
 title: "Simulator Overview"
 layout: doc
-last_verified: 2026-09-30
+last_verified: 2026-10-05
 mermaid: true
 ---
 
 # Simulator Overview
 
-last_verified: 2026-09-28
+last_verified: 2026-10-05
 
 ## Purpose
 
@@ -15,13 +15,13 @@ SwarmTrader replays one immutable Consilium genome over ENI daily OHLCV data thr
 
 ## Components
 
-- [Data acquisition script](../../scripts/fetch-eni-data.mjs) downloads and validates the Borsa Italiana response offline. It writes `public/data/eni-ohlcv.json` atomically with date coverage and SHA-256 metadata.
-- [DataTrainer](../../src/engine/dataTrainer.js) validates the snapshot and exposes Consilium `StockStream` objects from memory. It performs no network request.
-- [Genome adapter](../../src/engine/genome.js) validates the provided snake_case genome and maps percentage fields to the fractional camelCase values expected by Consilium.
-- [FixedGenomeGA](../../src/engine/fixedGenomeGA.js) supplies exactly one `Individual`; it does not mutate, cross, or evolve the genome.
-- [SimulationController](../../src/engine/simulationController.js) connects `Life`, `Individual`, and `DataTrainer`, advances one bar at a time, and records the actual state, IIR values, portfolio and broker closes.
-- [FitnessValidator](../../src/engine/fitnessValidator.js) checks chronological frames, finite IIR values, OHLC/trade coherence, and position quantity invariants. It does not evaluate profitability.
-- [Browser UI](../../src/main.js) renders candles, volume, IIR, transitions and broker events in a static browser UI.
+- [Data acquisition script](https://github.com/ChaosCoreLab/SwarmTrader-core/blob/main/scripts/fetch-eni-data.mjs) downloads and validates the Borsa Italiana response offline. It writes `src/data/eni-ohlcv.json` atomically with date coverage and SHA-256 metadata.
+- [DataTrainer](https://github.com/ChaosCoreLab/SwarmTrader-core/blob/main/src/engine/dataTrainer.js) validates the snapshot and exposes Consilium `StockStream` objects from memory. It performs no network request.
+- [Genome adapter](https://github.com/ChaosCoreLab/SwarmTrader-core/blob/main/src/engine/genome.js) validates the provided snake_case genome and maps percentage fields to the fractional camelCase values expected by Consilium.
+- [FixedGenomeGA](https://github.com/ChaosCoreLab/SwarmTrader-core/blob/main/src/engine/fixedGenomeGA.js) supplies exactly one `Individual`; it does not mutate, cross, or evolve the genome.
+- [SimulationController](https://github.com/ChaosCoreLab/SwarmTrader-core/blob/main/src/engine/simulationController.js) connects `Life`, `Individual`, and `DataTrainer`, advances one bar at a time, and records the actual state, IIR values, portfolio and broker closes.
+- [FitnessValidator](https://github.com/ChaosCoreLab/SwarmTrader-core/blob/main/src/engine/fitnessValidator.js) checks chronological frames, finite IIR values, OHLC/trade coherence, and position quantity invariants. It does not evaluate profitability.
+- [Browser UI](https://github.com/ChaosCoreLab/SwarmTrader-core/blob/main/src/main.js) renders candles, volume, IIR, transitions and broker events in a static browser UI.
 - `src/vendor/consilium/` contains the selected upstream browser modules at the pinned commit; the MIT license and local browser-only deltas are documented there.
 
 ## Data flow
@@ -29,8 +29,8 @@ SwarmTrader replays one immutable Consilium genome over ENI daily OHLCV data thr
 ```mermaid
 flowchart LR
     BI[Borsa Italiana] -->|offline POST| FETCH[fetch-eni-data.mjs]
-    FETCH -->|validated snapshot + hash| SNAP[public/data/eni-ohlcv.json]
-    SNAP -->|local fetch| DT[DataTrainer]
+    FETCH -->|validated snapshot + hash| SNAP[src/data/eni-ohlcv.json]
+    SNAP -->|embedded at build| DT[DataTrainer]
     DT -->|in-memory StockStream| LIFE[Consilium Life]
     GA[FixedGenomeGA] --> LIFE
     LIFE --> IND[Individual / Algorithm]
