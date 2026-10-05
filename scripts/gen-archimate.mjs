@@ -586,7 +586,9 @@ function main() {
   if (built.errors.length) process.exit(1);
 
   if (flag === '--check') {
-    const stale = built.outputs.filter((o) => !existsSync(o.path) || readFileSync(o.path, 'utf8') !== o.content);
+    // Compare ignoring CRLF/LF, which git may rewrite on checkout (core.autocrlf).
+    const lf = (s) => s.replace(/\r\n/g, '\n');
+    const stale = built.outputs.filter((o) => !existsSync(o.path) || lf(readFileSync(o.path, 'utf8')) !== lf(o.content));
     if (stale.length) {
       for (const o of stale) console.error(`ERRORE: ${o.path} non è aggiornato: esegui npm run archimate:gen.`);
       process.exit(1);
