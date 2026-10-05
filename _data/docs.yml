@@ -18,6 +18,9 @@ decisions:
   - id: ADR-004-stakeholder-docs-ui
     title: ADR-004 Stakeholder Docs UI
     path: /docs/decisions/ADR-004-stakeholder-docs-ui/
+  - id: ADR-005-archimate-per-layer-source
+    title: ADR-005 ArchiMate Per-Layer Source
+    path: /docs/decisions/ADR-005-archimate-per-layer-source/
 operations:
   - id: development
     title: Development & Operations

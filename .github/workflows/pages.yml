@@ -38,8 +38,8 @@ jobs:
           GH_PAGES: '1'
         run: npm run build
 
-      - name: Generate ArchiMate SVG
-        run: npm run archimate:svg
+      - name: Check ArchiMate model
+        run: npm run archimate:check
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1

@@ -298,6 +298,14 @@
     root.querySelector('#m-aspect').textContent = d.aspect;
     root.querySelector('#m-tech-block').style.display = d.tech ? 'block' : 'none';
     root.querySelector('#m-rel-block').style.display = d.relations ? 'block' : 'none';
+    const editBlock = root.querySelector('#m-edit-block');
+    if (editBlock) {
+      editBlock.style.display = d.edit_url ? 'block' : 'none';
+      const link = root.querySelector('#m-edit');
+      if (link && d.edit_url) link.href = d.edit_url;
+      const source = root.querySelector('#m-source');
+      if (source) source.textContent = d.source || '';
+    }
     root.querySelector('#overlay').style.display = 'block';
     root.querySelector('#modal').style.display = 'block';
   }

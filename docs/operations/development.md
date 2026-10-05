@@ -77,18 +77,21 @@ npm.cmd run test:e2e
 
 First run on a new machine: `npx.cmd playwright install chromium`. The human counterpart of this check is NRC-H01 in `.swhouse/memory/validation/non_regression_checklist.md`.
 
-## Generate ArchiMate views
+## Edit and check the ArchiMate model
 
 ```powershell
-npm.cmd run archimate:gen
-npm.cmd run archimate:check
+npm.cmd run archimate:watch   # live preview at http://127.0.0.1:5180/ while you edit
+npm.cmd run archimate:gen     # check the model and regenerate the page fragment, PlantUML and matrix
+npm.cmd run archimate:check   # check the model and fail if the generated files are out of date (also in CI)
 ```
 
-`scripts/gen-archimate.mjs` reads the cell files under `archimate/<use-case>/`, validates elements and relationships against `archimate/_vocabulary.md`, and injects the PlantUML diagram block and the Service Layer × Aspect matrix into `docs/architecture/use-case-<use-case>.md` between idempotent markers. `archimate:check` regenerates and fails if the committed block differs from the source (drift detection). `archimate:svg` writes a responsive interactive SVG to `_includes/use-cases/<use-case>.svg` (rendered directly from the YAML, no PlantUML/Java), inlined into the use-case page via Jekyll `{% raw %}{% include %}{% endraw %}`. See ADR-002, ADR-004 and `docs/MAP.md` for the structured source pattern.
+The model of each use case is written in `archimate/<use-case>/`, one file per layer: `motivationlayer.md`, `businesslayer.md`, `applicationlayer.md`, `technologylayer.md`. Each element is a `### Name` section with `- id`, `- aspect`, `- type`, `- role` and `- tech` lines; each relation is a row of the Relations table in the file of its `from` element. Allowed types are in `archimate/_vocabulary.md`; what belongs in the model is in `software-house-ai/protocols/archimate-modeling.md`.
+
+`scripts/gen-archimate.mjs` checks the model and stops with Italian messages naming the file and line when an element has no relation, a layer is not linked to the layer above, a type or id is unknown, a relation is in the wrong file, or a path quoted in `tech` no longer exists. When the model is valid it writes `_includes/use-cases/<use-case>.html` (the interactive diagram) and the PlantUML block and matrix into `docs/architecture/use-case-<use-case>.md`. Commit the layer files together with the generated files. On the published page, each element's detail has a **✎ Edit this element** link to its layer file on GitHub. See ADR-005.
 
 ## GitHub Pages
 
-A GitHub Actions workflow (`.github/workflows/pages.yml`) builds the PoC app with the Pages base path (`GH_PAGES=1`), generates the ArchiMate SVG, builds the Jekyll site, and deploys to GitHub Pages. The site is served at `https://chaoscorelab.github.io/SwarmTrader-core/`: the landing page links to the app (`/app/`) and the documentation (`docs/`). The app build uses `vite.config.js` with `base` derived from the `GH_PAGES` env var; locally the base is `/`.
+A GitHub Actions workflow (`.github/workflows/pages.yml`) runs the tests, builds the PoC app with the Pages base path (`GH_PAGES=1`), checks the ArchiMate model (`archimate:check`), builds the Jekyll site, and deploys to GitHub Pages. The site is served at `https://chaoscorelab.github.io/SwarmTrader-core/`: the landing page links to the app (`/app/`) and the documentation (`docs/`). The app build uses `vite.config.js` with `base` derived from the `GH_PAGES` env var; locally the base is `/`.
 
 First deployment requires enabling Pages in the repository settings (Source: GitHub Actions). The first published site is a `PENDING_HUMAN` target — the Owner must confirm visual rendering after the initial deploy.
 

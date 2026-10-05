@@ -1,196 +1,245 @@
 #!/usr/bin/env node
 /**
- * ArchiMate generator (cell-based source pattern).
+ * ArchiMate generator (per-layer source pattern).
  *
- * Reads the cell files under archimate/<use-case>/, validates every element and
- * relationship against archimate/_vocabulary.md, and emits:
- *   - a PlantUML ArchiMate block (diagram-as-code) between markers in the use
- *     case doc, or to stdout with --emit stdout;
- *   - a Markdown 4x4 Service Layer x Aspect matrix with populated cells and "—"
- *     for empty cells (the derived matrix view).
- *   - a self-contained HTML fragment (Jekyll include) with an ArchiMate grid,
- *     KB/RELS JSON and inline element boxes, rendered by assets/js/archimate-browser.js.
+ * Reads archimate/<use-case>/{motivation,business,application,technology}layer.md,
+ * checks the model against archimate/_vocabulary.md and the modeling rules in
+ * software-house-ai/protocols/archimate-modeling.md, and emits:
+ *   - the PlantUML block and the Layer x Aspect matrix, injected between markers
+ *     into docs/architecture/use-case-<use-case>.md;
+ *   - the ArchiMate browser fragment _includes/use-cases/<use-case>.html
+ *     (grid + KB/RELS JSON), rendered by assets/js/archimate-browser.js.
  *
  * Usage:
- *   node scripts/gen-archimate.mjs <use-case>                 # write block into docs
- *   node scripts/gen-archimate.mjs <use-case> --check         # exit non-zero if committed block differs
- *   node scripts/gen-archimate.mjs <use-case> --emit stdout   # print PlantUML to stdout
- *   node scripts/gen-archimate.mjs <use-case> --emit matrix   # print the Markdown matrix to stdout
- *   node scripts/gen-archimate.mjs <use-case> --emit html     # write HTML fragment to _includes/use-cases/<use-case>.html
+ *   node scripts/gen-archimate.mjs <use-case>                # check, then write doc block + HTML fragment
+ *   node scripts/gen-archimate.mjs <use-case> --check        # check, and fail if committed outputs are stale
+ *   node scripts/gen-archimate.mjs <use-case> --emit stdout  # print PlantUML
+ *   node scripts/gen-archimate.mjs <use-case> --emit matrix  # print the matrix
  *
- * Zero external dependencies: frontmatter YAML is parsed by a minimal inline parser.
+ * Messages for the human editor are in Italian. Zero external dependencies.
  */
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const ARCH = join(ROOT, 'archimate');
+const REPO_EDIT_BASE = process.env.ARCHIMATE_EDIT_BASE || 'https://github.com/ChaosCoreLab/SwarmTrader-core/edit/main/';
 
-// ─── minimal YAML frontmatter parser (subset: scalars, inline lists, block lists) ───
+const LAYER_ORDER = ['motivation', 'business', 'application', 'technology', 'physical'];
+// Rank used for "every layer is linked to the one above" (physical sits with technology).
+const LAYER_RANK = { motivation: 0, business: 1, application: 2, technology: 3, physical: 3 };
+const LAYER_IT = { motivation: 'Motivation', business: 'Business', application: 'Application', technology: 'Technology', physical: 'Physical' };
+
+// ─── parsing ───
 
 function parseFrontmatter(text) {
   const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text);
-  if (!m) throw new Error('no frontmatter found');
-  return parseYamlBlock(m[1]);
-}
-
-function parseYamlBlock(src) {
-  const obj = {};
-  let i = 0;
-  const lines = src.split(/\r?\n/);
-  while (i < lines.length) {
-    const line = lines[i];
-    if (!line.trim()) { i++; continue; }
-    const kv = /^([A-Za-z_][\w-]*)\s*:\s*(.*)$/.exec(line);
-    if (!kv) { i++; continue; }
-    const key = kv[1];
-    const rest = kv[2].trim();
-    if (rest === '') {
-      // block list or nested map; we only support block list of inline maps here
-      const items = [];
-      i++;
-      while (i < lines.length && /^\s+-\s/.test(lines[i])) {
-        const itemLine = lines[i].replace(/^\s+-\s/, '').trim();
-        if (itemLine.startsWith('{') && itemLine.endsWith('}')) {
-          items.push(parseInlineMap(itemLine));
-        } else {
-          // could be "key: value" start of a block map item
-          const sub = {};
-          if (/^([A-Za-z_][\w-]*)\s*:\s*(.*)$/.test(itemLine)) {
-            const sm = /^([A-Za-z_][\w-]*)\s*:\s*(.*)$/.exec(itemLine);
-            sub[sm[1]] = scalar(sm[2].trim());
-            i++;
-            while (i < lines.length && /^\s{4,}\S/.test(lines[i])) {
-              const sm2 = /^\s+([A-Za-z_][\w-]*)\s*:\s*(.*)$/.exec(lines[i]);
-              if (sm2) sub[sm2[1]] = scalar(sm2[2].trim());
-              i++;
-            }
-            items.push(sub);
-          } else {
-            items.push(scalar(itemLine));
-            i++;
-          }
-        }
-      }
-      obj[key] = items;
-      // i already points to the next non-list line; do not advance again
-      continue;
-    } else {
-      obj[key] = scalar(rest);
-    }
-    i++;
-  }
-  return obj;
-}
-
-function scalar(v) {
-  if (v.startsWith('[') && v.endsWith(']')) {
-    return v.slice(1, -1).split(',').map((s) => s.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
-  }
-  return v.replace(/^["']|["']$/g, '');
-}
-
-function parseInlineMap(s) {
-  // { id: x, type: y, name: z }
-  const body = s.replace(/^\{|\}$/g, '');
   const out = {};
-  for (const part of body.split(',')) {
-    const mm = /^\s*([A-Za-z_][\w-]*)\s*:\s*(.*)$/.exec(part);
-    if (mm) out[mm[1]] = scalar(mm[2].trim());
+  if (!m) return out;
+  for (const line of m[1].split(/\r?\n/)) {
+    const kv = /^([A-Za-z_][\w-]*)\s*:\s*(.*)$/.exec(line);
+    if (kv) out[kv[1]] = kv[2].trim().replace(/^["']|["']$/g, '');
   }
   return out;
 }
 
-// ─── vocabulary ───
+// Blank out HTML comments but keep their newlines, so line numbers stay correct.
+function stripComments(text) {
+  return text.replace(/<!--[\s\S]*?-->/g, (c) => c.replace(/[^\n]/g, ''));
+}
 
-function loadVocabulary() {
-  const text = readFileSync(join(ARCH, '_vocabulary.md'), 'utf8');
-  // parse the "Element types by (layer, aspect)" tables and the relationship table
+/** Parses one layer file: "### Name" + "- field: value" elements, and a Relations table. */
+export function parseLayerFile(text, file) {
+  const fm = parseFrontmatter(text);
+  const lines = stripComments(text).split(/\r?\n/);
+  const elements = [];
+  const relations = [];
+  let section = null;
+  let current = null;
+  let inFrontmatter = false;
+  lines.forEach((raw, i) => {
+    const line = raw.trimEnd();
+    if (i === 0 && line === '---') { inFrontmatter = true; return; }
+    if (inFrontmatter) { if (line === '---') inFrontmatter = false; return; }
+    const h2 = /^##\s+(.+)$/.exec(line);
+    if (h2) {
+      const title = h2[1].trim().toLowerCase();
+      section = title.startsWith('element') ? 'elements' : title.startsWith('relation') ? 'relations' : null;
+      current = null;
+      return;
+    }
+    if (section === 'elements') {
+      const h3 = /^###\s+(.+)$/.exec(line);
+      if (h3) {
+        current = { name: h3[1].trim(), file, line: i + 1 };
+        elements.push(current);
+        return;
+      }
+      const field = /^\s*-\s+([a-z_]+)\s*:\s*(.*)$/.exec(line);
+      if (field && current) current[field[1]] = field[2].trim();
+      return;
+    }
+    if (section === 'relations') {
+      if (!line.startsWith('|')) return;
+      const cols = line.replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => c.trim());
+      if (cols[0].toLowerCase() === 'from' || /^:?-+:?$/.test(cols[0])) return;
+      relations.push({ from: cols[0], type: cols[1] || '', to: cols[2] || '', label: cols[3] || '', file, line: i + 1 });
+    }
+  });
+  return { layer: fm.layer, useCase: fm.use_case, file, elements, relations };
+}
+
+/** Loads all layer files of a use case. Element layer = file layer unless the element sets `layer:`. */
+export function loadModel(useCase, archDir = ARCH) {
+  const dir = join(archDir, useCase);
+  if (!existsSync(dir)) throw new Error(`cartella del caso d'uso non trovata: ${dir}`);
+  const files = readdirSync(dir).filter((f) => f.endsWith('.md')).sort();
+  const layerFiles = [];
+  const ignored = [];
+  for (const f of files) {
+    if (!/layer\.md$/.test(f)) { ignored.push(f); continue; }
+    const rel = `archimate/${useCase}/${f}`;
+    layerFiles.push(parseLayerFile(readFileSync(join(dir, f), 'utf8'), rel));
+  }
+  const elements = [];
+  const relations = [];
+  for (const lf of layerFiles) {
+    for (const el of lf.elements) elements.push({ ...el, layer: el.layer || lf.layer, fileLayer: lf.layer });
+    for (const r of lf.relations) relations.push({ ...r, fileLayer: lf.layer });
+  }
+  return { useCase, layerFiles, elements, relations, ignored };
+}
+
+/** Parses archimate/_vocabulary.md into allowed element types per layer/aspect and relation types. */
+export function loadVocabulary(archDir = ARCH) {
+  const text = readFileSync(join(archDir, '_vocabulary.md'), 'utf8');
+  const elStart = text.indexOf('## Element types');
+  const relStart = text.indexOf('## Relationship types');
+  const elSection = text.slice(elStart, relStart);
+  const relSection = text.slice(relStart);
   const vocab = { elements: {}, relationships: new Set() };
-  const relTable = /## Relationship types[\s\S]*?(?=\n## )/.exec(text)[0];
-  for (const line of relTable.split(/\r?\n/)) {
+  let layer = null;
+  for (const line of elSection.split(/\r?\n/)) {
+    const h3 = /^###\s+(\w+)/.exec(line);
+    if (h3) { layer = h3[1].toLowerCase(); continue; }
+    if (!layer || !/`[\w-]+`/.test(line)) continue;
+    const types = line.match(/`[\w-]+`/g).map((t) => t.slice(1, -1));
+    if (layer === 'motivation') {
+      vocab.elements['motivation/motivation'] = (vocab.elements['motivation/motivation'] || []).concat(types);
+    } else if (line.startsWith('|')) {
+      const aspect = line.split('|')[1].trim();
+      vocab.elements[`${layer}/${aspect}`] = types;
+    }
+  }
+  for (const line of relSection.split(/\r?\n/)) {
     const m = /^\|\s*`([\w-]+)`/.exec(line);
     if (m) vocab.relationships.add(m[1]);
-  }
-  // element types: gather from all tables under ### Motivation / ### <Layer>
-  const section = /## Element types by[\s\S]*?(?=\n## )/.exec(text)[0];
-  let currentLayer = null;
-  let currentAspect = null;
-  for (const line of section.split(/\r?\n/)) {
-    const lm = /^### (\w+)/.exec(line);
-    if (lm) {
-      currentLayer = lm[1] === 'Motivation' ? 'motivation' : lm[1].toLowerCase();
-      currentAspect = lm[1] === 'Motivation' ? 'motivation' : null;
-      continue;
-    }
-    const am = /^\| (active-structure|behaviour|passive-structure|Motivation) \|/.exec(line);
-    if (am) { currentAspect = am[1]; continue; }
-    // inline code-fence list line (e.g. "`goal`, `outcome`, ...") under Motivation
-    if (currentLayer === 'motivation' && /`[\w-]+`/.test(line) && !line.startsWith('|')) {
-      const types = line.match(/`[\w-]+`/g).map((t) => t.replace(/`/g, ''));
-      const key = 'motivation/motivation';
-      vocab.elements[key] = vocab.elements[key] || [];
-      vocab.elements[key].push(...types);
-      continue;
-    }
-    // table data row: "| <aspect> | `type1`, `type2` |" — types are in the 2nd column
-    if (line.startsWith('|') && currentLayer && currentAspect && /`[\w-]+`/.test(line)) {
-      const types = line.match(/`[\w-]+`/g).map((t) => t.replace(/`/g, ''));
-      const key = currentLayer + '/' + currentAspect;
-      vocab.elements[key] = vocab.elements[key] || [];
-      vocab.elements[key].push(...types);
-    }
-  }
-  // motivation applies to every layer
-  const motivationTypes = vocab.elements['motivation/motivation'] || [];
-  for (const layer of ['business', 'application', 'technology', 'physical']) {
-    vocab.elements[layer + '/motivation'] = motivationTypes;
   }
   return vocab;
 }
 
-// ─── cell loading ───
+// ─── checks (Italian messages for the human editor) ───
 
-function loadUseCase(name) {
-  const dir = join(ARCH, name);
-  if (!existsSync(dir)) throw new Error(`use case directory not found: ${dir}`);
-  const files = readdirSync(dir).filter((f) => f.endsWith('.md'));
-  const cells = [];
-  for (const f of files) {
-    const text = readFileSync(join(dir, f), 'utf8');
-    const fm = parseFrontmatter(text);
-    cells.push({ file: f, fm, text });
-  }
-  return cells;
-}
+const PATH_RE = /(?:^|[\s(`'"])((?:src|scripts|docs|tests|archimate|assets|_includes|_layouts|_data|human-interaction|software-house-ai|\.github|public)\/[A-Za-z0-9_./-]*[A-Za-z0-9_/-])/g;
 
-function validate(cells, vocab) {
+export function checkModel(model, vocab, rootDir = ROOT) {
   const errors = [];
   const warnings = [];
-  const declared = new Map(); // id -> { type, layer, aspect }
-  for (const c of cells) {
-    const { layer, aspect, elements, relationships } = c.fm;
-    if (!layer || !aspect) { errors.push(`${c.file}: missing layer or aspect`); continue; }
-    const allowed = vocab.elements[layer + '/' + aspect];
-    for (const el of elements || []) {
-      if (!el.id || !el.type) { errors.push(`${c.file}: element missing id or type`); continue; }
-      if (allowed && !allowed.includes(el.type)) {
-        warnings.push(`${c.file}: element "${el.id}" type "${el.type}" not in vocabulary for ${layer}/${aspect}`);
+  const at = (x) => `${x.file}:${x.line}`;
+  const byId = new Map();
+
+  for (const f of model.ignored) warnings.push(`archimate/${model.useCase}/${f}: file ignorato (i file del modello si chiamano <livello>layer.md).`);
+
+  for (const el of model.elements) {
+    for (const field of ['id', 'aspect', 'type']) {
+      if (!el[field]) errors.push(`${at(el)} — l'elemento "${el.name}" non ha il campo '${field}'.`);
+    }
+    if (!el.id) continue;
+    if (!/^[a-z0-9_]+$/.test(el.id)) errors.push(`${at(el)} — id "${el.id}" non valido: usa solo lettere minuscole, cifre e "_".`);
+    if (byId.has(el.id)) errors.push(`${at(el)} — id "${el.id}" già usato in ${at(byId.get(el.id))}.`);
+    byId.set(el.id, el);
+    if (el.layer === 'motivation' && el.aspect !== 'motivation') {
+      errors.push(`${at(el)} — gli elementi del livello Motivation usano aspect: motivation.`);
+    }
+    const allowed = vocab.elements[`${el.layer}/${el.aspect}`];
+    if (el.type && el.aspect && (!allowed || !allowed.includes(el.type))) {
+      errors.push(`${at(el)} — il tipo "${el.type}" non è ammesso per livello ${LAYER_IT[el.layer] || el.layer}, aspetto ${el.aspect} (vedi archimate/_vocabulary.md).`);
+    }
+    for (const [field, value] of [['tech', el.tech], ['name', el.name]]) {
+      if (!value) continue;
+      for (const m of value.matchAll(PATH_RE)) {
+        const p = m[1].replace(/#.*$/, '');
+        if (!existsSync(join(rootDir, p))) {
+          errors.push(`${at(el)} — il percorso "${p}" citato in '${field}' di "${el.name}" non esiste più: aggiorna il testo.`);
+        }
       }
-      declared.set(el.id, { type: el.type, layer, aspect, name: el.name, role: el.role, tech: el.tech });
     }
   }
-  for (const c of cells) {
-    const { relationships } = c.fm;
-    for (const r of relationships || []) {
-      if (!r.from || !r.to || !r.type) { errors.push(`${c.file}: relationship missing from/to/type`); continue; }
-      if (!vocab.relationships.has(r.type)) { errors.push(`${c.file}: relationship type "${r.type}" not in vocabulary`); }
-      if (!declared.has(r.from)) errors.push(`${c.file}: relationship references undeclared element "${r.from}"`);
-      if (!declared.has(r.to)) errors.push(`${c.file}: relationship references undeclared element "${r.to}"`);
+
+  const degree = new Map([...byId.keys()].map((id) => [id, 0]));
+  for (const r of model.relations) {
+    const label = `${r.from} → ${r.to}`;
+    if (!vocab.relationships.has(r.type)) {
+      errors.push(`${at(r)} — relazione "${r.type}" non ammessa (${label}); tipi validi in archimate/_vocabulary.md.`);
+    }
+    const from = byId.get(r.from);
+    const to = byId.get(r.to);
+    if (!from) errors.push(`${at(r)} — la relazione ${label} cita l'id "${r.from}", che non esiste.`);
+    if (!to) errors.push(`${at(r)} — la relazione ${label} cita l'id "${r.to}", che non esiste.`);
+    if (from && from.file !== r.file) {
+      errors.push(`${at(r)} — la relazione ${label} va scritta in ${from.file} (il file del livello dell'elemento "from").`);
+    }
+    if (from && to) { degree.set(r.from, degree.get(r.from) + 1); degree.set(r.to, degree.get(r.to) + 1); }
+  }
+
+  for (const [id, d] of degree) {
+    if (d === 0) {
+      const el = byId.get(id);
+      errors.push(`${at(el)} — l'elemento "${el.name}" non ha relazioni: collegalo, oppure rimuovilo se non è significativo.`);
     }
   }
-  return { errors, warnings, declared };
+
+  const ranks = new Set([...byId.values()].map((el) => LAYER_RANK[el.layer]));
+  for (const rank of [...ranks].filter((k) => k > 0).sort()) {
+    if (!ranks.has(rank - 1)) continue;
+    const linked = model.relations.some((r) => {
+      const a = byId.get(r.from); const b = byId.get(r.to);
+      if (!a || !b) return false;
+      const ra = LAYER_RANK[a.layer]; const rb = LAYER_RANK[b.layer];
+      return (ra === rank && rb === rank - 1) || (ra === rank - 1 && rb === rank);
+    });
+    if (!linked) {
+      const lower = LAYER_ORDER.find((l) => LAYER_RANK[l] === rank);
+      const upper = LAYER_ORDER.find((l) => LAYER_RANK[l] === rank - 1);
+      errors.push(`nessuna relazione collega il livello ${LAYER_IT[lower]} al livello ${LAYER_IT[upper]}.`);
+    }
+  }
+
+  for (const el of byId.values()) {
+    if (el.type !== 'data-object') continue;
+    const realizesBusiness = model.relations.some((r) => r.from === el.id && r.type === 'realizes' && byId.get(r.to)?.type === 'business-object');
+    if (!realizesBusiness) warnings.push(`${at(el)} — il data object "${el.name}" non realizza nessun business object.`);
+  }
+
+  return { errors, warnings };
+}
+
+// Groups the model into (layer, aspect) cells for the emitters; relations go with their `from` element.
+function toCells(model) {
+  const cells = new Map();
+  const cellOf = new Map();
+  for (const el of model.elements) {
+    const key = `${el.layer}/${el.aspect}`;
+    if (!cells.has(key)) cells.set(key, { layer: el.layer, aspect: el.aspect, elements: [], relationships: [] });
+    cells.get(key).elements.push(el);
+    cellOf.set(el.id, key);
+  }
+  for (const r of model.relations) {
+    const key = cellOf.get(r.from);
+    if (key) cells.get(key).relationships.push(r);
+  }
+  return [...cells.values()];
 }
 
 // ─── PlantUML emission ───
@@ -208,6 +257,7 @@ const PLANT_SHAPE = {
   'application-function': 'rectangle',
   'data-object': 'folder',
   'node': 'node',
+  'device': 'node',
   'system-software': 'node',
   'technology-service': 'hexagon',
   'artifact': 'artifact',
@@ -215,6 +265,9 @@ const PLANT_SHAPE = {
   'facility': 'node',
   'distribution-network': 'rectangle',
   'material': 'folder',
+  'stakeholder': 'usecase',
+  'driver': 'usecase',
+  'assessment': 'usecase',
   'goal': 'usecase',
   'outcome': 'usecase',
   'requirement': 'usecase',
@@ -224,245 +277,70 @@ const PLANT_SHAPE = {
   'value': 'usecase',
 };
 
-const LAYER_ORDER = ['business', 'application', 'technology', 'physical', 'motivation'];
 const REL_ARROW = {
-  'used-by': '-->',
   'realizes': '..>',
+  'serves': '-->',
   'assigned-to': '-->',
+  'accesses': '..>',
   'flows-to': '-->',
-  'composes': '*--',
-  'specializes': '<|--',
   'triggers': '-->',
-  'accesses': '-->',
+  'composes': '*--',
+  'aggregates': 'o--',
+  'influences': '..>',
+  'specializes': '--|>',
+  'association': '--',
 };
 
-function emitPlantUml(cells, declared) {
-  const byLayer = new Map();
-  for (const [id, meta] of declared) {
-    const l = meta.layer;
-    if (!byLayer.has(l)) byLayer.set(l, []);
-    byLayer.get(l).push({ id, ...meta });
-  }
+function emitPlantUml(model) {
   const lines = ['@startuml', 'archimate', 'skinparam linetype ortho', ''];
   for (const layer of LAYER_ORDER) {
-    const els = byLayer.get(layer);
-    if (!els || els.length === 0) continue;
+    const els = model.elements.filter((el) => el.layer === layer);
+    if (!els.length) continue;
     lines.push(`package "${layer}" {`);
-    for (const el of els) {
-      const shape = PLANT_SHAPE[el.type] || 'rectangle';
-      lines.push(`  ${shape} "${el.name || el.id}" as ${el.id}`);
-    }
+    for (const el of els) lines.push(`  ${PLANT_SHAPE[el.type] || 'rectangle'} "${el.name || el.id}" as ${el.id}`);
     lines.push('}', '');
   }
-  for (const c of cells) {
-    for (const r of c.fm.relationships || []) {
-      const arr = REL_ARROW[r.type] || '-->';
-      const label = r.label ? ` : ${r.label}` : '';
-      lines.push(`${r.from} ${arr} ${r.to}${label}`);
-    }
+  for (const r of model.relations) {
+    const label = r.label ? ` : ${r.label}` : ` : ${r.type}`;
+    lines.push(`${r.from} ${REL_ARROW[r.type] || '-->'} ${r.to}${label}`);
   }
   lines.push('@enduml');
   return lines.join('\n');
 }
 
-// ─── SVG emission (direct from YAML, zero dependencies) ───
+// ─── matrix emission (same rows and columns as the browser grid) ───
 
-const LAYER_COLOR = {
-  business: '#c8e6c9',
-  application: '#bbdefb',
-  technology: '#ffe0b2',
-  physical: '#d7ccc8',
-  motivation: '#f8bbd0',
-};
-const LAYER_LABEL = {
-  business: 'Business',
-  application: 'Application',
-  technology: 'Technology',
-  physical: 'Physical',
-  motivation: 'Motivation',
-};
-// shape per type: { shape: rect|hex|folder|ellipse, label }
-const SVG_SHAPE = {
-  'business-actor': 'rect',
-  'business-role': 'rect',
-  'business-process': 'rect',
-  'business-service': 'hex',
-  'business-function': 'rect',
-  'business-object': 'folder',
-  'representation': 'rect',
-  'application-component': 'rect',
-  'application-service': 'hex',
-  'application-function': 'rect',
-  'data-object': 'folder',
-  'node': 'rect',
-  'system-software': 'rect',
-  'technology-service': 'hex',
-  'artifact': 'folder',
-  'equipment': 'rect',
-  'facility': 'rect',
-  'distribution-network': 'rect',
-  'material': 'folder',
-  'goal': 'ellipse',
-  'outcome': 'ellipse',
-  'requirement': 'ellipse',
-  'principle': 'ellipse',
-  'constraint': 'ellipse',
-  'meaning': 'note',
-  'value': 'ellipse',
-};
-const REL_LABEL = {
-  'used-by': 'used-by',
-  'realizes': 'realizes',
-  'assigned-to': 'assigned-to',
-  'flows-to': 'flows-to',
-  'composes': 'composes',
-  'specializes': 'specializes',
-  'triggers': 'triggers',
-  'accesses': 'accesses',
-};
+const ASPECT_COLS = ['active-structure', 'behaviour', 'passive-structure', 'motivation'];
+const ASPECT_LABEL = { 'active-structure': 'Active structure', behaviour: 'Behaviour', 'passive-structure': 'Passive structure', motivation: 'Motivation' };
 
-function esc(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function emitSvg(cells, declared) {
-  const COL_W = 220;
-  const GAP_X = 40;
-  const BOX_W = 180;
-  const BOX_H = 44;
-  const BOX_GAP_Y = 14;
-  const PAD = 24;
-  const HEADER_H = 28;
-
-  const byLayer = new Map();
-  for (const [id, meta] of declared) {
-    const l = meta.layer;
-    if (!byLayer.has(l)) byLayer.set(l, []);
-    byLayer.get(l).push({ id, ...meta });
-  }
-  const presentLayers = LAYER_ORDER.filter((l) => byLayer.has(l) && byLayer.get(l).length);
-  const colCount = presentLayers.length;
-  const maxRows = Math.max(...presentLayers.map((l) => byLayer.get(l).length), 1);
-  const width = COL_W * colCount + GAP_X * (colCount - 1) + PAD * 2;
-  const height = PAD * 2 + HEADER_H + maxRows * (BOX_H + BOX_GAP_Y) + 60;
-
-  const pos = new Map(); // id -> {x,y,cx,cy}
-  presentLayers.forEach((layer, ci) => {
-    const els = byLayer.get(layer);
-    const colX = PAD + ci * (COL_W + GAP_X);
-    els.forEach((el, ri) => {
-      const x = colX + (COL_W - BOX_W) / 2;
-      const y = PAD + HEADER_H + ri * (BOX_H + BOX_GAP_Y);
-      pos.set(el.id, { x, y, cx: x + BOX_W / 2, cy: y + BOX_H / 2 });
+function emitMatrix(model) {
+  const rows = ['| Layer | ' + ASPECT_COLS.map((a) => ASPECT_LABEL[a]).join(' | ') + ' |', '|---|---|---|---|---|'];
+  for (const layer of LAYER_ORDER) {
+    const els = model.elements.filter((el) => el.layer === layer);
+    if (!els.length) continue;
+    const cells = ASPECT_COLS.map((a) => {
+      const names = els.filter((el) => el.aspect === a).map((el) => el.name);
+      return names.length ? names.join(', ') : '—';
     });
-  });
-
-  // Build a lookup from element id -> its cell file (without extension) for click-to-cell.
-  const elCell = new Map();
-  for (const c of cells) {
-    const cellSlug = c.file.replace(/\.md$/, '').replace(/--/g, '-');
-    for (const el of c.fm.elements || []) elCell.set(el.id, cellSlug);
-  }
-
-  const parts = [];
-  parts.push(`<?xml version="1.0" encoding="UTF-8"?>`);
-  // Responsive: width/height 100%, viewBox preserved, scales to container.
-  parts.push(`<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet" font-family="system-ui, sans-serif" font-size="12" role="img" aria-labelledby="archimate-title archimate-desc">`);
-  parts.push(`<title id="archimate-title">ArchiMate view</title>`);
-  parts.push(`<desc id="archimate-desc">Layered ArchiMate diagram derived from archimate/ cell sources.</desc>`);
-  parts.push(`<style> .ell{stroke:#37474f;stroke-width:1.4;cursor:pointer;transition:filter .15s} .ell:hover{filter:drop-shadow(0 1px 3px rgba(0,0,0,.25))} .lbl{fill:#263238;pointer-events:none} .hdr{font-weight:700;fill:#37474f;font-size:13px;pointer-events:none} .rel{stroke:#546e7a;stroke-width:1.2;fill:none} .relLbl{fill:#607d8b;font-size:10px;pointer-events:none} .layer-col{transition:opacity .2s} .archimate-svg.is-filtered .layer-col:not(.is-active){opacity:.18} @media (prefers-reduced-motion:reduce){.ell,.layer-col{transition:none}} </style>`);
-
-  // layer columns (grouped for layer-tab filtering)
-  presentLayers.forEach((layer, ci) => {
-    const colX = PAD + ci * (COL_W + GAP_X);
-    const fill = LAYER_COLOR[layer] || '#eeeeee';
-    parts.push(`<g class="layer-col" data-layer="${layer}">`);
-    parts.push(`<rect x="${colX}" y="${PAD}" width="${COL_W}" height="${height - PAD * 2}" rx="8" fill="${fill}" fill-opacity="0.25" stroke="#b0bec5" stroke-dasharray="4 3"/>`);
-    parts.push(`<text x="${colX + COL_W / 2}" y="${PAD + 18}" text-anchor="middle" class="hdr">${esc(LAYER_LABEL[layer] || layer)}</text>`);
-    parts.push(`</g>`);
-  });
-
-  // elements (each in a group with data attributes for interactivity)
-  for (const [id, p] of pos) {
-    const meta = declared.get(id);
-    const shape = SVG_SHAPE[meta.type] || 'rect';
-    const label = esc(meta.name || id);
-    const cell = elCell.get(id) || '';
-    const gOpen = `<g class="ell" data-layer="${meta.layer}" data-type="${esc(meta.type)}" data-id="${esc(id)}" data-cell="${esc(cell)}">`;
-    const gClose = `</g>`;
-    const titleDesc = `<title>${esc(meta.name || id)} — ${esc(meta.type)}</title><desc>${esc(meta.layer)} / ${esc(meta.type)}</desc>`;
-    let body = '';
-    if (shape === 'hex') {
-      const hx = [p.x, p.x + 14, p.x + BOX_W - 14, p.x + BOX_W, p.x + BOX_W - 14, p.x + 14];
-      const hy = [p.cy, p.y, p.y, p.cy, p.y + BOX_H, p.y + BOX_H];
-      const pts = hx.map((x, i) => `${x},${hy[i]}`).join(' ');
-      body = `<polygon points="${pts}" fill="#fff"/>` + `<text x="${p.cx}" y="${p.cy + 4}" text-anchor="middle" class="lbl">${label}</text>`;
-    } else if (shape === 'ellipse') {
-      body = `<ellipse cx="${p.cx}" cy="${p.cy}" rx="${BOX_W / 2}" ry="${BOX_H / 2}" fill="#fff"/>` + `<text x="${p.cx}" y="${p.cy + 4}" text-anchor="middle" class="lbl">${label}</text>`;
-    } else if (shape === 'folder') {
-      body = `<path d="M${p.x} ${p.y} h30 v-6 h40 v6 h${BOX_W - 70} v${BOX_H} h${-BOX_W} z" fill="#fff"/>` + `<text x="${p.cx}" y="${p.cy + 6}" text-anchor="middle" class="lbl">${label}</text>`;
-    } else {
-      body = `<rect x="${p.x}" y="${p.y}" width="${BOX_W}" height="${BOX_H}" rx="4" fill="#fff"/>` + `<text x="${p.cx}" y="${p.cy + 4}" text-anchor="middle" class="lbl">${label}</text>`;
-    }
-    parts.push(gOpen + titleDesc + body + gClose);
-  }
-
-  // relationships
-  let relIdx = 0;
-  for (const c of cells) {
-    for (const r of c.fm.relationships || []) {
-      const a = pos.get(r.from);
-      const b = pos.get(r.to);
-      if (!a || !b) continue;
-      const dy = (relIdx % 3) * 10 - 10;
-      relIdx++;
-      parts.push(`<path class="rel" d="M${a.cx} ${a.y + BOX_H} C ${a.cx} ${a.cy + 80 + dy}, ${b.cx} ${b.cy + 80 + dy}, ${b.cx} ${b.y}" marker-end="url(#arrow)"/>`);
-      const mx = (a.cx + b.cx) / 2;
-      const my = (a.y + BOX_H + b.y) / 2 + dy;
-      parts.push(`<text x="${mx}" y="${my}" text-anchor="middle" class="relLbl">${esc(REL_LABEL[r.type] || r.type)}</text>`);
-    }
-  }
-  parts.push(`<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#546e7a"/></marker></defs>`);
-  parts.push(`</svg>`);
-  return parts.join('\n');
-}
-
-// ─── matrix emission ───
-
-const LAYERS = ['business', 'application', 'technology', 'physical'];
-const ASPECTS = ['motivation', 'active-structure', 'behaviour', 'passive-structure'];
-
-function emitMatrix(cells) {
-  const grid = {};
-  for (const l of LAYERS) { grid[l] = {}; for (const a of ASPECTS) grid[l][a] = []; }
-  for (const c of cells) {
-    const { layer, aspect, elements } = c.fm;
-    if (grid[layer] && grid[layer][aspect] !== undefined) {
-      grid[layer][aspect] = (elements || []).map((e) => e.name || e.id);
-    }
-  }
-  const header = '| Service Layer | Motivation | Active structure | Behaviour | Passive structure |';
-  const sep = '|---------------|------------|-----------------|-----------|-------------------|';
-  const rows = [header, sep];
-  for (const l of LAYERS) {
-    rows.push('| ' + l.charAt(0).toUpperCase() + l.slice(1) + ' | ' + ASPECTS.map((a) => grid[l][a].length ? grid[l][a].join(', ') : '—').join(' | ') + ' |');
+    rows.push(`| ${LAYER_IT[layer]} | ${cells.join(' | ')} |`);
   }
   return rows.join('\n');
 }
 
 // ─── HTML fragment emission (ArchiMate browser grid) ───
 
-// Map kebab element types → Pascal_Underscore used by the renderer/icons.
+// Kebab element types → Pascal_Underscore used by the renderer icons.
 const TYPE_PASCAL = {
-  // Motivation (cross-layer)
+  'stakeholder': 'Motivation_Stakeholder',
+  'driver': 'Motivation_Driver',
+  'assessment': 'Motivation_Assessment',
   'goal': 'Motivation_Goal',
   'outcome': 'Motivation_Outcome',
   'requirement': 'Motivation_Requirement',
   'principle': 'Motivation_Principle',
   'constraint': 'Motivation_Constraint',
-  'meaning': 'Motivation_Assessment',
-  'value': 'Motivation_Outcome',
-  // Business
+  'meaning': 'Motivation_Meaning',
+  'value': 'Motivation_Value',
   'business-actor': 'Business_Actor',
   'business-role': 'Business_Role',
   'business-process': 'Business_Process',
@@ -470,192 +348,118 @@ const TYPE_PASCAL = {
   'business-function': 'Business_Function',
   'business-object': 'Business_Object',
   'representation': 'Business_Representation',
-  // Application
   'application-component': 'Application_Component',
   'application-service': 'Application_Service',
   'application-function': 'Application_Function',
   'data-object': 'Application_DataObject',
-  // Technology
   'node': 'Technology_Node',
+  'device': 'Technology_Device',
   'system-software': 'Technology_SystemSoftware',
   'technology-service': 'Technology_Service',
   'artifact': 'Technology_Artifact',
-  // Physical
   'equipment': 'Technology_Device',
   'facility': 'Technology_Node',
   'distribution-network': 'Technology_CommunicationNetwork',
-  'material': 'Business_Object',
+  'material': 'Technology_Artifact',
 };
 
-// Map kebab layer → Pascal layer label used by the renderer.
-const LAYER_PASCAL = {
-  business: 'Business',
-  application: 'Application',
-  technology: 'Technology',
-  physical: 'Technology',
-  motivation: 'Motivation',
-};
+const LAYER_PASCAL = { motivation: 'Motivation', business: 'Business', application: 'Application', technology: 'Technology', physical: 'Technology' };
+const ASPECT_PASCAL = { 'active-structure': 'Active Structure', behaviour: 'Behaviour', 'passive-structure': 'Passive Structure', motivation: 'Motivation' };
 
-// Map kebab aspect → Pascal aspect label.
-const ASPECT_PASCAL = {
-  'active-structure': 'Active Structure',
-  'behaviour': 'Behaviour',
-  'passive-structure': 'Passive Structure',
-  'motivation': 'Motivation',
-};
-
-// Map kebab relation type → Pascal relation used by the renderer.
 const REL_PASCAL = {
-  'used-by': 'Serving',
   'realizes': 'Realization',
+  'serves': 'Serving',
   'assigned-to': 'Assignment',
-  'flows-to': 'Flow',
-  'composes': 'Composition',
-  'specializes': 'Specialization',
-  'triggers': 'Triggering',
   'accesses': 'Access',
+  'flows-to': 'Flow',
+  'triggers': 'Triggering',
+  'composes': 'Composition',
+  'aggregates': 'Aggregation',
+  'influences': 'Influence',
+  'specializes': 'Specialization',
+  'association': 'Association',
 };
 
-// Short human type descriptions.
 const TYPE_DESC = {
+  'Motivation_Stakeholder': 'ArchiMate Stakeholder — someone with interests in the outcome.',
+  'Motivation_Driver': 'ArchiMate Driver — a condition that motivates change.',
+  'Motivation_Assessment': 'ArchiMate Assessment — the result of analysing a driver.',
   'Motivation_Goal': 'ArchiMate Goal — a desired end-state.',
   'Motivation_Outcome': 'ArchiMate Outcome — an end result.',
   'Motivation_Requirement': 'ArchiMate Requirement — a needed property.',
   'Motivation_Principle': 'ArchiMate Principle — a fundamental guideline.',
   'Motivation_Constraint': 'ArchiMate Constraint — a restriction.',
-  'Motivation_Assessment': 'ArchiMate Assessment — an evaluation.',
+  'Motivation_Meaning': 'ArchiMate Meaning — the interpretation of a concept.',
+  'Motivation_Value': 'ArchiMate Value — the worth or importance of a concept.',
   'Business_Actor': 'ArchiMate Business Actor — an organizational entity.',
   'Business_Role': 'ArchiMate Business Role — a responsibility.',
   'Business_Process': 'ArchiMate Business Process — a sequence of behaviors.',
   'Business_Service': 'ArchiMate Business Service — exposed business behavior.',
   'Business_Function': 'ArchiMate Business Function — a grouping of behavior.',
-  'Business_Object': 'ArchiMate Business Object — a passive data concept.',
-  'Business_Representation': 'ArchiMate Business Representation — a data view.',
-  'Application_Component': 'ArchiMate Application Component — a modular unit.',
-  'Application_Service': 'ArchiMate Application Service — exposed app behavior.',
-  'Application_Function': 'ArchiMate Application Function — app behavior.',
+  'Business_Object': 'ArchiMate Business Object — a passive business concept.',
+  'Business_Representation': 'ArchiMate Representation — a perceptible form of information.',
+  'Application_Component': 'ArchiMate Application Component — a modular unit of software.',
+  'Application_Service': 'ArchiMate Application Service — exposed application behavior.',
+  'Application_Function': 'ArchiMate Application Function — application behavior.',
   'Application_DataObject': 'ArchiMate Data Object — passive application data.',
-  'Technology_Node': 'ArchiMate Technology Node — a compute resource.',
-  'Technology_Device': 'ArchiMate Technology Device — a hardware resource.',
-  'Technology_SystemSoftware': 'ArchiMate System Software — a platform resource.',
-  'Technology_Service': 'ArchiMate Technology Service — exposed tech behavior.',
-  'Technology_Artifact': 'ArchiMate Artifact — a passive technology piece.',
+  'Technology_Node': 'ArchiMate Node — a computational or physical resource.',
+  'Technology_Device': 'ArchiMate Device — a physical IT resource.',
+  'Technology_SystemSoftware': 'ArchiMate System Software — a software platform.',
+  'Technology_Service': 'ArchiMate Technology Service — exposed technology behavior.',
+  'Technology_Artifact': 'ArchiMate Artifact — a piece of data used or produced.',
   'Technology_CommunicationNetwork': 'ArchiMate Communication Network — a network.',
 };
 
-// Grid column order (aspect columns). Motivation is last to match reference.
-const ASPECT_COLS = ['active-structure', 'behaviour', 'passive-structure', 'motivation'];
-// Row order: Motivation first, then Business, Application, Technology (Physical folds into Technology).
-const GRID_ROW_ORDER = ['motivation', 'business', 'application', 'technology', 'physical'];
+const pascalType = (t) => TYPE_PASCAL[t] || t.split('-').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('_');
 
-function pascalType(t) {
-  return TYPE_PASCAL[t] || t.split('-').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('_');
-}
-function pascalLayer(l) { return LAYER_PASCAL[l] || l.charAt(0).toUpperCase() + l.slice(1); }
-function pascalAspect(a) { return ASPECT_PASCAL[a] || a; }
-function pascalRel(r) { return REL_PASCAL[r] || r; }
-
-// Build a human relations string for an element from the relationships touching it.
-function buildRelationsString(id, relationships) {
-  const lines = [];
-  for (const r of relationships) {
-    if (r.from === id || r.to === id) {
+function relationsText(id, model, byId) {
+  const name = (x) => byId.get(x)?.name || x;
+  return model.relations
+    .filter((r) => r.from === id || r.to === id)
+    .map((r) => {
       const verb = REL_PASCAL[r.type] || r.type;
-      const other = r.from === id ? r.to : r.from;
-      const dir = r.from === id ? '→' : '←';
-      const label = r.label ? ` (${r.label})` : '';
-      lines.push(`${verb} ${dir} ${other}${label}`);
-    }
-  }
-  return lines.join('. ');
+      const text = r.from === id ? `${verb} → ${name(r.to)}` : `${verb} ← ${name(r.from)}`;
+      return r.label ? `${text} (${r.label})` : text;
+    })
+    .join('. ');
 }
 
-function emitHtml(cells, declared) {
-  // Gather all relationships across cells (dedup by from+to+type+label).
-  const allRels = [];
-  const seen = new Set();
-  for (const c of cells) {
-    for (const r of c.fm.relationships || []) {
-      const key = `${r.from}|${r.to}|${r.type}|${r.label || ''}`;
-      if (!seen.has(key)) { seen.add(key); allRels.push(r); }
-    }
-  }
-
-  // Group elements by (layer → aspect), folding physical into technology row.
-  // Motivation-aspect elements get their own "Motivation" row (cross-layer),
-  // matching the reference page where motivation is a separate row with only
-  // the Motivation column populated.
-  const rowAspect = new Map(); // rowKey(Pascal) → aspect(kebab) → [{id, meta}]
-  const elLayer = new Map(); // id → Pascal layer (for data-layer attr)
-  const elAspect = new Map(); // id → Pascal aspect
-  for (const [id, meta] of declared) {
-    const aspect = meta.aspect;
-    // Motivation-aspect elements live in a Motivation row; their data-layer
-    // stays "Motivation" so the box tints match the reference.
-    const rowKey = aspect === 'motivation' ? 'Motivation' : pascalLayer(meta.layer);
-    const dataLayer = aspect === 'motivation' ? 'Motivation' : pascalLayer(meta.layer);
-    if (!rowAspect.has(rowKey)) rowAspect.set(rowKey, new Map());
-    const am = rowAspect.get(rowKey);
-    if (!am.has(aspect)) am.set(aspect, []);
-    am.get(aspect).push({ id, ...meta });
-    elLayer.set(id, dataLayer);
-    elAspect.set(id, pascalAspect(aspect));
-  }
-
-  // Determine present rows in GRID_ROW_ORDER, dedup by Pascal key.
-  const presentRowKeys = [];
-  const seenRow = new Set();
-  for (const l of GRID_ROW_ORDER) {
-    const rk = pascalLayer(l);
-    if (rowAspect.has(rk) && !seenRow.has(rk)) { seenRow.add(rk); presentRowKeys.push(rk); }
-  }
-
-  // Build KB object.
-  const kb = {};
-  for (const [id, meta] of declared) {
-    const pt = pascalType(meta.type);
-    kb[id] = {
-      title: meta.name || id,
-      type: pt,
-      layer: elLayer.get(id),
-      aspect: elAspect.get(id),
-      type_desc: TYPE_DESC[pt] || `ArchiMate ${pt.replace(/_/g, ' ')}.`,
-      role: meta.role || '',
-      tech: meta.tech || '',
-      relations: buildRelationsString(id, allRels),
-    };
-  }
-
-  // Build RELS array. ArchiMate Serving points server->consumer; the source
-  // vocabulary uses `used-by` as consumer->provider, so reverse from/to for it.
-  const rels = allRels.map((r) => {
-    const pascal = pascalRel(r.type);
-    if (pascal === 'Serving') {
-      return { from: r.to, to: r.from, type: pascal, label: r.label || '' };
-    }
-    return { from: r.from, to: r.to, type: pascal, label: r.label || '' };
-  });
-
-  // Escape for HTML text/attribute.
+function emitHtml(model) {
+  const byId = new Map(model.elements.map((el) => [el.id, el]));
   const escAttr = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  // Box label: allow <br> in names with " · " or " / "? Keep name verbatim; replace newlines.
-  const boxLabel = (name, id) => escAttr(name || id).replace(/\\n/g, '<br>');
+  const safeJson = (obj) => JSON.stringify(obj).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-  // Build legend: only layers present + relations present.
-  const layerSwatches = presentRowKeys.map((rk) => {
-    const colors = {
-      Motivation: '#7c3aed',
-      Business: '#b45309',
-      Application: '#1e40af',
-      Technology: '#166534',
+  const rowKeys = [];
+  for (const l of LAYER_ORDER) {
+    const rk = LAYER_PASCAL[l];
+    if (model.elements.some((el) => LAYER_PASCAL[el.layer] === rk) && !rowKeys.includes(rk)) rowKeys.push(rk);
+  }
+
+  const kb = {};
+  for (const el of model.elements) {
+    const pt = pascalType(el.type);
+    kb[el.id] = {
+      title: el.name || el.id,
+      type: pt,
+      layer: LAYER_PASCAL[el.layer],
+      aspect: ASPECT_PASCAL[el.aspect] || el.aspect,
+      type_desc: TYPE_DESC[pt] || `ArchiMate ${pt.replace(/_/g, ' ')}.`,
+      role: el.role || '',
+      tech: el.tech || '',
+      relations: relationsText(el.id, model, byId),
+      source: `${el.file}:${el.line}`,
+      edit_url: REPO_EDIT_BASE + el.file,
     };
-    const c = colors[rk] || '#64748b';
-    return `<div class="legend-item"><span class="l-box" style="background:${c};border:1px solid ${c};"></span>${rk}</div>`;
-  }).join('');
+  }
+  const rels = model.relations.map((r) => ({ from: r.from, to: r.to, type: REL_PASCAL[r.type] || r.type, label: r.label || '' }));
 
-  const relColors = {
+  const layerColor = { Motivation: '#7c3aed', Business: '#b45309', Application: '#1e40af', Technology: '#166534' };
+  const layerSwatches = rowKeys.map((rk) => `<div class="legend-item"><span class="l-box" style="background:${layerColor[rk]};border:1px solid ${layerColor[rk]};"></span>${rk}</div>`).join('');
+
+  const relStyle = {
     Realization: { kind: 'dash', color: '#3b82f6' },
     Composition: { kind: 'line', color: '#374151', glyph: '◆' },
+    Aggregation: { kind: 'line', color: '#374151', glyph: '◇' },
     Serving: { kind: 'line', color: '#7c3aed' },
     Assignment: { kind: 'line', color: '#374151', glyph: '●' },
     Flow: { kind: 'line', color: '#f59e0b' },
@@ -665,152 +469,136 @@ function emitHtml(cells, declared) {
     Triggering: { kind: 'line', color: '#ef4444' },
     Specialization: { kind: 'line', color: '#64748b' },
   };
-  // Canonical order matching the reference; only show relations present in the data.
-  const CANONICAL_REL_ORDER = ['Realization', 'Composition', 'Serving', 'Assignment', 'Flow', 'Access', 'Influence', 'Association', 'Triggering', 'Specialization'];
-  const presentRelTypes = [...new Set(rels.map((r) => r.type))];
-  const orderedRels = CANONICAL_REL_ORDER.filter((t) => presentRelTypes.includes(t));
-  const relSwatches = orderedRels.map((t) => {
-    const st = relColors[t] || { kind: 'line', color: '#6b7280' };
+  const present = new Set(rels.map((r) => r.type));
+  const relSwatches = Object.keys(relStyle).filter((t) => present.has(t)).map((t) => {
+    const st = relStyle[t];
     const swatch = st.kind === 'dash'
       ? `<span class="l-dash" style="border-top:2px dashed ${st.color};"></span>`
       : `<span class="l-line" style="background:${st.color};"></span>`;
-    const glyph = st.glyph ? ` ${st.glyph}` : '';
-    return `<div class="legend-item">${swatch}${t}${glyph}</div>`;
+    return `<div class="legend-item">${swatch}${t}${st.glyph ? ' ' + st.glyph : ''}</div>`;
   }).join('');
 
-  // Build the grid table rows.
-  const rowsHtml = presentRowKeys.map((rk) => {
-    const am = rowAspect.get(rk);
+  const rowsHtml = rowKeys.map((rk) => {
     const cellsHtml = ASPECT_COLS.map((a) => {
-      const els = (am.get(a) || []);
-      const boxes = els.map((el) => {
-        const pt = pascalType(el.type);
-        return `    <div class="arch-box" id="${escAttr(el.id)}" data-layer="${rk}" data-type="${pt}" title="${escAttr(el.name || el.id)}" onclick="showModal('${escAttr(el.id)}')">${boxLabel(el.name, el.id)}</div>`;
-      }).join('\n');
+      const boxes = model.elements
+        .filter((el) => LAYER_PASCAL[el.layer] === rk && el.aspect === a)
+        .map((el) => `    <div class="arch-box" id="${escAttr(el.id)}" data-layer="${rk}" data-type="${pascalType(el.type)}" title="${escAttr(el.name)}" onclick="showModal('${escAttr(el.id)}')">${escAttr(el.name)}</div>`)
+        .join('\n');
       return `  <td class="grid-cell">\n${boxes}\n  </td>`;
     }).join('\n');
     return `<tr>\n  <td class="layer-label layer-${rk}">${rk}<br>Layer</td>\n${cellsHtml}\n</tr>`;
   }).join('\n');
 
-  // JSON must not contain Liquid tags. Our data is controlled; still guard {{ }}.
-  const safeJson = (obj) => JSON.stringify(obj).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-  const parts = [];
-  parts.push('<!-- ArchiMate browser fragment — generated by scripts/gen-archimate.mjs --emit html. Do not edit by hand. -->');
-  parts.push('<div class="archimate-browser" id="archimate-browser-root">');
-  parts.push('  <div class="legend">');
-  parts.push('    <span class="legend-label">Layers</span>');
-  parts.push('    ' + layerSwatches);
-  if (relSwatches) {
-    parts.push('    <span class="legend-label" style="margin-left:10px;">Relations</span>');
-    parts.push('    ' + relSwatches);
-  }
-  parts.push('  </div>');
-  parts.push('  <div class="diagram-wrapper" id="diagram-wrapper">');
-  parts.push('    <svg id="rel-svg" width="0" height="0" aria-hidden="true"></svg>');
-  parts.push('    <table class="arch-grid">');
-  parts.push('      <thead>');
-  parts.push('        <tr>');
-  parts.push('          <th style="width:82px;border:none;background:transparent;"></th>');
-  parts.push('          <th>Active Structure</th>');
-  parts.push('          <th>Behaviour</th>');
-  parts.push('          <th>Passive Structure</th>');
-  parts.push('          <th>Motivation</th>');
-  parts.push('        </tr>');
-  parts.push('      </thead>');
-  parts.push('      <tbody>');
-  parts.push(rowsHtml);
-  parts.push('      </tbody>');
-  parts.push('    </table>');
-  parts.push('  </div>');
-  parts.push('  <div id="overlay" onclick="closeModal()"></div>');
-  parts.push('  <div id="modal">');
-  parts.push('    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;">');
-  parts.push('      <h3 id="m-title" style="font-size:1rem;font-weight:800;color:#0f172a;padding-right:12px;line-height:1.3;"></h3>');
-  parts.push('      <button type="button" onclick="closeModal()" style="font-size:1.3rem;color:#94a3b8;cursor:pointer;background:none;border:none;flex-shrink:0;line-height:1;" aria-label="Close">✕</button>');
-  parts.push('    </div>');
-  parts.push('    <div style="margin-bottom:10px;">');
-  parts.push('      <span id="m-layer-badge" class="badge"></span>');
-  parts.push('      <span id="m-aspect" class="badge" style="background:#f1f5f9;color:#475569;"></span>');
-  parts.push('      <code id="m-type" style="font-size:.68rem;background:#f8fafc;color:#64748b;padding:2px 6px;border-radius:4px;margin-left:4px;border:1px solid #e2e8f0;"></code>');
-  parts.push('    </div>');
-  parts.push('    <p id="m-type-desc" style="font-size:.73rem;color:#94a3b8;font-style:italic;margin-bottom:14px;"></p>');
-  parts.push('    <div class="m-field"><div class="m-label">Role</div><div class="m-value" id="m-role"></div></div>');
-  parts.push('    <div class="m-field" id="m-tech-block"><div class="m-label">Technology</div><div class="m-value m-mono" id="m-tech"></div></div>');
-  parts.push('    <div class="m-field" id="m-rel-block"><div class="m-label">Relationships</div><div class="m-value" id="m-relations"></div></div>');
-  parts.push('  </div>');
-  parts.push('  <script type="application/json" id="archimate-kb">' + safeJson(kb) + '</script>');
-  parts.push('  <script type="application/json" id="archimate-rels">' + safeJson(rels) + '</script>');
-  parts.push('</div>');
-  return parts.join('\n');
+  return [
+    '<!-- ArchiMate browser fragment — generated by scripts/gen-archimate.mjs from archimate/' + model.useCase + '/*layer.md. Do not edit by hand. -->',
+    '<div class="archimate-browser" id="archimate-browser-root">',
+    '  <div class="legend">',
+    '    <span class="legend-label">Layers</span>',
+    '    ' + layerSwatches,
+    relSwatches ? '    <span class="legend-label" style="margin-left:10px;">Relations</span>\n    ' + relSwatches : '',
+    '  </div>',
+    '  <div class="diagram-wrapper" id="diagram-wrapper">',
+    '    <svg id="rel-svg" width="0" height="0" aria-hidden="true"></svg>',
+    '    <table class="arch-grid">',
+    '      <thead>',
+    '        <tr>',
+    '          <th style="width:82px;border:none;background:transparent;"></th>',
+    ...ASPECT_COLS.map((a) => `          <th>${ASPECT_PASCAL[a]}</th>`),
+    '        </tr>',
+    '      </thead>',
+    '      <tbody>',
+    rowsHtml,
+    '      </tbody>',
+    '    </table>',
+    '  </div>',
+    '  <div id="overlay" onclick="closeModal()"></div>',
+    '  <div id="modal">',
+    '    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;">',
+    '      <h3 id="m-title" style="font-size:1rem;font-weight:800;color:#0f172a;padding-right:12px;line-height:1.3;"></h3>',
+    '      <button type="button" onclick="closeModal()" style="font-size:1.3rem;color:#94a3b8;cursor:pointer;background:none;border:none;flex-shrink:0;line-height:1;" aria-label="Close">✕</button>',
+    '    </div>',
+    '    <div style="margin-bottom:10px;">',
+    '      <span id="m-layer-badge" class="badge"></span>',
+    '      <span id="m-aspect" class="badge" style="background:#f1f5f9;color:#475569;"></span>',
+    '      <code id="m-type" style="font-size:.68rem;background:#f8fafc;color:#64748b;padding:2px 6px;border-radius:4px;margin-left:4px;border:1px solid #e2e8f0;"></code>',
+    '    </div>',
+    '    <p id="m-type-desc" style="font-size:.73rem;color:#94a3b8;font-style:italic;margin-bottom:14px;"></p>',
+    '    <div class="m-field"><div class="m-label">Role in ENI replay</div><div class="m-value" id="m-role"></div></div>',
+    '    <div class="m-field" id="m-tech-block"><div class="m-label">Technology</div><div class="m-value m-mono" id="m-tech"></div></div>',
+    '    <div class="m-field" id="m-rel-block"><div class="m-label">Relationships</div><div class="m-value" id="m-relations"></div></div>',
+    '    <div class="m-field m-edit" id="m-edit-block"><a id="m-edit" href="#" target="_blank" rel="noopener">✎ Edit this element</a> <code id="m-source"></code></div>',
+    '  </div>',
+    '  <script type="application/json" id="archimate-kb">' + safeJson(kb) + '</script>',
+    '  <script type="application/json" id="archimate-rels">' + safeJson(rels) + '</script>',
+    '</div>',
+  ].filter((line) => line !== '').join('\n') + '\n';
 }
 
 // ─── doc injection (idempotent between markers) ───
 
 const START = '<!-- archimate:gen start -->';
 const END = '<!-- archimate:gen end -->';
+const MSTART = '<!-- archimate:matrix start -->';
+const MEND = '<!-- archimate:matrix end -->';
 
-function injectBlock(docPath, block, matrix) {
-  let text = readFileSync(docPath, 'utf8');
-  // Detect the file's dominant line ending and use it in replacements so the
-  // check is stable across CRLF (Windows autocrlf) and LF checkouts.
+function injectBlock(text, block, matrix) {
+  // Keep the file's line endings so the check is stable across CRLF and LF checkouts.
   const nl = text.includes('\r\n') ? '\r\n' : '\n';
-  const blockNl = block.replace(/\r?\n/g, nl);
-  const matrixNl = matrix.replace(/\r?\n/g, nl);
-  const re = new RegExp(START + '[\\s\\S]*?' + END);
-  const replacement = START + nl + '```plantuml' + nl + blockNl + nl + '```' + nl + END;
-  if (re.test(text)) text = text.replace(re, replacement);
-  const MSTART = '<!-- archimate:matrix start -->';
-  const MEND = '<!-- archimate:matrix end -->';
-  const mre = new RegExp(MSTART + '[\\s\\S]*?' + MEND);
-  const mrep = MSTART + nl + matrixNl + nl + MEND;
-  if (mre.test(text)) text = text.replace(mre, mrep);
-  return text;
+  const toNl = (s) => s.replace(/\r?\n/g, nl);
+  return text
+    .replace(new RegExp(START + '[\\s\\S]*?' + END), START + nl + '```plantuml' + nl + toNl(block) + nl + '```' + nl + END)
+    .replace(new RegExp(MSTART + '[\\s\\S]*?' + MEND), MSTART + nl + toNl(matrix) + nl + MEND);
+}
+
+/** Builds every output of a use case. Returns the check result and the expected file contents. */
+export function buildUseCase(useCase, { archDir = ARCH, rootDir = ROOT } = {}) {
+  const vocab = loadVocabulary(archDir);
+  const model = loadModel(useCase, archDir);
+  const result = checkModel(model, vocab, rootDir);
+  if (result.errors.length) return { ...result, model, outputs: [] };
+  const docPath = join(rootDir, 'docs', 'architecture', `use-case-${useCase}.md`);
+  const htmlPath = join(rootDir, '_includes', 'use-cases', `${useCase}.html`);
+  const outputs = [{ path: htmlPath, content: emitHtml(model) }];
+  if (existsSync(docPath)) outputs.push({ path: docPath, content: injectBlock(readFileSync(docPath, 'utf8'), emitPlantUml(model), emitMatrix(model)) });
+  return { ...result, model, outputs };
+}
+
+export function printReport({ errors, warnings }) {
+  for (const w of warnings) console.error('ATTENZIONE: ' + w);
+  for (const e of errors) console.error('ERRORE: ' + e);
+  if (errors.length) console.error(`archimate: ${errors.length} errore/i nel modello — nessun file generato.`);
 }
 
 // ─── main ───
 
 function main() {
-  const [, , useCase, ...rest] = process.argv;
-  if (!useCase) { console.error('usage: gen-archimate.mjs <use-case> [--check|--emit stdout|matrix]'); process.exit(2); }
-  const flag = rest[0] || '';
-  const vocab = loadVocabulary();
-  const cells = loadUseCase(useCase);
-  const { errors, warnings, declared } = validate(cells, vocab);
-  for (const w of warnings) console.error('WARN: ' + w);
-  if (errors.length) { for (const e of errors) console.error('ERROR: ' + e); process.exit(1); }
+  const [, , useCase, flag, arg] = process.argv;
+  if (!useCase) { console.error('uso: gen-archimate.mjs <use-case> [--check | --emit stdout|matrix]'); process.exit(2); }
 
-  const plant = emitPlantUml(cells, declared);
-
-  if (flag === '--emit' && rest[1] === 'stdout') { console.log(plant); return; }
-  if (flag === '--emit' && rest[1] === 'matrix') { console.log(emitMatrix(cells)); return; }
-  if (flag === '--emit' && rest[1] === 'svg') { console.log(emitSvg(cells, declared)); return; }
-  if (flag === '--emit' && rest[1] === 'html') {
-    const htmlPath = rest[2] || join(ROOT, '_includes', 'use-cases', `${useCase}.html`);
-    writeFileSync(htmlPath, emitHtml(cells, declared), 'utf8');
-    console.log(`archimate: wrote HTML fragment to ${htmlPath}`);
-    return;
-  }
-  if (flag === '--write-svg') {
-    const svgPath = rest[1] || join(ROOT, '_includes', 'use-cases', `${useCase}.svg`);
-    writeFileSync(svgPath, emitSvg(cells, declared), 'utf8');
-    console.log(`archimate: wrote SVG to ${svgPath}`);
+  if (flag === '--emit') {
+    const model = loadModel(useCase);
+    console.log(arg === 'matrix' ? emitMatrix(model) : emitPlantUml(model));
     return;
   }
 
-  const docPath = join(ROOT, 'docs', 'architecture', `use-case-${useCase}.md`);
-  const block = plant;
-  const matrix = emitMatrix(cells);
-  const next = injectBlock(docPath, block, matrix);
+  const built = buildUseCase(useCase);
+  printReport(built);
+  if (built.errors.length) process.exit(1);
 
   if (flag === '--check') {
-    const cur = readFileSync(docPath, 'utf8');
-    if (cur !== next) { console.error('archimate: generated block differs from committed (run gen to update)'); process.exit(1); }
-    console.log('archimate: check ok');
+    // Compare ignoring CRLF/LF, which git may rewrite on checkout (core.autocrlf).
+    const lf = (s) => s.replace(/\r\n/g, '\n');
+    const stale = built.outputs.filter((o) => !existsSync(o.path) || lf(readFileSync(o.path, 'utf8')) !== lf(o.content));
+    if (stale.length) {
+      for (const o of stale) console.error(`ERRORE: ${o.path} non è aggiornato: esegui npm run archimate:gen.`);
+      process.exit(1);
+    }
+    console.log(`archimate: modello "${useCase}" valido (${built.model.elements.length} elementi, ${built.model.relations.length} relazioni); file generati aggiornati.`);
     return;
   }
-  writeFileSync(docPath, next, 'utf8');
-  console.log(`archimate: wrote diagram into ${docPath}`);
+
+  for (const o of built.outputs) writeFileSync(o.path, o.content, 'utf8');
+  console.log(`archimate: modello "${useCase}" valido; scritti ${built.outputs.map((o) => o.path).join(', ')}`);
 }
 
-main();
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();
