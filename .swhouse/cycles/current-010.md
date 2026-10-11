@@ -47,3 +47,35 @@ Il genoma attuale è una macchina a nove stati: ogni stato ha transizioni condiz
 2. Dettaglio matematico: **intermedio**, leggibile da persone con formazione tecnico-scientifica ma non necessariamente finanziaria; ogni termine di finanza va spiegato alla prima occorrenza.
 
 **Prossimo step:** Step 2 — PRODUCT OWNER, in una nuova sessione.
+
+## Step 2 — PRODUCT OWNER: Define the Value
+
+**Agent:** claude-opus-5-5
+
+**Chi ha il problema:** Luca e Simone, che devono scegliere la forma del nuovo genoma prima di investire in R3, R4 ed E2; in seconda battuta chi implementerà E2, che parte dalla forma scelta.
+
+**Valore misurabile**
+- Dopo il ciclo restano **1–2 candidati** con motivazione e con le condizioni in cui verrebbero scartati, invece di una scelta implicita.
+- Ogni forma è confrontata con le stesse sette dimensioni (AC-02) e con l'FSM attuale, così la scelta si può discutere su evidenze e non su preferenze.
+- R3, R4 ed E2 possono partire senza rimettere in discussione la forma.
+
+**Costo del non farlo:** si sceglie la forma per abitudine o per la prima che si prova; se non regge (non evolve bene, non si interpreta, non produce memoria di stato), lo si scopre dopo E2, con il codice già scritto. Resterebbe anche indistinto quanto della debolezza osservata in Consilium dipenda dalla forma e quanto dalla fitness (R5).
+
+**Requisito dell'operatore da onorare:** la memoria di stato deve nascere da indicatori finanziari già qualificati, non da una macchina a stati. Per ogni forma la rassegna dice quindi **da dove viene la memoria del passato** (indicatori su finestre, stato interno ricorrente, ritardi in ingresso).
+
+**Criteri di accettazione**
+- AC-01 **Copertura.** Una scheda per ciascuna di: punteggio lineare di indicatori con soglie, alberi di espressioni / programmazione genetica, rule list, rete neurale piccola (MLP e NEAT), fuzzy; più almeno una forma emersa dallo Step 4.
+- AC-02 **Sette dimensioni per scheda:** espressività, spazio di ricerca, interpretabilità, costo di valutazione, adattamento a crossover e mutazione, adeguatezza al contratto di strategia del ciclo 009, origine della memoria di stato.
+- AC-03 **Confronto con l'FSM attuale** nella stessa griglia, come riga di riferimento.
+- AC-04 **Tracciabilità.** Ogni affermazione non banale riporta la fonte (riferimento bibliografico, URL verificato o percorso nel codice); ciò che non ha fonte è marcato come ipotesi. Nessuna cifra di rendimento senza fonte, e nessuna promessa di redditività (coerente con il principio del PoC).
+- AC-05 **Esito.** 1–2 candidati con motivazione, condizioni di scarto ed elenco di ciò che non si è potuto accertare, da portare a Luca.
+- AC-06 **Leggibilità.** Italiano; matematica di livello intermedio per lettori tecnico-scientifici non finanziari; simboli definiti alla prima comparsa; termini di finanza spiegati alla prima occorrenza, con un breve glossario.
+- AC-07 **Scelta di Luca registrata** nel file del ciclo (blocco `## Human Verification — [data]` con esecutore, oggetto, esito, note); senza, il ciclo resta DEFERRED.
+- AC-08 **Pubblicazione.** Il documento sta in `docs/` con l'intestazione usata dagli altri documenti, compare nel menu del sito, e la prosa evita costrutti che Jekyll interpreta come Liquid. La build di Pages si verifica dopo il merge su `main` (PENDING_HUMAN, come negli altri cicli); Jekyll non è disponibile in locale.
+- AC-09 **Nessuna modifica** a `src/`, `tests/`, `scripts/`, `archimate/**` né ai file di stato condivisi prima dello Step 12.
+
+**Fonti ammesse:** letteratura scientifica e rassegne sull'uso di algoritmi genetici, programmazione genetica, reti neuroevolutive e logica fuzzy nel trading; testi di riferimento sugli indicatori tecnici; documentazione di librerie note; il codice e il rapporto sugli esperimenti di Consilium. **Non ammesse come prova:** materiale commerciale o promozionale e risultati di backtest non riproducibili usati per sostenere la redditività.
+
+**UX Coherence Check:** non applicabile. Il ciclo produce un documento; non introduce campi, controlli né passi di flusso (AC-09).
+
+**Prossimo step:** Step 3 — ARCHITECT.
