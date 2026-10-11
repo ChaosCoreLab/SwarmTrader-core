@@ -599,3 +599,88 @@ Mitigation: controllo statico di Liquid (PASS sopra); build di Pages e osservazi
 ```
 
 **Prossimo step:** Step 8 — OPTIMIZER (da svolgere in una nuova sessione; qui non eseguito).
+
+## Step 8 — OPTIMIZER: Improve the Solution
+
+**Agent:** claude-sonnet-5-5 (subagent)
+**Confidence:** Medium — fatti, fonti, candidati e giudizi sulle forme sono invariati rispetto allo Step 7 e i controlli meccanici sono verdi; resta Medium perché l'obiettivo di lunghezza indicato dal Coordinator (5.500-6.500 parole) **non è stato raggiunto** (vedi sotto), la build di Pages non è provata e i livelli della griglia restano giudizi dell'autore.
+**Assunzioni**
+- Il documento dello Step 7 è la base; copia di sicurezza fuori dal repository: `scratchpad/genome-forms-review.builder.md` (485 righe, 10326 parole) e `docs.yml.bak`.
+- «Parole» = `wc -w` sul file intero (comprende i `|` delle tabelle, che gonfiano il conteggio di circa 500); le parole senza i separatori di tabella sono circa 7.600.
+- Nessun fatto, fonte (salvo i due rimossi sotto) né conclusione è stato cambiato; non è stata decisa la domanda 2.
+
+### Ridondanze e complessità individuate
+
+| Elemento | Problema | Azione |
+|---|---|---|
+| Ordine dei capitoli | La sintesi per la decisione (candidati, scarto, non accertato, domande) era al capitolo 9, dopo ~8.000 parole di schede | **Spostata in apertura** (capitolo 1); le schede restano il dettaglio. Rinumerati i rimandi |
+| Intestazione | Indice di 11 voci e frase di processo sul Critic nel capitolo della scala | Indice **rimosso**; riferimenti al Critic e ai passaggi del ciclo tolti; aggiunta una riga «Come leggerlo» |
+| Capitolo «Metodo» | Elenco delle sette dimensioni ripetuto (già nel capitolo della scala), paragrafi di stato delle fonti (già nel capitolo Riferimenti), frasi su livello matematico duplicate | Accorciato (circa -30%); sparita la lista delle dimensioni e la descrizione dello stato fonti |
+| Schede (sezione 6) | Righe «Contratto» che ripetevano `labels`/`describe()`/`serialize()` già nella tabella unica del capitolo 7; righe «Fonti.» a fine scheda che duplicavano le citazioni nelle tabelle; righe «Origine della memoria» duplicate nelle tabelle delle varianti e nelle schede; «Fatto» prolissi | Righe «Contratto» ridotte a `labels` più rimando; righe «Fonti.» **rimosse**; riga ridondante nelle tabelle delle varianti di GP e reti accorciata; celle «Fatto» e paragrafi «Rischi» abbreviati; «Genotipo di massima» riportato in coda ai rischi |
+| Sintesi (ex capitolo 9) | Motivazioni dei candidati duplicate dalle schede (punti ripetuti 4 volte: spazio piccolo, leggibile, naturale, contratto) | Riassunte in 3-4 punti per candidato; le forme di riserva in una riga ciascuna |
+| Griglia | Tre «letture» in tre elenchi puntati | Unite in un paragrafo; la tabella (12 righe) è invariata |
+| Famiglie e forme escluse | Frasi che ripetevano le schede (conteggi dei pesi, descrizione di NEAT) | Accorciate |
+| Riferimenti | Note di lettura dettagliate, DOI, «Verificato il 2026-10-11» su ogni voce, paragrafo di conteggio lungo | Data di verifica dichiarata **una volta** in testa (tutte le voci, stesso giorno), note brevi con lo stato letto/scheda per voce; conteggio ridotto a una riga |
+| Fonti [16] e [17] (CGP, solo schede bibliografiche) | Nessuna affermazione in più rispetto a [5] (Field Guide, letto: sezioni 7.1 e 7.2.3) | **Rimosse**; riferimenti rinumerati: GE 18→16, reservoir 19→17, Consilium 20→18. 18 fonti totali (12 lette, 6 solo scheda) |
+| Glossario | Voci non usate o duplicate: ATR, RSI, Hold-out, Volume, «Look-ahead» come rinvio, «Crossover» (già definito nella voce GA) | Rimosse; ATR e RSI tolti anche dal testo (resta l'esempio massimo/minimo su N barre come indicatore non lineare) |
+| Titolo | In inglese («Genome Forms Review») | **«Rassegna delle forme di genoma»** nell'intestazione e nella voce di `_data/docs.yml` (`id` e `path` invariati) |
+
+### Errori corretti
+- **Tabella dell'esempio IIR:** `volume 1` dopo 2 barre era 102,22; il valore con `c = 0.11764…` è **102,21** (ricalcolato con `110 - 10*(1-c)^k` sui quattro coefficienti di `FIXED_GENOME`). Colonna «dopo 3» eliminata.
+- **Rimandi ambigui:** «capitolo 7.1 / 7.2.3 / 11.3» nelle schede indicavano le sezioni del Field Guide [5] ma si leggevano come capitoli del documento: ora «sez. 7.1 di [5]» e simili.
+- **Formula IIR:** controllata nuovamente sul codice (`algorithm.js` righe 369-372: `ema = ema * (1 - c) + x * c`); invariata. Verificati anche i conteggi dell'FSM (36 transizioni, 135 identificatori) con uno script su `FIXED_GENOME`.
+
+### Cosa è stato tenuto deliberatamente, nonostante il costo
+- **Sette dimensioni in ogni scheda** (FSM compreso) con livello e fonte o `[ipotesi]`, anche dove la cella è ripetitiva: è AC-02 e permette ad AC-04 di verificarsi riga per riga.
+- **Le due varianti «solo indicatori»/«con memoria interna»** per GP e per MLP/NEAT con pro, contro e riga di griglia ciascuna (domanda 2 aperta).
+- **Scala definita prima delle schede**, griglia a 12 righe con colonna dei vincoli duri, senza punteggio totale e senza riga buy&hold.
+- **Tabella unica del contratto** con «cosa si perde» e le frasi uniche su `hold`, `labels`, `crossover`/`mutate`, forme con stato; la frase sul contratto provato con una sola strategia.
+- **Esempio numerico dell'IIR** (4 righe): è il solo punto in cui il lettore vede che `c` è il peso del dato nuovo e che `prezzo 2` ha quasi nessuna memoria; è dichiarato come calcolo di esempio.
+- **Candidati A e B con condizioni di scarto**, forme di confine e di riserva, ciò che non si è potuto accertare (compreso l'esperimento di controllo, domanda 5) e le domande 2-5.
+- **Le note `[ipotesi]` e `[ipotesi, fonte da verificare]`**, le attribuzioni «risultato di quello studio» (F8/[6], [7], [14]) e l'assenza di cifre di rendimento; i termini di finanza spiegati alla prima occorrenza (stop loss, take profit, buy&hold, OHLCV, CAGR, backtest, look-ahead, overfitting) più il glossario.
+- **Riferimenti con stato letto/scheda** e le due fonti non verificate (LCS, CART), indispensabili per AC-04 e AC-05.
+
+### Misure (prima → dopo)
+| | Prima (Step 7) | Dopo (Step 8) |
+|---|---|---|
+| Righe | 485 | 410 |
+| Parole (`wc -w`) | 10326 | 8110 (-21,5%) |
+| Fonti numerate | 20 | 18 |
+
+**L'obiettivo di 5.500-6.500 parole non è raggiunto.** La parte che non si può accorciare senza toccare un criterio pesa da sola circa 4.500 parole: sette schede × sette dimensioni con fonte (AC-02, AC-04), scala (circa 400), tabella del contratto e frasi uniche (circa 450), griglia (circa 480), 18 riferimenti con stato (circa 700), glossario. Il lettore che deve solo decidere ha ora il capitolo 1 (circa 1.000 parole) e la griglia (capitolo 8) all'inizio; per scendere sotto 6.500 servirebbe togliere righe di dimensioni dalle schede, cosa che il contratto di AC-02 non consente, o una modifica esplicita di AC-02/AC-06 da parte del Product Owner (non proposta qui).
+
+### Verifica (eseguita davvero)
+
+```
+(a) wc -w -l: prima 485 righe / 10326 parole; dopo 410 righe / 8110 parole
+(b) grep -nE '\{\{|\{%' docs/architecture/genome-forms-review.md -> nessuna riga, exit 1: PASS
+(c) script Python sulle tabelle: FSM (cap. 4), 6.1, 6.2, 6.3, 6.4, 6.5, 6.6 -> 7/7 dimensioni in ciascuna; 0 tabelle con numero di colonne incoerente: PASS
+(d) script Python sui rimandi [n]: definiti 1-18, citati nel testo 1-18, nessun orfano, nessuna fonte non citata (la voce 18 non ha URL: Consilium, percorso nel repository, verificata a mano alla riga 390): PASS
+(e) link interni: ../simulator-overview/ e ../simulator-overview/#strategy-contract -> docs/architecture/simulator-overview.md esiste e ha "## Strategy contract" (riga 29): PASS. Rimandi «capitolo N» ricontrollati a mano sulla nuova numerazione (1-11): PASS
+(f) front matter (title in italiano, layout: doc, last_verified) come simulator-overview; _data/docs.yml caricato con PyYAML (yaml.safe_load): valido, voce genome-forms-review con id e path invariati e titolo «Rassegna delle forme di genoma». Ruby non installato; nessun parser YAML in node_modules: usato Python: PASS
+(g) npm test -> # tests 28 / # pass 28 / # fail 0; npm run archimate:check -> modello "eni-replay" valido (32 elementi, 51 relazioni): PASS
+```
+
+Non eseguito: build Jekyll (non installato; resta PENDING_HUMAN dopo il merge). Ricerca dei termini promissori (`guadagn|batter|rendimento`): solo usi non promissori (definizioni di CAGR e take profit, «rendimento atteso» negato, risultato di [6] riportato come esito di quello studio).
+
+### Copertura degli AC dopo lo Step 8
+
+| AC | Esito | Nota |
+|---|---|---|
+| AC-01 Copertura | Soddisfatto | Cinque forme previste (MLP e NEAT in una scheda) più HMM; Kalman e minima nella scheda lineare |
+| AC-02 Sette dimensioni | Soddisfatto | Script (c): 7/7 in FSM e nelle sei schede |
+| AC-03 Riga FSM | Soddisfatto | Scheda cap. 4 e prima riga della griglia |
+| AC-04 Tracciabilità | Soddisfatto con riserva | Resta la riserva dello Step 7: forme poggiate su `[ipotesi]` (punteggio lineare, fuzzy), 6 fonti su 18 solo scheda; nessuna cifra di rendimento |
+| AC-05 Esito | Soddisfatto | Candidati A e B con scarto, forme di confine/riserva, non accertato, domande 2-5 |
+| AC-06 Leggibilità | Soddisfatto con riserva | Sintesi in apertura e -21,5% di parole, ma 8.110 parole restano sopra l'obiettivo; tabelle larghe (griglia a 8 colonne) non viste su schermo stretto |
+| AC-07 Scelta di Luca | Non applicabile a questo step | Da registrare in `## Human Verification` |
+| AC-08 Pubblicazione | Soddisfatto con riserva | Intestazione e menu in regola, nessun Liquid; build di Pages PENDING_HUMAN |
+| AC-09 Nessuna modifica | Soddisfatto | Toccati solo il documento, il titolo in `_data/docs.yml` e questo file; `src/`, `tests/`, `scripts/`, `archimate/**`, stato condiviso intatti (`software-house-ai` già modificato prima del ciclo) |
+
+### Rischi residui
+- Lunghezza ancora sopra l'obiettivo (AC-06): per Luca bastano i capitoli 1 e 8; chi vuole ridurre ancora deve accettare di perdere celle di dimensione o aprire una modifica di AC-02.
+- La rinumerazione dei capitoli e dei riferimenti [16]-[18] è stata verificata con script, ma i rimandi testuali «capitolo N» solo a mano.
+- Le fonti con ruolo di prova restano [5], [1], [2], [3], [4], [8], [9]; le altre sono schede o abstract.
+- Il documento non è stato aperto nel sito: tabelle, blocchi di codice e `last_verified` ripetuto nel corpo (come negli altri documenti) vanno visti allo Step 9.
+
+**Prossimo step:** Step 9 — SCIENTIST
