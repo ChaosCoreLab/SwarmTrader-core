@@ -79,3 +79,78 @@ Il genoma attuale è una macchina a nove stati: ogni stato ha transizioni condiz
 **UX Coherence Check:** non applicabile. Il ciclo produce un documento; non introduce campi, controlli né passi di flusso (AC-09).
 
 **Prossimo step:** Step 3 — ARCHITECT.
+
+## Step 3 — ARCHITECT: Propose Structure
+
+**Agent:** claude-sonnet-5-5 (subagent)
+
+**Input Surface Audit:** non applicabile; il ciclo produce un documento, senza UI né input (Step 2, AC-09).
+
+**Assunzioni**
+- La rassegna è un documento unico in `docs/`; le fonti si raccolgono negli Step 4–8, non qui.
+- Il contratto di strategia è quello letto in `src/engine/strategy.js` (`assertStrategy`, `StrategyIndividual`), in `src/engine/fsmStrategy.js` e in `docs/architecture/simulator-overview.md#strategy-contract`, con la decisione `memory/decisions/2026-10-11-strategy-contract.md` (confidence Medium: provato solo con una seconda strategia di test).
+- «Struttura» = struttura della rassegna e del documento; nessun codice.
+
+### Scomposizione in componenti
+
+Sette componenti, ciascuno con una sola responsabilità; le dipendenze vanno dall'alto in basso.
+
+1. **Metodo e fonti** (sezione breve in apertura). Fonti ammesse e non ammesse (Step 2), formato di citazione, regola «affermazione senza fonte = ipotesi, marcata come tale». Non dipende da nulla; tutti gli altri lo usano.
+2. **Glossario e notazione.** Simboli definiti alla prima comparsa nel testo; termini di finanza (OHLCV, buy&hold, stop loss, take profit, drawdown, CAGR, look-ahead bias, overfitting, ecc.) spiegati alla prima occorrenza e raccolti in un breve glossario in coda. Responsabilità di AC-06.
+3. **Riga di riferimento FSM.** Descrive il genoma attuale con le stesse sette dimensioni, ricavando i fatti dal codice: 9 stati (`GENOME_STATES`), transizioni come liste di id di condizione 0–13 in `genome.js`, 4 coefficienti IIR in (0,1), margini percentuali, `stop_loss_percent` e `take_profit_percent`; memoria = lo stato corrente più i filtri IIR (`FsmIndividual.describe()` espone i quattro IIR). È la prima scheda, così il lettore ha il metro prima delle alternative (AC-03).
+4. **Schema comune delle schede** (AC-02). Intestazione fissa per ogni forma: *definizione in 3–5 righe con la formula* → *le sette dimensioni* (espressività, spazio di ricerca, interpretabilità, costo di valutazione, adattamento a crossover e mutazione, adeguatezza al contratto, origine della memoria di stato) → *rischi di sfruttamento da parte della selezione* (anticipazione dei dati, soluzioni degeneri; da qui il Critic parte, lo Step 6 è omesso) → *fonti*. Ogni dimensione è una voce di una riga + giudizio ordinale + fonte o «ipotesi».
+5. **Scheda del contratto** (verificabilità dell'AC-02/adeguatezza). Sotto-tabella fissa, identica per ogni forma, con una riga per ogni membro che `assertStrategy` e `StrategyIndividual` richiedono: `kind`; `labels` (lista finita e non vuota di stringhe: come una forma continua o ad albero produce etichette?); `init/reset` (stato ricorrente azzerabile); `updateIndicators` (solo dati fino alla barra corrente); `decide()` → `buy|sell|hold`, valutata a fine barra con esecuzione all'apertura della barra successiva (`knowledge/consilium-trader-order-timing`); `describe()` (numeri finiti: ogni indicatore deve essere esposto come numero); `serialize()` (JSON semplice); parametri di `Trader` (`buyPercent`, `stopLossPercent`, `takeProfitPercent`) che restano parametri evolvibili o fissi. Esito per riga: *diretto / con adattamento (descritto) / non soddisfatto*. È una verifica sulla carta, non codice: la prova reale è E2.
+6. **Griglia di confronto e scala.** Una tabella forme × sette dimensioni, FSM come prima riga, con scala ordinale a tre livelli (es. alto/medio/basso) definita dimensione per dimensione prima di compilare, in modo che «alto» non cambi significato da una riga all'altra. **Nessun punteggio numerico totale né pesi**: i pesi sarebbero una scelta di valore, che è di Luca, e darebbero una precisione apparente. Ogni cella rimanda alla scheda e quindi alla fonte.
+7. **Sintesi per la decisione di Luca** (AC-05). 1–2 candidati con motivazione, condizioni di scarto («se E2 mostra che…, si passa a…»), elenco di ciò che non si è potuto accertare, e le domande aperte lasciate a R3/R4/R5/R6. Chiude con lo spazio per la scelta di Luca (AC-07 la registra nel file del ciclo, non nel documento).
+
+**Posizione nel sito.** File: `docs/architecture/genome-forms-review.md`, intestazione come gli altri documenti (`title`, `layout: doc`, `last_verified`, prima riga `last_verified:` nel corpo; niente `mermaid: true` se non serve). Menu: una voce in `_data/docs.yml` sotto `architecture`. Motivo: `_includes/use-case-nav.html` itera solo `site.data.docs.architecture`, `decisions` e `operations`; un gruppo `research` richiederebbe di modificare l'include e rischiare la build di Pages senza poterla provare in locale (Jekyll non è disponibile). Riga in `docs/MAP.md` e menu si aggiornano allo Step 12 per la condizione sui file di stato (il 007 è aperto). Prosa: nessuna doppia graffa né `{%`; le formule in testo semplice o in blocchi di codice, mai nella notazione che Liquid interpreta (`patterns/jekyll-stakeholder-docs`).
+
+### Interfacce e dipendenze
+
+- **Ciclo 009 (contratto di strategia):** R1 *consuma* il contratto e non lo modifica. Se la scheda del contratto trova un requisito che il contratto non copre (per esempio `labels` fisse per una forma con output continuo, o indicatori non finiti), lo segnala come «richiesta di estensione al contratto» da trattare in E2, non lo risolve.
+- **R2 (indicatori):** R1 usa gli indicatori solo come esempio di ingresso e dice per ogni forma *dove* entrerebbero (tipo e numero di ingressi); non li qualifica. **Cosa R1 non deve rimettere in discussione:** l'elenco degli indicatori.
+- **R3 (codifica genetica) e R4 (equazioni di decisione):** R1 consegna la forma e per ciascuna una frase su cosa va codificato (genotipo di massima) e su che tipo di decisione produce. Non fissa operatori né equazioni.
+- **R5 (fitness) e R6 (protocollo di valutazione):** R1 dichiara solo la sensibilità della forma (rischio di overfitting, costo di valutazione per candidato); non propone fitness.
+- **E2:** parte dai 1–2 candidati, dalla scheda del contratto e dalle condizioni di scarto. Per non farlo ripartire da zero, la scheda del contratto va redatta in modo che E2 possa derivarne i test.
+- **Cosa R1 deve consegnare perché non si rimetta in discussione:** (a) quale forma si usa; (b) da dove viene la memoria di stato (requisito dell'operatore); (c) i vincoli che il contratto impone; (d) le condizioni di scarto del candidato.
+
+### Approccio A — Per forma, schema uniforme, con griglia trasversale
+
+Una scheda per forma (FSM di riferimento, punteggio lineare, alberi/GP, rule list, MLP, NEAT, fuzzy, più le forme dallo Step 4), ciascuna con lo schema dei componenti 4 e 5; poi la griglia (6) e la sintesi (7).
+
+**Pro:** corrisponde direttamente ad AC-01 (una scheda per forma) e AC-02; la fonte sta accanto all'affermazione, quindi AC-04 si verifica scheda per scheda; chi cerca una forma la trova; una forma nuova dallo Step 4 si aggiunge senza toccare le altre; il confronto per dimensione è comunque disponibile nella griglia, senza ripetere il testo.
+**Contro:** le somiglianze tra forme (es. MLP e NEAT condividono la rete; GP e rule list condividono i predicati) non emergono dalla struttura: vanno esplicitate con rimandi o in una breve sezione di famiglie; il rischio di schede di lunghezza diseguale, controllato dal limite di righe per dimensione.
+
+### Approccio B — Per capacità richiesta
+
+Sezioni per domanda: «come si ottiene memoria dal passato», «come si interpreta», «come evolve», «quanto costa», «come si integra»; in ogni sezione si confrontano tutte le forme.
+
+**Pro:** mette in primo piano il requisito centrale (memoria da indicatori) e agevola il confronto diretto per criterio.
+**Contro:** la fonte e la descrizione di una forma si frammentano in cinque sezioni, quindi AC-01 (una scheda per forma) non si verifica a vista e AC-04 richiede di ricomporre; ogni forma nuova tocca tutte le sezioni; il lettore non finanziario incontra i concetti di una forma (es. fuzzy) sparsi e ripetuti. Il confronto per criterio che B offre è già la griglia di A.
+
+### Approccio C — Per catena codifica → decisione → valutazione
+
+Struttura in tre parti che seguono il ciclo evolutivo: come il genoma è codificato (genotipo), come produce la decisione (fenotipo), come lo si valuta (fitness e protocollo); le forme compaiono in ciascuna parte.
+
+**Pro:** riflette il modo in cui un algoritmo genetico lavora; collega il documento a R3, R4, R5.
+**Contro:** sovrappone R1 a R3 (codifica), R4 (equazioni) e R5/R6 (valutazione), che il perimetro esclude; spinge R1 a decisioni che spettano alle ricerche successive; frammenta le forme come B. **Scartato:** aggiunge complessità e invade il perimetro senza vantaggio sulla scelta della forma.
+
+### Raccomandazione
+
+**Approccio A**, con tre elementi trasversali già nei componenti: la scheda del contratto (5), la colonna «origine della memoria» ripresa in evidenza nella griglia (6) per onorare il requisito dell'operatore, e una breve sezione di famiglie (reti: MLP/NEAT; programmi: GP/rule list/lineare) che compensa il difetto di A senza cambiare struttura. **B si ottiene gratis** come lettura della griglia; **C si scarta**. Si aggiunge una sola cosa al minimo (la scheda del contratto) perché risponde direttamente all'unico criterio verificabile (AC-02, adeguatezza). Non si propongono grafici, Mermaid né pagine multiple: un file, tabelle testuali, come i documenti esistenti.
+
+### Tracciabilità (AC-04), leggibilità (AC-06), nessuna promessa di redditività
+
+- **Tracciabilità:** ogni voce delle sette dimensioni termina con `[fonte]` (riferimento bibliografico con anno, URL verificato con data di accesso, oppure `percorso/del/file.js` per il codice) oppure con `[ipotesi]`. Una sezione finale «Riferimenti» elenca le fonti numerate; durante la raccolta (Step 4–8) si tiene un elenco di lavoro «affermazione → fonte → verificata sì/no» che il Critic può controllare a campione. Fonti non ammesse (commerciali, backtest non riproducibili) non entrano come prova.
+- **Leggibilità:** ordine fisso per scheda (definizione → formula → sette dimensioni), simboli definiti alla prima comparsa in ogni scheda dove compaiono, lunghezza limitata per voce, glossario in coda con rimando dalla prima occorrenza. Matematica a livello intermedio: formule semplici (somme pesate, soglie, funzioni di attivazione), niente dimostrazioni.
+- **Nessuna promessa di redditività:** nessuna cifra di rendimento senza fonte, e quando una fonte ne riporta una è citata come risultato di quello studio, con le sue condizioni; il documento dichiara in apertura che confronta *forme* per espressività, ricercabilità e integrazione, non rendimenti; i candidati si motivano con quelle dimensioni, mai con «guadagnerebbe di più». Come per il PoC, resta uno strumento di ispezione storica (`docs/architecture/simulator-overview.md`, «Purpose»).
+
+### Rischi che segnalo al Critic (Step 5)
+- La scala ordinale resta soggettiva se le soglie non si definiscono prima di compilare la griglia.
+- `labels` è una lista fissa: forme con output continuo (MLP, fuzzy, punteggio lineare) devono derivare etichette (es. fasce dell'output), con possibile perdita di informazione nel replay.
+- Il contratto è provato con una sola strategia di test (confidence Medium): l'adeguatezza dichiarata qui è di carta fino a E2.
+- Lunghezza del documento rispetto a AC-06.
+
+**Confidence:** Medium — la struttura è semplice e coerente con gli AC, ma la qualità della rassegna dipenderà dalle fonti trovate negli Step successivi e dalla definizione della scala, non ancora verificabili; l'adeguatezza al contratto si conferma solo con E2.
+
+**Prossimo step:** Step 4 — EXPLORER
