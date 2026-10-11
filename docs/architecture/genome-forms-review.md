@@ -6,11 +6,18 @@ last_verified: 2026-10-11
 
 # Rassegna delle forme di genoma
 
+<style>
+.doc-content table { display: block; max-width: 100%; overflow-x: auto; }
+.doc-content li, .doc-content p { overflow-wrap: anywhere; }
+</style>
+
 last_verified: 2026-10-11
 
 Rassegna di ricerca del ciclo 010 (issue R1, epica "genoma non basato su macchina a stati"). È in italiano, come richiesto dall'operatore; gli altri documenti di questa sezione sono in inglese.
 
 **A chi serve.** A Luca e Simone, che devono scegliere la forma del nuovo genoma prima delle ricerche sugli indicatori (R2), sulla codifica genetica (R3), sulle equazioni di decisione (R4) e prima dell'implementazione (E2). **La scelta è di Luca**: il documento porta 1 o 2 candidati motivati, le condizioni di scarto e ciò che non si è potuto accertare.
+
+**Parole chiave** (definizioni complete nel glossario, capitolo 11). Il **genoma** è l'insieme dei parametri che definiscono una strategia; il **GA** (algoritmo genetico) è il metodo che lo fa evolvere con selezione, **crossover** (scambio di parti tra due genitori) e mutazione; la **fitness** è il numero che dice quanto un candidato è buono. Una **barra** è un giorno di negoziazione riassunto nei valori OHLCV. Una **media mobile** è la media dei prezzi delle ultime N barre e un filtro **IIR** è una media ricorsiva, dove ogni valore dipende dal precedente e dal dato nuovo. Una **posizione lunga** è un acquisto tenuto in attesa che il prezzo salga; i **costi di transazione** sono commissioni e scarti di prezzo pagati a ogni operazione. L'**anticipazione dei dati** (look-ahead) è l'uso di informazioni non ancora disponibili. Una rete **feedforward** è senza memoria interna: l'uscita dipende solo dagli ingressi del momento. Il **bloat** è la crescita degli alberi evoluti senza miglioramento. **R2…R6** sono le altre ricerche dell'epica: indicatori, codifica genetica, equazioni di decisione, fitness, protocollo di valutazione.
 
 **Cosa NON è.** Non è una promessa di redditività né un confronto di rendimenti. Le forme sono confrontate per espressività, ricercabilità (quanto bene un algoritmo genetico le esplora), interpretabilità, costo di valutazione e integrazione con il motore. Il PoC resta uno strumento di ispezione storica (vedi [Simulator overview](../simulator-overview/), sezione "Purpose").
 
@@ -30,8 +37,8 @@ I candidati sono presentati **sulle dimensioni** delle schede, mai sul rendiment
 
 ### 1.2 Candidato B: alberi di espressioni (GP), variante "solo indicatori"
 
-- **Espressività universale** e **crossover naturale** sui sottoalberi [5]; è la forma con più precedenti nella scoperta evolutiva di regole di trading [6], [7] (il primo letto solo come riassunto).
-- **Interpretabilità con calcolo**: un albero piccolo è una formula leggibile, più di una rete.
+- **Espressività universale** e **crossover naturale** sui sottoalberi [5]; è, insieme ai GA, una delle forme più studiate per scoprire regole di trading con metodi evolutivi [7] (letto l'abstract); un precedente classico è [6] (letto solo come riassunto).
+- **Interpretabilità con calcolo**: un albero piccolo è una formula leggibile, più di una rete [ipotesi].
 - Copre ciò che A non rappresenta (congiunzioni, soglie condizionate) e può esprimere come caso particolare una rule list e un punteggio lineare [ipotesi]. Contratto con adattamento (etichette dalle fasce dell'uscita).
 
 **Condizioni di scarto.** Si passa ad A o alla rule list se, in E2, la dimensione degli alberi cresce senza miglioramento (bloat) [5], se gli alberi evoluti non sono più leggibili, o se il divario tra fitness di addestramento e di valutazione cresce con la dimensione dell'albero.
@@ -40,10 +47,10 @@ I candidati sono presentati **sulle dimensioni** delle schede, mai sul rendiment
 
 ### 1.3 Forme di confine e di riserva
 
-- **HMM** (6.6): la più vicina al problema che l'FSM attuale tenta di risolvere e l'unica con etichette finite per costruzione. **Forma di confine**: ha la struttura di una macchina a stati probabilistica. Ammessa dall'operatore, non è portata come candidato perché ha una dimensione in più da risolvere (stima dei parametri senza anticipazione, a cura di R6) e non si è trovata alcuna fonte sul suo uso con un GA nel trading. Ha già una scheda piena se Luca la preferisce.
+- **HMM** (6.6): la più vicina al problema che l'FSM attuale tenta di risolvere e l'unica con etichette finite per costruzione [ipotesi]. **Forma di confine**: ha la struttura di una macchina a stati probabilistica. Ammessa dall'operatore, non è portata come candidato perché ha una dimensione in più da risolvere (stima dei parametri senza anticipazione, a cura di R6) e non si è trovata alcuna fonte sul suo uso con un GA nel trading. Ha già una scheda piena se Luca la preferisce.
 - **Rule list** (6.3): versione vincolata e più leggibile del GP; riserva se B si rivela troppo libero.
 - **MLP e NEAT** (6.4): espressività universale a prezzo di interpretabilità minima; non si trova un criterio per cui serva rispetto ad A e B [ipotesi].
-- **Fuzzy** (6.5): molti parametri (54 con 6 ingressi) e accorgimenti nel crossover; nessun vantaggio visibile rispetto a B.
+- **Fuzzy** (6.5): molti parametri (54 con 6 ingressi) e accorgimenti nel crossover; nessun vantaggio visibile rispetto a B [ipotesi].
 
 ### 1.4 Ciò che non si è potuto accertare
 
@@ -182,11 +189,11 @@ buy  se s[t] > soglia_alta;  sell se s[t] < soglia_bassa;  altrimenti hold
 | Contratto | `labels`: tre fasce del punteggio | con adattamento | `src/engine/strategy.js` 12-33; capitolo 7 |
 | Memoria | A monte; ricorrenza: no. Kalman: stato continuo (livello, pendenza); ricorrenza: sì | a monte; Kalman: stato continuo | [3] per Kalman; [ipotesi] |
 
-**Rischi.** Anticipazione: no; per Kalman nessuna stima globale se i rumori sono parametri del genoma. Soluzioni degeneri: soglie che non scattano mai, ingressi di scala grande che prevalgono. Sfruttamento della fitness: pochi parametri limitano la capacità di adattarsi al rumore ma non la eliminano [4]. Kalman è ottimo con rumori gaussiani; le serie giornaliere hanno code pesanti [ipotesi]. **Genotipo:** vettore di numeri reali (pesi, soglie, eventuali parametri di Kalman).
+**Rischi.** Anticipazione: no; per Kalman nessuna stima globale se i rumori sono parametri del genoma. Soluzioni degeneri: soglie che non scattano mai, ingressi di scala grande che prevalgono. Sfruttamento della fitness: pochi parametri limitano la capacità di adattarsi al rumore [ipotesi] ma non la eliminano [4]. Kalman è ottimo con rumori gaussiani; le serie giornaliere hanno code pesanti [ipotesi]. **Genotipo:** vettore di numeri reali (pesi, soglie, eventuali parametri di Kalman).
 
 ### 6.2 Alberi di espressioni e programmazione genetica (GP)
 
-**Definizione.** Un programma è un albero: i nodi interni sono operazioni (`+`, `-`, `*`, divisione protetta, confronti, `if`), le foglie sono ingressi o costanti; valutato sugli ingressi dà un numero, da cui si ricavano le tre azioni con soglie [5]. Un precedente classico per il trading cerca con un algoritmo genetico **combinazioni logiche di regole semplici** su medie mobili e su massimi e minimi di prezzi passati [6]; il riassunto letto riporta che, nelle condizioni di quello studio, dopo i costi di transazione le regole trovate non hanno dato rendimento in eccesso rispetto al riferimento di mercato (nessuna cifra qui). Una rassegna sistematica [7] osserva una forte concentrazione di studi su GA e GP per le regole di trading azionario (letto l'abstract).
+**Definizione.** Un programma è un albero: i nodi interni sono operazioni (`+`, `-`, `*`, divisione protetta, confronti, `if`), le foglie sono ingressi o costanti; valutato sugli ingressi dà un numero, da cui si ricavano le tre azioni con soglie [5]. Un precedente classico per il trading cerca con un algoritmo genetico **combinazioni logiche di regole semplici** su medie mobili e su massimi e minimi di prezzi passati [6]; il riassunto letto dice che, nelle condizioni di quello studio, dopo i costi di transazione non è possibile guadagnare con le regole trovate (nessuna cifra qui). Una rassegna sistematica [7] osserva una forte concentrazione di studi su GA e GP per le regole di trading azionario (letto l'abstract).
 
 **Varianti di rappresentazione** [5]: albero (default); **GP lineare**, sequenza di istruzioni che leggono e scrivono registri (sez. 7.1 di [5]); **GP cartesiano (CGP)**, genoma di interi a lunghezza fissa che codifica un grafo, tradizionalmente evoluto per sola mutazione (sez. 7.2.3 di [5]).
 
@@ -222,6 +229,8 @@ se  (close_filter_1 > close_filter_2 + m1)  e  (volume > volume_filter_1)  allor
 altrimenti se  (close_filter_1 < close_filter_2 - m2)                      allora sell
 altrimenti                                                                   hold
 ```
+
+`m1` e `m2` sono **margini**: numeri del genoma, evoluti dal GA, che evitano di reagire a differenze minime tra i due filtri.
 
 Esempio di forma, non di regola proposta. I **learning classifier system** (LCS) evolvono una popolazione di regole; lo stile "Michigan" (un individuo è una regola) si distingue da quello "Pittsburgh" (un individuo è un insieme di regole) [ipotesi, fonte da verificare: Urbanowicz e Moore, 2009, non letta]. Una rule list è **simile, non identica** a un insieme Pittsburgh (ha un ordine e un default) [ipotesi, fonte da verificare]. Gli LCS non sono portati a scheda: nello stile Michigan l'individuo del GA sarebbe l'intera popolazione di regole, in tensione con l'ipotesi "un genoma = una strategia" del contratto.
 
@@ -316,7 +325,7 @@ Dopo la normalizzazione, `alfa_t` è la **distribuzione di credenza** sui regimi
 
 Il contratto è quello di `assertStrategy` e `StrategyIndividual` (`src/engine/strategy.js`) e della sezione "Strategy contract" di [Simulator overview](../simulator-overview/#strategy-contract). La decisione di riferimento è `.swhouse/memory/decisions/2026-10-11-strategy-contract.md`, con confidenza **Medium**: provata con una sola strategia di test. **L'adeguatezza dichiarata qui è fatta sulla carta fino a E2.**
 
-**Membri richiesti.** `kind` (stringa non vuota); `labels` (lista finita e non vuota di stringhe); `init()`, `reset()`, `feed()`, `getCAGR()`, `getPerformanceSummary()`; `describe()` che restituisce `{ label, indicators }` con numeri finiti; `serialize()` che restituisce il genoma come JSON; `decide()` che restituisce `buy`, `sell` o `hold` (`strategy.js`, righe 4-5, 12-33, 35-87). I parametri di rischio del `Trader` restano evolvibili o fissi, **comuni a ogni forma**.
+**Membri richiesti da `assertStrategy`:** `kind` (stringa non vuota); `labels` (lista finita e non vuota di stringhe); `trader` (l'oggetto con cui si opera, con `getTotalValue()`); `init()`, `feed()`, `reset()`, `getCAGR()`, `getPerformanceSummary()`; `describe()` che restituisce `{ label, indicators }` con numeri finiti; `serialize()` che restituisce il genoma come JSON (`strategy.js`, righe 4-5, 12-33). **Per le forme costruite su `StrategyIndividual`** (la base per i tipi diversi dall'FSM) si aggiungono i ganci `initIndicators()`, `updateIndicators()`, `resetIndicators()` e `decide()`, che restituisce `buy`, `sell` o `hold` (righe 35-87). I parametri di rischio del `Trader` restano evolvibili o fissi, **comuni a ogni forma**.
 
 **Frasi uniche per tutte le forme.**
 
@@ -384,7 +393,7 @@ Stato: **letto** = testo integrale scaricato e letto per le parti citate; **sche
 12. J. D. Hamilton, *A New Approach to the Economic Analysis of Nonstationary Time Series and the Business Cycle*, Econometrica 57(2), 357-384, 1989. https://www.econometricsociety.org/publications/econometrica/1989/03/01/new-approach-economic-analysis-nonstationary-time-series-and. Scheda con abstract.
 13. A. Ang, A. Timmermann, *Regime Changes and Financial Markets*, NBER Working Paper 17182, 2011. https://www.nber.org/papers/w17182. Scheda con abstract; la versione pubblicata (2012) non è stata verificata.
 14. R. Gupta, S. Kapoor, H. Gupta, S. Natesan, *A forest of opinions: A multi-model ensemble-HMM voting framework for market regime shift detection and trading*, Data Science in Finance and Economics 5(4), 466-501, 2025. https://www.aimspress.com/aimspress-data/dsfe/2025/4/PDF/DSFE-05-04-019.pdf. Letto in parte.
-15. R. J. Hyndman, G. Athanasopoulos, *Forecasting: Principles and Practice*, 3a edizione online, OTexts, capitolo 8. https://otexts.com/fpp3/exponential-smoothing.html. Letto in parte. Anno di edizione non confermato.
+15. R. J. Hyndman, G. Athanasopoulos, *Forecasting: Principles and Practice*, 3a edizione online, OTexts, capitolo 8. https://otexts.com/fpp3/exponential-smoothing.html. Letto in parte. Anno di edizione non confermato. Il server risponde 403 a richieste con User-Agent di browser e 200 a `curl`: la pagina esiste (verificato il 2026-10-11).
 16. C. Ryan, M. O'Neill, J. J. Collins, *Introduction to 20 Years of Grammatical Evolution*, in *Handbook of Grammatical Evolution*, Springer, 2018, 1-21. https://gpbib.pmacs.upenn.edu/gp-html/Ryan_2018_hbge_intro.html. Scheda con abstract.
 17. Gruppo MINDS, *Echo State Networks and Reservoir Computing*, pagina ospitata su `ai.rug.nl`. https://www.ai.rug.nl/minds/esnresearch/. Pagina letta; è di un gruppo di ricerca, non una rassegna con revisione.
 18. Consilium, *Train/Holdout Experiments, Generalizzazione della popolazione GA*, 2026-09-12 (rapporto interno): `archive/reports/2026-09-12_train-test-holdout-experiments.md` nel repository Consilium. Letto per intero. Riguarda titoli e panieri con fitness basata sul CAGR, non la serie ENI di questo PoC.
@@ -397,8 +406,11 @@ Stato: **letto** = testo integrale scaricato e letto per le parti citate; **sche
 - **Anticipazione dei dati (look-ahead bias).** Errore per cui una decisione usa informazioni non ancora disponibili alla barra corrente, e il risultato appare migliore di quello ottenibile davvero.
 - **Backtest.** Prova di una strategia sui dati storici, come se fosse stata applicata allora.
 - **Barra.** Un periodo di negoziazione (qui un giorno) riassunto nei suoi valori OHLCV.
+- **Bloat.** Crescita della dimensione degli alberi evoluti senza miglioramento della fitness.
 - **Buy&hold.** Strategia di riferimento: comprare all'inizio e tenere fino alla fine, senza altre operazioni.
 - **CAGR (compound annual growth rate).** Tasso di crescita annuo composto: il rendimento annuo costante che porterebbe dal capitale iniziale a quello finale.
+- **Costi di transazione.** Commissioni e scarti di prezzo pagati a ogni operazione di acquisto o vendita.
+- **Feedforward.** Rete senza memoria interna: l'uscita dipende solo dagli ingressi del momento.
 - **Fitness.** Numero che dice quanto un candidato è "buono" per l'algoritmo genetico; qui oggi è basato sul CAGR.
 - **Genoma.** L'insieme dei parametri che definiscono una strategia, ciò che l'algoritmo genetico fa evolvere.
 - **IIR (infinite impulse response).** Filtro ricorsivo: ogni valore dipende dal valore precedente dell'uscita oltre che dal dato nuovo.
@@ -406,5 +418,6 @@ Stato: **letto** = testo integrale scaricato e letto per le parti citate; **sche
 - **Media mobile.** Media dei prezzi delle ultime N barre.
 - **OHLCV.** Open, high, low, close, volume: prezzo di apertura, massimo, minimo, chiusura e volume scambiato in una barra.
 - **Overfitting (sovradattamento).** Adattarsi troppo ai dati di addestramento, compreso il rumore, e funzionare peggio su dati nuovi.
+- **Posizione lunga.** Acquisto tenuto in attesa che il prezzo salga.
 - **Stop loss.** Soglia di perdita oltre la quale una posizione viene chiusa automaticamente.
 - **Take profit.** Soglia di guadagno oltre la quale una posizione viene chiusa automaticamente.

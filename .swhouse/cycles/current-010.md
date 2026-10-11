@@ -687,3 +687,154 @@ Non eseguito: build Jekyll (non installato; resta PENDING_HUMAN dopo il merge). 
 
 ### Decisione dell'operatore sulla lunghezza (2026-10-11)
 Luca **accetta la lunghezza del documento oltre il criterio** (circa 8.100 parole contro le 5.500–6.500 indicate). AC-06 resta soddisfatto con la riserva registrata allo Step 8, ora **accettata**: il documento si legge dal capitolo 1 (sintesi) e dalla griglia (capitolo 8); il resto è consultazione. Nessuna modifica di AC-02.
+
+## Step 9 — SCIENTIST: Verify
+
+**Agent:** claude-sonnet-5-5 (subagent)
+**Esito in apertura: nessun difetto Critico o Alto.** Trovati 2 difetti Medi (contratto incompleto nella tabella del capitolo 7; tabelle che sforano a 390 px) e 6 Bassi, tutti correggibili senza toccare le conclusioni. Fonti, numeri e citazioni di codice reggono.
+**Confidence:** Medium — alta su fonti, numeri e coerenza con il codice (riscontri diretti sul testo e con script); media sul rendering, perché è approssimato (Jekyll non installato) e sulla build di Pages, che non è raggiungibile (PENDING_HUMAN). I livelli della griglia sono giudizi dell'autore e non sono verificabili.
+**Assunzioni**
+- Il documento verificato è quello dello Step 8 (410 righe, 8110 parole, 18 riferimenti), già con la lunghezza accettata da Luca.
+- «Testo letto» = scaricato con `curl` e convertito con `pdftotext`/HTML in testo, poi cercate le espressioni chiave; non ho riletto per intero ogni PDF.
+- Non ho modificato nulla tranne questa sezione; file temporanei in `scratchpad/` (script `nums.mjs`, `ac.py`, `shot.mjs`, estratti dei PDF).
+
+### 1. Fonti
+
+**HTTP (17 URL del documento).** 16 risposte 200 al primo tentativo. `https://otexts.com/fpp3/exponential-smoothing.html` ([15]) ha dato **403** in 3 tentativi con User-Agent Chrome, ma 200 con User-Agent `curl` e Firefox (filtro anti-robot, non assenza della pagina). Il documento dice che «gli URL hanno risposto con codice 200 salvo dove indicato» e non indica questo caso (difetto D8, Basso). `mathnet.ru` ([10]) ha risposto 200 stavolta (il Builder aveva visto 503 intermittenti, già dichiarato).
+
+**Controllo di contenuto: 18 riferimenti su 18** (12 sul testo integrale scaricato, 6 su abstract/scheda come dichiara il documento). Esito: 16 sostenute, 2 sostenute con riserva ([6], [7] per una sola frase), 0 non sostenute, nessun «testo letto» dichiarato falsamente.
+
+| Affermazione nel documento | Fonte | Esito | Correzione |
+|---|---|---|---|
+| NEAT: topologia e pesi, marcatori storici, speciazione, crescita incrementale; memoria con connessioni ricorrenti; «competing conventions» | [1] PDF (Evol. Comp. 10(2), 99-127) | **Sostenuta** (abstract: tre idee; riga 47 del testo: «memory is easily represented through recurrent connections»; sez. 2.2 competing conventions) | nessuna |
+| HMM: variabile in avanti, induzione, scaling per la somma sugli stati; Baum-Welch e Viterbi | [2] Rabiner (PDF; Proc. IEEE 77(2), 1989) | **Sostenuta** (eq. 20, 92a-92b; Baum-Welch e Viterbi nel testo); il testo non parla di finanza, come il documento dice | nessuna |
+| Kalman per la stima ricorsiva; non tratta livellamento esponenziale né prezzi | [3] PDF | **Sostenuta**: nessun riscontro per «exponential», «slope», prezzi; «smoothing» solo in senso Wiener | nessuna |
+| L'hold-out non basta quando si prova più di una configurazione; versione di novembre 2014, rivista non confermata | [4] PDF | **Sostenuta** (sezione «Comparisons to other approaches»: hold-out inadeguato per campioni piccoli, alta varianza, «overfitting is always present» provando più configurazioni; data 27 nov 2014) | nessuna |
+| GP: albero, GP lineare con registri (sez. 7.1), CGP per sola mutazione (7.2.3), bloat (11.3) | [5] Field Guide PDF | **Sostenuta**: 7.2.3 dice «traditionally Cartesian GP has always used mutation as its main search operation» e che un crossover è stato proposto di recente | nessuna |
+| GA su combinazioni logiche di regole con medie mobili e massimi/minimi; dopo i costi non si guadagna | [6] pagina di corso | **Sostenuta con riserva**: la pagina riporta «Not possible to make money after transaction costs»; «rendimento in eccesso rispetto al riferimento» è una lettura (la fitness della pagina è l'eccesso sul buy&hold, ma la conclusione è formulata come «make money»). Autori, rivista, volume e anno sono sulla pagina | D5 |
+| Rassegna con forte concentrazione di studi su GA e GP | [7] scheda PolyU (Appl. Soft Comput. 36, 534-551, 23 ago 2015) | **Sostenuta** (abstract: «significant bias toward ... GA ... and GP»). **Non sostenuto**: che GP sia «la forma con più precedenti» (1.2), perché l'abstract accorpa GA e GP | D4 |
+| Decision list: prima regola vera, l'ultima è sempre vera | [8] Rivest PDF | **Sostenuta** («least index such that f_j(x)=1 ... the last function is always true») | nessuna |
+| MLP con almeno uno strato nascosto è approssimatore universale | [9] Hornik PDF | **Sostenuta** (abstract) | nessuna |
+| Insiemi sfumati: grado di appartenenza tra 0 e 1 | [10] mathnet | **Sostenuta** (abstract). La pagina è una ristampa 2015 (Fuzzy Systems and Soft Computing) dell'articolo del 1965; la citazione originale è sulla pagina | nessuna |
+| Sistema fuzzy per azioni ottimizzato con GA, lavoro di conferenza su un caso | [11] Raimondi e altri (ICEIS 2007, pp. 322-329) | **Sostenuta** (abstract e intestazione del PDF) | nessuna |
+| Hamilton: cambio di regime con processo di Markov a stati discreti | [12] | **Sostenuta** (abstract: «discrete-state Markov process») | nessuna |
+| Regimi nei mercati finanziari | [13] NBER w17182 (giugno 2011); [14] Gupta e altri (DSFE 5(4), 466-501) | **Sostenute** ([13] abstract «Regime switching models... financial markets»; [14] PDF su HMM e trading) | nessuna |
+| Holt (metodo lineare) e livellamento esponenziale; non presenta l'equivalenza con Kalman | [15] FPP3 cap. 8 | **Sostenuta** (indice: Holt's linear trend method, ETS(A,A,N)); nessun riscontro sull'equivalenza, come il documento dice | nessuna |
+| GE: stringa di interi tradotta da grammatica; Springer 2018, pp. 1-21 | [16] gpbib | **Sostenuta** (record BibTeX: Springer 2018, pages 1--21); è la sola scheda, come dichiarato | nessuna |
+| Reservoir: rete ricorrente casuale e fissa, lettura lineare addestrata | [17] MINDS | **Sostenuta** (testo della pagina). Nota: la pagina cita «Fraunhofer IAIS» (brevetti); il documento non lo usa, quindi nessun errore | nessuna |
+| Rapporto Consilium: parametri di rischio degenerati e CAGR grezzo come causa ricorrente; titoli e panieri diversi da ENI; finestre da 2 a 5 anni | [18] `consilium/archive/reports/2026-09-12_train-test-holdout-experiments.md` | **Sostenuta** (riga 267: stop loss 15-45%, take profit 3-6%; tabella iniziale: finestre 2y-3m, 3y-1y, 5y-1y; PST.MTA e partizioni da 14-19 titoli). «Letto per intero»: non verificabile da me, ho letto le parti citate | nessuna |
+| Non numerate: LCS (Urbanowicz-Moore) e CART (Breiman) | — | **Non verificabili** (non lette), correttamente marcate `[ipotesi, fonte da verificare]` e non usate come prova | nessuna |
+
+Nessun riferimento inventato: ogni voce esiste e coincide con titolo/autori/anno/pagine dove ho potuto confrontare (esclusi [4], dichiarato incerto dal documento, e [18], file locale).
+
+### 2. Formule e numeri (script `nums.mjs`, eseguito su `FIXED_GENOME`)
+
+| Valore del documento | Ricalcolo | Esito |
+|---|---|---|
+| Tabella IIR (prezzo 2/1, volume 2/1; dopo 1, 2, 8 barre; 1/c) | 109,90/110,00/110,00; 107,31/109,27/110,00; 103,96/106,35/109,82; 101,18/102,21/106,33; 1/c = 1,0/1,4/2,5/8,5 | **coincide** in tutte le 12 celle |
+| Formula `ema = ema*(1-c) + x*c` equivalente a `y = y + c*(x-y)`; `c` peso del dato nuovo | `algorithm.js` righe 369-372 | **coincide** |
+| 9 stati, 36 transizioni, 135 identificatori, solo SW con azione `buy`, 4 transizioni per stato | conteggio sul genoma fisso | **coincide** |
+| 11 numeri continui del genoma | 4 IIR + buy + 4 margini + stop + take | **coincide** |
+| 2517 barre, 2016-09-29 → 2026-09-28 | `src/data/eni-ohlcv.json` | **coincide** |
+| Lineare 9; MLP 43; fuzzy 54; HMM 44 (36+6+2) | ricalcolati | **coincide** |
+| Costi per barra (decine/centinaia) | stima a mano | coerenti, rimangono `[ipotesi]` |
+| Valori della fitness/rendimenti | assenti | nessuna cifra di rendimento nel documento |
+
+Confidenza: alta. Le formule di Rabiner (induzione e scaling) e di Kalman citate nel testo coincidono con le equazioni dei PDF; il documento non riporta formule del filtro di Kalman, solo la descrizione.
+
+### 3. Coerenza con il codice
+
+Controllate tutte le citazioni file/riga: `algorithm.js` 20-61, 135-193, 342-358, 365-384, 399-403; `genome.js` 4, 13-17, 32, 78-88, 92-102 (e `toFraction`); `stockStream.js` 32-34 (media OHLC: ok); `individual.js` 191 (`mutate`) e 350-380 (`crossover`); `ga.js` 116-125 e 345-351 (chiamano `crossover`/`mutate`); `strategy.js` 4-5, 12-33, 35-87 (ordine `feed`, `hold` non chiama `buy()`/`sell()`); `simulator-overview.md` ha `## Strategy contract`; la decisione `2026-10-11-strategy-contract.md` ha confidenza Medium; il link `../simulator-overview/#strategy-contract` è valido. **Tutte esistono e dicono ciò che il documento afferma**, con questa eccezione:
+
+- **D1 (Media) — «Membri richiesti» del capitolo 7 (riga 319).** `assertStrategy` richiede anche `trader` (oggetto con `getTotalValue`) e non controlla `decide()`: questo è un hook di `StrategyIndividual`, non un requisito di `assertStrategy`. Il documento elenca `decide()` tra i membri richiesti e omette `trader`. Rilevante perché E2 deriva i test da questa tabella. Correzione: scrivere due gruppi (richiesti da `assertStrategy`: `kind`, `labels`, `trader`, `init`, `feed`, `reset`, `getCAGR`, `getPerformanceSummary`, `describe`, `serialize`; richiesto da `StrategyIndividual`: `decide` e i tre hook degli indicatori). Il resto della tabella (labels, describe, serialize) è corretto.
+
+### 4. Criteri di accettazione
+
+| AC | Esito | Prova |
+|---|---|---|
+| AC-01 Copertura | **Soddisfatto** | Schede 6.1-6.6 più FSM (cap. 4): lineare (con minima e Kalman), GP, rule list, MLP+NEAT (una scheda, conferma del PO riportata allo Step 7), fuzzy, HMM |
+| AC-02 Sette dimensioni | **Soddisfatto** | `ac.py`: 7/7 in FSM, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6; nessuna cella senza fonte o marcatura |
+| AC-03 Riga FSM | **Soddisfatto** | Cap. 4 e prima riga della griglia; fatti ricontrollati sul codice |
+| AC-04 Tracciabilità | **Soddisfatto con riserva** | 45 marcature `[ipotesi...]`; campione di 22 affermazioni (sopra nelle tabelle 1-3 e: IIR, 36/135, 11 numeri, 2517 barre, CGP, bloat, ricorrenze NEAT, competing conventions, scaling, Baum-Welch, hold-out, MLP, decision list, Hamilton, [7], [6], [14], [15], [17], [18], [3]): 19 sostenute, 3 con riserva (D4, D5, D6). Giudizi senza marcatura: D7. Nessuna cifra di rendimento. 6 fonti su 18 solo abstract/scheda (dichiarato) |
+| AC-05 Esito | **Soddisfatto** | Candidati A e B con condizioni di scarto, forme di confine e di riserva, ciò che non si è accertato, domande 2-5; la scelta non è anticipata |
+| AC-06 Leggibilità | **Soddisfatto con riserva** (lunghezza accettata da Luca) | Italiano, simboli definiti alla prima comparsa (verificati `n`, `c`, `x[t]`, `s[t]`, `K`, `alfa`, `a_ij`; manca solo `m1`, `m2` nel blocco della rule list). Script del glossario (15 termini): spiegati alla prima occorrenza nel testo OK per backtest, buy&hold, CAGR, OHLCV, stop loss, take profit, overfitting, indicatore; **non spiegati alla prima occorrenza (solo glossario)**: «algoritmo genetico» (riga 15), «fitness» (37), «genoma» (7), «media mobile» (21, solo esempio); spiegati più avanti: look-ahead (43 → 76), IIR (78 → 88), barra (25 → 76). Termini fuori glossario: «posizione lunga» (171), «costi di transazione» (189). Vedi D3 |
+| AC-07 Scelta di Luca | **Non applicabile a questo step** | Nessun blocco `## Human Verification` ancora nel file; il ciclo resta DEFERRED fino alla scelta |
+| AC-08 Pubblicazione | **Soddisfatto con riserva** | Intestazione come `simulator-overview.md` (tranne `mermaid`, non richiesto), voce in `_data/docs.yml` (YAML valido, `path` coerente con `permalink: pretty`), nessun `{{` né `{%` (grep exit 1), 0 tabelle con colonne incoerenti, 13 tabelle. Riserve: rendering a 390 px (D2) e build di Pages PENDING_HUMAN |
+| AC-09 Nessuna modifica | **Soddisfatto** | `git diff --name-only ed16af8~1 HEAD`: `.swhouse/cycles/current-010.md`, `_data/docs.yml`, `docs/architecture/genome-forms-review.md`; `software-house-ai` modificato prima del ciclo (non toccato) |
+
+**Promesse di redditività:** ricerca di `%`, «rendiment», «profitt», «guadagn», «batt», «redditiv»: solo le definizioni (CAGR, take profit), la negazione in apertura (riga 15: «non è una promessa di redditività») e l'attribuzione a «quello studio» ([6]). Nessuna percentuale di rendimento, nessuna frase del tipo «la forma X batterebbe il buy&hold».
+
+### 5. Rendering — **approssimazione, non il rendering reale di Jekyll**
+
+Metodo: Markdown → HTML con il modulo Python `markdown` (estensioni `tables`, `fenced_code`), inserito in una struttura `doc-shell`/`doc-content` come in `_layouts/doc.html` con `assets/css/style.css` del sito; Chromium via Playwright del repository a 1280 e 390 px. Differenze possibili da kramdown/GitHub Pages: attributi di intestazione, trattamento di `[n]` e dei caratteri speciali; la struttura delle tabelle è la stessa.
+
+- **Console:** nessun errore né avviso a 1280 e a 390 px.
+- **1280 px:** `scrollWidth` 1280 = larghezza finestra; colonna di contenuto 828 px; nessuna tabella sfora; la griglia a 8 colonne (cap. 8) è leggibile, righe da 2-4 righe di testo. Vedo il titolo duplicato (intestazione del layout e `# Rassegna...` nel corpo) e la riga di testo `last_verified: 2026-10-11`: stesso schema degli altri documenti, non un difetto nuovo. Menu laterale con la voce evidenziata.
+- **390 px:** **`scrollWidth` 856 contro 390: la pagina scorre in orizzontale.** 11 tabelle su 13 sforano (larghezze 412-836 px); la griglia a 8 colonne misura 836 px e le tabelle delle schede (4 colonne) 430-620 px; 5 blocchi di codice scorrono dentro il proprio riquadro (`pre` ha `overflow-x: auto`: corretto). Il testo corrente si legge bene (contenuto largo 350 px). Il sito non ha un contenitore scorrevole per le tabelle (`table { width:100% }` senza wrapper).
+- **D2 (Media):** per il lettore da telefono la griglia e le schede sono scomode. Correzione proposta (da fare fuori dal documento, scelta del coordinatore): regola CSS in `assets/css/style.css`, ad esempio `.doc-content table { display: block; overflow-x: auto; }`, oppure accettare il comportamento perché il documento è pensato per lo schermo largo (Luca e Simone); in ogni caso va detto all'Owner nella verifica di Pages. Nota: `assets/css/style.css` non è un modulo NRC (l'NRC elenca `src/style.css`).
+
+Screenshot: `scratchpad/shot-1280-top.png`, `shot-390-top.png`, `shot-1280-grid.png`, `shot-390-grid.png`, `shot-{1280,390}-full.png`.
+
+### 6. Non regressione (NRC)
+
+File modificati dal ciclo 010 (commit `ed16af8` … `855934e`): `.swhouse/cycles/current-010.md`, `_data/docs.yml`, `docs/architecture/genome-forms-review.md`. **Nessuno appartiene a un modulo dell'elenco NRC** (`src/engine/*`, `src/vendor/consilium/*`, `src/main.js`, `src/style.css`, `index.html`, `src/data/eni-ohlcv.json`, `archimate/**`, `scripts/gen-archimate.mjs`, `docs/architecture/use-case-*.md`, `_includes/use-cases/*`). **NRC Type-A: non applicabile** (nessun modulo toccato). Verifica comunque eseguita: `npm test` → 28 test, 28 passati, 0 falliti; `npm run archimate:check` → «modello "eni-replay" valido (32 elementi, 51 relazioni); file generati aggiornati». H-item (NRC-H01, H02): non attivati (nessuna UI né modello toccati).
+
+### 7. Target di deployment (validation matrix `last_updated: 2026-10-03`)
+
+```
+Target: github-pages
+Reachable by automation: NO (la build parte dal merge su main; non raggiungibile in questa sessione, il ramo è epic-genoma-non-fsm)
+Verification method: workflow .github/workflows/pages.yml (build app, SVG, Jekyll, deploy) e controllo dell'Owner sulla pagina pubblicata
+Status: PENDING_HUMAN
+```
+
+Comandi dopo il merge su `main` (esecutore: Owner U422756 o chi merge):
+1. `gh run list --workflow pages.yml --branch main --limit 1` → esito atteso `completed success` per il commit di merge.
+2. `curl -s -o /dev/null -w '%{http_code}\n' https://chaoscorelab.github.io/SwarmTrader-core/docs/architecture/genome-forms-review/` → `200`.
+3. `curl -s https://chaoscorelab.github.io/SwarmTrader-core/docs/architecture/genome-forms-review/ | grep -c -E '\{\{|\{%'` → `0` (nessun Liquid grezzo) e `| grep -c 'Rassegna delle forme di genoma'` → almeno 2.
+4. `curl -s https://chaoscorelab.github.io/SwarmTrader-core/docs/architecture/simulator-overview/ | grep -c 'genome-forms-review'` → almeno 1 (voce di menu).
+5. Visivo: aprire la pagina a 1280 px (tabelle leggibili, griglia a 8 colonne senza sovrapposizioni) e a 390 px (aspettarsi lo scorrimento orizzontale descritto in D2 se non corretto); registrare l'esito in `## Human Verification`.
+Gli altri target (`local-static-ui`, `simulation-engine`, `data-snapshot`) non sono toccati dal ciclo: nessuna voce VERIFIED, `SKIPPED_JUSTIFIED` (nessun deploy né modifica di questi componenti). Nessuna validazione locale è stata presentata come VERIFIED del target github-pages. Il ciclo resta provvisorio finché la voce è PENDING_HUMAN (Articolo 16).
+
+### Difetti trovati
+
+| # | Gravità | Posizione | Difetto | Correzione proposta |
+|---|---|---|---|---|
+| D1 | Media | Cap. 7, riga 319 («Membri richiesti») | Manca `trader` (con `getTotalValue`) tra i requisiti di `assertStrategy`; `decide()` è presentato come richiesto da `assertStrategy` ma è hook di `StrategyIndividual` | Due gruppi di membri, come nella sezione «Strategy contract» di `simulator-overview.md` |
+| D2 | Media | Intero documento (13 tabelle, soprattutto cap. 8) | A 390 px la pagina scorre in orizzontale (`scrollWidth` 856); 11 tabelle sforano, la griglia 836 px (rendering approssimato) | Wrapper scorrevole per le tabelle in `assets/css/style.css`, oppure accettare e dichiararlo; confermare allo Step Pages |
+| D3 | Bassa | Righe 7, 15, 21, 25, 37, 43, 61, 78, 171, 189 | AC-06: «algoritmo genetico», «fitness», «genoma», «crossover», «feedforward», «bloat», «R5/R6» usati prima di una spiegazione nel testo (solo glossario o più avanti); «look-ahead» (43→76), «IIR» (78→88), «barra» (25→76); «posizione lunga» e «costi di transazione» non spiegati né nel glossario; `m1`, `m2` non definiti (riga 221) | Una riga di spiegazione alla prima occorrenza o rimando «(glossario)»; aggiungere due voci al glossario; definire `m1`, `m2` |
+| D4 | Bassa | Riga 33 (1.2) | «forma con più precedenti ... [6], [7]»: [7] accorpa GA e GP, [6] è un riassunto | Riformulare («tra le forme con precedenti, insieme a GA») o `[ipotesi]` |
+| D5 | Bassa | Riga 189 (6.2) | «non hanno dato rendimento in eccesso rispetto al riferimento di mercato»: il riassunto [6] dice «not possible to make money after transaction costs» | Riportare la formulazione della pagina o citare l'articolo originale |
+| D6 | Bassa | Riga 185 (6.1) | «pochi parametri limitano la capacità di adattarsi al rumore ma non la eliminano [4]»: [4] sostiene solo la seconda metà | Marcare la prima metà `[ipotesi]` |
+| D7 | Bassa | Righe 34, 43, 46 | Giudizi senza `[ipotesi]` («interpretabilità ... più di una rete», «unica con etichette finite per costruzione», «nessun vantaggio visibile rispetto a B») | Aggiungere `[ipotesi]` |
+| D8 | Bassa | Cap. 10, riga 371 | «URL 200 salvo dove indicato»: [15] ha dato 403 con User-Agent Chrome (200 con curl/Firefox) | Aggiungere la nota a [15] |
+
+### Ipotesi non verificate
+- La build reale di Jekyll/kramdown (resa di tabelle, titolo e menu): approssimata soltanto.
+- Applicazione al trading di HMM, Kalman, reti ricorrenti e reservoir con un GA (il documento stesso dice che non c'è fonte letta); equivalenza Kalman a guadagno costante e livellamento esponenziale doppio; LCS e CART.
+- I testi integrali di [6], [7], [10], [12], [13], [16] (solo abstract/scheda); [8], [9], [11], [14] letti solo in parte.
+- Tutti i livelli della griglia e i conteggi di costo per barra: giudizi dell'autore, non verificabili con fonti.
+- Il contenuto di [18] «letto per intero» e la citazione di [4] sulla rivista.
+- L'adeguatezza al contratto resta sulla carta fino a E2.
+
+### Verdetto
+**Solution is:** partially verified (fonti, numeri e codice verificati; rendering approssimato; Pages PENDING_HUMAN).
+**Recommended action:** proceed with conditions — correzioni del Builder per D1 (e a scelta D3-D8); decisione del coordinatore su D2; verifica di Pages dopo il merge (Arbiter: DEFERRED finché la voce è PENDING_HUMAN e manca la scelta di Luca, AC-07).
+
+**Prossimo step:** correzioni del Builder se servono, poi Step 10 — LIBRARIAN
+
+### Correzioni dopo lo Step 9 (coordinatore, 2026-10-11)
+
+Nessun difetto Critico o Alto. Corretti nel documento tutti gli otto difetti dello Scientist; il documento passa da 8.110 a **8.426 parole** (le parole chiave in apertura e quattro voci di glossario).
+
+| Difetto | Correzione |
+|---|---|
+| D1 (Media) | Capitolo 7: due gruppi di membri, quelli richiesti da `assertStrategy` (con `trader`) e quelli aggiunti da `StrategyIndividual` (`initIndicators`, `updateIndicators`, `resetIndicators`, `decide`) |
+| D2 (Media) | Blocco `<style>` locale alla pagina: tabelle con scorrimento orizzontale e `overflow-wrap` per URL e testo lunghi. Nessuna modifica a `assets/css/style.css`, che la pagina del ciclo 007 (NRC-H02) condivide |
+| D3 | Paragrafo «Parole chiave» in apertura; `m1` e `m2` definiti; glossario con Bloat, Costi di transazione, Feedforward, Posizione lunga |
+| D4, D5 | Riformulate secondo ciò che le fonti [6] e [7] sostengono |
+| D6, D7 | Aggiunto `[ipotesi]` ai giudizi senza fonte |
+| D8 | Nota su [15]: 403 con User-Agent di browser, 200 con `curl` |
+
+**Verifica dopo le correzioni** (rendering approssimato Markdown → HTML con il CSS del sito, Chromium): a 390 px lo scorrimento della pagina è sparito (`scrollWidth` 390 contro 747 prima; 11 tabelle su 13 scorrono al loro interno), a 1280 px nessuno scorrimento, nessun errore in console. Lo scorrimento a 747 px era dovuto anche agli URL lunghi nei riferimenti, non solo alle tabelle. `npm test` 28/28, `archimate:check` valido, nessuna occorrenza Liquid.
+**Rischio residuo:** il blocco `<style>` in Markdown (kramdown) e il rendering reale vanno visti sul sito dopo il merge su `main` (PENDING_HUMAN, voce `github-pages` dello Step 9). Se Jekyll rimuovesse lo stile, il documento resta leggibile a schermo largo.
