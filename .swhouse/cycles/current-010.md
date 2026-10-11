@@ -42,4 +42,8 @@ Il genoma attuale è una macchina a nove stati: ogni stato ha transizioni condiz
 - Domande aperte per Luca: (1) lingua del documento (i documenti esistenti sono in inglese, cicli e issue in italiano); (2) livello di dettaglio matematico atteso.
 - Fonti: Step 2 stabilisce quali fonti sono ammesse (letteratura, documentazione di librerie, codice di Consilium); ogni affermazione nel documento riporta la sua fonte.
 
+**Risposte dell'operatore (2026-10-11):**
+1. Lingua del documento di ricerca: **italiano**.
+2. Dettaglio matematico: **intermedio**, leggibile da persone con formazione tecnico-scientifica ma non necessariamente finanziaria; ogni termine di finanza va spiegato alla prima occorrenza.
+
 **Prossimo step:** Step 2 — PRODUCT OWNER, in una nuova sessione.
