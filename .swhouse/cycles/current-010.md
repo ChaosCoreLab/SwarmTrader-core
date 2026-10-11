@@ -154,3 +154,122 @@ Struttura in tre parti che seguono il ciclo evolutivo: come il genoma è codific
 **Confidence:** Medium — la struttura è semplice e coerente con gli AC, ma la qualità della rassegna dipenderà dalle fonti trovate negli Step successivi e dalla definizione della scala, non ancora verificabili; l'adeguatezza al contratto si conferma solo con E2.
 
 **Prossimo step:** Step 4 — EXPLORER
+
+## Step 4 — EXPLORER: Generate Alternatives
+
+**Agent:** claude-sonnet-5-5 (subagent)
+**Confidence:** N/A (fase divergente: la fattibilità non si valuta qui)
+**Assunzioni:** il caso «ricerca» si legge così: gli *approcci* sono modi di condurre la rassegna o di impostare il problema della forma; le *forme* sono i candidati da schedare. Letti: Step 1–3 di questo file; `src/engine/strategy.js` (`assertStrategy`, `StrategyIndividual`: `labels` lista non vuota di stringhe, `decide()` in `buy|sell|hold`, ordine per barra indicatori → `trader.update` → decisione); `src/engine/fsmStrategy.js` (`describe()` espone i quattro IIR, `serialize()` restituisce il genoma JSON); `src/engine/genome.js` (`GENOME_STATES` a 9 etichette, coefficienti IIR in (0,1)); `docs/architecture/simulator-overview.md#strategy-contract`; `memory/knowledge/consilium-trader-order-timing.md`; l'Esperimento 1 del rapporto Consilium `archive/reports/2026-09-12_train-test-holdout-experiments.md` (lettura parziale: gli altri tre esperimenti non sono stati riletti in questo step). Tecniche usate: Challenge, Provocation, Analogies (teoria dei filtri e del controllo), Lateral Thinking.
+
+### Parte 1 — Approcci alternativi alla rassegna
+
+#### Alternativa 1 — Imbuto: prima i vincoli duri, poi il confronto (sfida l'Architect)
+**Tecnica:** Challenge («perché tutte le forme devono avere la stessa scheda lunga?»).
+**Idea:** l'Architect propone sette dimensioni uniformi per ogni forma, senza punteggio totale. Questa alternativa cambia l'*ordine*: (1) una porta d'ingresso a sì/no con i soli vincoli *duri* del contratto e dell'operatore, verificabili sulla carta: `labels` finita e non vuota, ogni indicatore esposto come numero finito (`describe()`), `serialize()` in JSON semplice, decisione discreta eseguibile all'apertura della barra successiva, **memoria di stato derivata da indicatori e non da uno stato discreto codificato nel genoma** (`src/engine/strategy.js`, requisito dell'operatore nello Step 2); (2) schede lunghe, con le sette dimensioni, solo per le forme che passano la porta o che passano «con adattamento»; (3) per le altre, una scheda breve di tre righe con il motivo dell'esclusione e la fonte. Le condizioni di scarto dei candidati diventano così la parte iniziale del documento e non un'appendice.
+**Cosa cambierebbe rispetto allo Step 3:** la scheda del contratto (componente 5) si sposta *prima* della griglia e diventa un criterio eliminatorio, non una riga descrittiva; il documento si accorcia (rischio di lunghezza segnalato dall'Architect, AC-06) e il lettore non finanziario non deve leggere sette dimensioni per una forma che il contratto comunque esclude.
+**Perché potrebbe essere migliore:** concentra la fatica di fonti e di spiegazione sulle 3–4 forme che hanno una possibilità, e rende esplicita la scelta di valore (cosa è eliminatorio) invece di lasciarla nascosta nella scala ordinale, di cui l'Architect stesso segnala la soggettività.
+**Attenzione:** AC-01 chiede «una scheda» per ciascuna forma; la scheda breve va dichiarata come tale (da concordare con il Product Owner). [ipotesi di metodo, nessuna fonte]
+
+#### Alternativa 2 — Memoria prima, lettura poi: il genoma come banco di filtri più una lettura (primo principio diverso)
+**Tecnica:** Analogies (teoria dei filtri e del controllo) e Lateral Thinking.
+**Idea:** si parte da un fatto del codice, non da una forma. I quattro indicatori del genoma attuale sono filtri ricorsivi del primo ordine: la memoria del passato è `y[t] = a·y[t-1] + (1-a)·x[t]` con `a` in (0,1) (`src/engine/genome.js`: coefficienti IIR «maggiori di 0 e minori di 1»; `FsmIndividual.describe()`: `iirPrice1`, `iirPrice2`, `iirVolume1`, `iirVolume2`). Ogni indicatore tecnico a finestra (media mobile, esponenziale, differenza tra medie, variazione su N barre) è un filtro lineare di serie temporale: una combinazione di ritardi dell'ingresso e dell'uscita. Quindi **la memoria di stato richiesta dall'operatore sta tutta nel banco di filtri, e una forma di genoma è solo la «lettura» che da un vettore di valori dei filtri produce `buy`, `sell` o `hold`**. Il problema si scompone in un prodotto: memoria (quali filtri, con quali coefficienti) × lettura (soglia su un punteggio, albero, lista di regole, rete piccola, logica fuzzy). La rassegna confronta allora le *letture*, tutte alimentate dallo stesso banco, e tratta l'FSM come la lettura «con stato interno proprio» che si vuole evitare.
+**Perché vale:** separa due fonti di debolezza che il rapporto Consilium non separa (forma vs fitness): se la memoria è la stessa, la differenza tra forme diventa attribuibile alla sola lettura. Dà a R2 (indicatori) e R3 (codifica) un'interfaccia pulita: il genotipo è «coefficienti dei filtri + parametri della lettura». Il linguaggio degli stati nel senso del controllo (Kalman 1960) è quello di un tecnico-scientifico, quindi aiuta AC-06.
+**Limite di perimetro:** tocca R2 (gli indicatori) che lo Step 3 vieta di rimettere in discussione: va usata solo come *cornice di confronto* («dove entrerebbero i filtri»), senza scegliere o qualificare indicatori. Da segnalare allo Step 5.
+**Fonti:** forma ricorsiva e vincolo (0,1): `src/engine/genome.js`; stato e filtraggio ricorsivo: Kalman 1960 [F7]; l'affermazione che *ogni* indicatore a finestra sia un filtro lineare è una conseguenza elementare per le medie e le differenze, non per indicatori non lineari (per esempio quelli basati su massimi e minimi, usati in Allen e Karjalainen [F8]): [ipotesi, da precisare con un testo di riferimento sugli indicatori, che R2 deve fornire].
+
+#### Alternativa 3 — Prima un piccolo esperimento nullo, poi la rassegna (esce dal perimetro dello Step 1)
+**Tecnica:** Provocation («e se la rassegna di letteratura non servisse a decidere?») e Challenge.
+**Idea:** il rapporto di Consilium (Esperimento 1) mostra che le dieci strategie migliori in addestramento hanno tutte un rendimento negativo nel periodo tenuto fuori, ma non dice quanto di ciò sia dovuto alla forma e quanto alla fitness. Un esperimento di controllo lo separerebbe: far evolvere ciascuna forma candidata, con *lo stesso* budget e la *stessa* fitness, su serie senza struttura predicibile (per esempio rendimenti dei dati ENI rimescolati, o una passeggiata aleatoria sintetica) e misurare lo scarto addestramento/holdout. Una forma che «trova» un vantaggio dove non ce n'è ha una grande capacità di sovradattare; una che non lo trova, no. L'esito è una misura *per forma* dell'attitudine a sfruttare il rumore, che la letteratura da sola non fornisce.
+**Fonti per la motivazione:** il problema, cioè che i test su dati tenuti fuori sono inaffidabili quando si seleziona tra molte configurazioni, è trattato in Bailey et al. [F9]; il comportamento osservato in Consilium in `archive/reports/2026-09-12_train-test-holdout-experiments.md` (Esperimento 1); i test su serie rimescolate o sintetiche come tecnica di controllo: [ipotesi, fonte da verificare].
+**ESCE DAL PERIMETRO DELLO STEP 1:** richiede codice (almeno le forme, un generatore di serie nulle, un GA) e calcoli su dati; lo Step 1 esclude «qualsiasi codice in `src/`, `tests/`, `scripts/`» e «prove numeriche su dati salvo piccoli calcoli di esempio». Non è un'alternativa a questo ciclo: è un'alternativa a *R1 come ciclo di sola ricerca*. Si segnala al Coordinator come possibile ciclo successivo (a valle della scelta dei candidati, con E2 o con R6 protocollo di valutazione) e come informazione utile al Critic: le forme che la rassegna promuove restano non confermate fino a un esperimento di questo tipo.
+
+#### Alternativa 4 — Forma minima e buy&hold come righe di controllo nella griglia
+**Tecnica:** Provocation («il genoma più semplice possibile: un filtro, una soglia»).
+**Idea:** aggiungere alla griglia due righe che non sono candidati ma metri: (a) buy&hold, già usato come riferimento da Consilium; (b) una «forma minima» con un solo filtro e una sola soglia (due numeri nel genoma, per esempio posizione lunga quando il prezzo supera il suo filtro per un margine). Ogni forma ricca deve giustificare perché l'espressività in più non è solo capacità di sovradattare; se una forma ricca non ha motivo di superare la minima sulle sette dimensioni, la minima è il candidato prudente.
+**Perché vale:** disciplina contro la tentazione di preferire la forma più espressiva, un rischio che il rapporto Consilium rende concreto (le strategie evolute non battono il buy&hold e non si trasferiscono tra panieri). Allen e Karjalainen [F8] usano regole basate su medie mobili e massimi/minimi, cioè forme molto semplici, come famiglia di partenza; la riga minima è coerente con quel precedente, senza riportarne i risultati numerici.
+**Limite:** non è un'alternativa alla rassegna, la integra a costo quasi nullo; la forma minima è già in parte il «punteggio lineare con soglie» dello Step 1 con due parametri.
+
+**Riassunto del rapporto con l'Architect:** l'Alternativa 1 lo sfida (ordine e peso della scheda), la 2 cambia il punto di partenza (la memoria come filtro, non la forma), la 3 cambia il metodo (esperimento invece di lettura) e va fuori perimetro, la 4 è un'aggiunta. La 2 e la 4 si possono adottare *insieme* all'Approccio A dell'Architect; la 1 lo sostituisce in parte; la 3 non è adottabile in questo ciclo.
+
+### Parte 2 — Nuove forme di genoma (oltre alle cinque previste)
+
+Le cinque previste: punteggio lineare con soglie, alberi/GP, rule list, MLP/NEAT, fuzzy. Ogni «giudizio di pertinenza» riguarda solo il contratto (`src/engine/strategy.js`) e il requisito dell'operatore; non è una valutazione critica.
+
+#### N1 — Filtro di regime nascosto (modello a stati nascosti, HMM) con lettura evolvibile
+**Cos'è:** un modello in cui il mercato è in uno di K regimi non osservati (per esempio «salita», «laterale», «discesa»); a ogni barra si aggiorna una *distribuzione di credenza* sui regimi, `b[t] = normalizza( O(x[t]) · (T^T · b[t-1]) )`, dove `x[t]` è il vettore di indicatori della barra, `T` la matrice di transizione tra regimi e `O` la verosimiglianza dell'osservazione in ciascun regime. Questo è l'algoritmo di filtraggio in avanti descritto da Rabiner 1989 [F6].
+**Memoria di stato da indicatori:** la memoria è il vettore `b[t]`, ricorsivo come un filtro, alimentato da indicatori già qualificati. Non è codificata come stato discreto nel genoma: il genoma contiene i parametri (medie e varianze per regime, `T`) e una mappa regime → `buy|sell|hold`.
+**Come evolverebbe:** mutazione gaussiana dei parametri continui, con vincoli (righe di `T` che sommano a 1); crossover per blocchi di regime o per media pesata; alternativa nota: stimare i parametri con l'algoritmo EM (descritto in [F6]) e usare il GA solo sulla mappa regime → azione e su K [ipotesi sull'uso nel GA, nessuna fonte]. L'uso dell'HMM nei mercati finanziari: [ipotesi, fonte da verificare].
+**Pertinenza al contratto:** `labels` = i K regimi (lista finita, naturale); `describe()` = la credenza `b[t]` come numeri finiti; `serialize()` = parametri in JSON; la decisione discreta si ottiene dal regime più probabile o da una soglia sulla credenza. **Nota per Luca:** un HMM con K regimi e una mappa regime → azione assomiglia strutturalmente a una macchina a stati (con stati *morbidi* e transizioni calcolate da indicatori); la richiesta dell'operatore («non una macchina a stati») si rispetta nella lettera, meno nello spirito: la valutazione è sua.
+**Da portare nella rassegna:** **sì**, come scheda piena: è l'unica forma qui che dà `labels` finite per costruzione ed è la più vicina al problema che l'FSM attuale tenta di risolvere.
+
+#### N2 — Osservatore di stato lineare (filtro di Kalman, livello e pendenza) con lettura a soglia
+**Cos'è:** un modello in cui il prezzo (o il suo logaritmo) è la somma di un livello e di una pendenza non osservati più rumore; il filtro di Kalman [F7] stima ricorsivamente i due e la loro incertezza. La decisione si legge dalla pendenza stimata (e dal suo rapporto con l'incertezza).
+**Memoria di stato da indicatori:** il vettore di stato stimato (livello, pendenza), aggiornato a ogni barra; con rumori costanti, il guadagno del filtro converge a un valore fisso e l'aggiornamento diventa un filtro ricorsivo di tipo esponenziale, quindi parente stretto degli IIR dell'FSM attuale: *è un'osservazione nota nella letteratura sul livellamento esponenziale, da citare con un testo di riferimento* [ipotesi, fonte da verificare]. Il banco di filtri dell'Alternativa 2 ne è la generalizzazione.
+**Come evolverebbe:** il genotipo ha pochissimi numeri (rapporto tra varianza del processo e del rumore per livello e pendenza, soglia di lettura, eventuale filtro anche sul volume); mutazione gaussiana sul logaritmo dei parametri; crossover aritmetico. Spazio di ricerca minuscolo.
+**Pertinenza al contratto:** `labels` non nascono da sole: vanno derivate da fasce della pendenza (per esempio «in salita / piatto / in discesa»), con la perdita di informazione che l'Architect segnala per le forme continue; `describe()`: livello, pendenza, guadagno, tutti numeri finiti; `serialize()` semplice.
+**Da portare nella rassegna:** **sì, ma come scheda breve o fusa con la «forma minima»** dell'Alternativa 4: più che una forma ricca è la versione con basi teoriche del punteggio lineare con filtri, e serve da metro.
+
+#### N3 — Programmazione genetica cartesiana o lineare, con registri (variante della scheda GP)
+**Cos'è:** il programma è un grafo orientato su una griglia di nodi con genoma di interi a lunghezza fissa (Cartesian GP) [F2][F3], o una sequenza di istruzioni su registri (GP lineare, trattato tra le rappresentazioni in [F10], capitolo da indicare). Nodi = operazioni su indicatori (`+`, `×`, confronto, `if`); l'uscita è un valore da cui si ricava `buy|sell|hold`.
+**Memoria di stato:** attenzione al requisito dell'operatore. Se i registri sono riscritti a ogni barra, la memoria nasce *dal programma* (non da indicatori qualificati) e questo ricrea, in forma implicita, uno stato non qualificato; la variante accettabile ha *solo* nodi feedforward sugli indicatori, con la memoria nei filtri a monte (coerente con l'Alternativa 2).
+**Come evolverebbe:** il CGP si evolve tipicamente per sola mutazione (strategia evolutiva con un genitore e pochi figli) e ha ridondanza neutra nel genotipo [F3, passaggio da verificare]; il GP lineare ammette crossover tra segmenti. [F2][F3]
+**Pertinenza al contratto:** `labels` da fasce dell'uscita; `describe()` obbligherebbe a esporre i valori intermedi o solo l'uscita; `serialize()` del genoma intero: semplice. **Da portare:** come **variante** nella scheda «alberi / GP» (con il vincolo sulla memoria), non come scheda a sé.
+
+#### N4 — Evoluzione grammaticale (grammatical evolution)
+**Cos'è:** il genoma è una stringa di interi; una grammatica (BNF) la traduce in un programma o in una regola [F4]. Cambiare la grammatica cambia la *famiglia* di forme raggiungibili senza cambiare l'algoritmo di ricerca: la stessa macchina può produrre una rule list, un'espressione, una soglia su punteggio, o perfino un FSM.
+**Memoria di stato:** quella dei terminali della grammatica; se i terminali sono indicatori a finestra qualificati (R2), la memoria nasce lì.
+**Come evolverebbe:** mutazione e crossover su stringa di interi (operatori ordinari, con mappatura genotipo-fenotipo molti-a-uno) [F4].
+**Pertinenza al contratto:** dipende dalla grammatica; `labels` e `serialize()` seguono la forma prodotta.
+**Da portare:** **come meccanismo di codifica**, quindi materia di R3, non come forma: segnalare nel documento che esiste e rimandare. Interessante come ponte tra rule list, GP e punteggio lineare nella sezione «famiglie».
+
+#### N5 — Learning classifier system (LCS)
+**Cos'è:** una popolazione di regole «se condizione sugli indicatori allora azione», ciascuna con una forza appresa; un GA fa evolvere le regole e un meccanismo di apprendimento attribuisce il merito alle regole che agiscono. L'introduzione di riferimento è Urbanowicz e Moore 2009 [F11]; si distingue lo stile «Michigan» (un individuo = una regola) da quello «Pittsburgh» (un individuo = un insieme di regole).
+**Memoria di stato:** dagli indicatori in ingresso; alcune varianti hanno memoria interna (messaggi), che sconsiglierei per il requisito.
+**Come evolverebbe:** GA su regole (crossover e mutazione su condizioni e azioni) [F11].
+**Pertinenza al contratto:** nella versione Pittsburgh l'individuo è una rule list con `serialize()` immediato; nella Michigan l'individuo del GA del progetto sarebbe l'intera popolazione di regole, in tensione con l'ipotesi del contratto «un genoma = una strategia». **Da portare:** **no come scheda a sé**; da citare nella scheda «rule list» come variante (Pittsburgh), con il rimando [F11].
+
+#### N6 — Reservoir computing / echo state network
+**Cos'è:** una rete ricorrente casuale e *fissa* riceve gli indicatori; la sua risposta interna, ricca e con memoria dell'ingresso, viene letta da una combinazione lineare addestrata [F5].
+**Memoria di stato:** lo stato ricorrente della rete (centinaia di numeri), non indicatori qualificati: potrebbe contrastare con il requisito dell'operatore.
+**Come evolverebbe:** evolvere solo i pesi di lettura e pochi iperparametri (raggio spettrale, scala dell'ingresso), con il «seme» del generatore casuale nel genoma per rendere il riservoir riproducibile (`serialize()`) [ipotesi, nessuna fonte].
+**Pertinenza al contratto:** `describe()` dovrebbe esporre molti numeri; `labels` da fasce dell'uscita; interpretabilità molto bassa. **Da portare:** **no come scheda**, solo come nota di contrasto nella famiglia «reti» accanto a MLP e NEAT (che condividono la rete; NEAT è descritto in Stanley e Miikkulainen 2002 [F1]).
+
+**Escluse a priori, con motivo:** foreste di decisione costruite con CART (Breiman et al. 1984 [F12]) o con simili, perché si addestrano con un algoritmo greedy e non con un GA; la regressione simbolica è una istanza del GP (stessa scheda); i metodi di apprendimento per rinforzo profondo escono dal contratto (un genoma serializzabile con forma fissa) e dall'epica (GA).
+
+### Parte 3 — Quali forme portare nella rassegna
+
+| Forma | Nel documento | Motivo in una riga |
+|---|---|---|
+| N1 HMM / filtro di regime | scheda piena | `labels` finite per costruzione; memoria da indicatori; ma vicinanza all'FSM da far valutare a Luca |
+| N2 Osservatore di Kalman | scheda breve, fusa con la forma minima | metro teorico, pochi parametri; parente degli IIR attuali |
+| N3 CGP / GP lineare | variante nella scheda GP | solo con vincolo sulla memoria (niente registri riscritti) |
+| N4 Evoluzione grammaticale | nota in «famiglie», rimando a R3 | è un meccanismo di codifica, non una forma |
+| N5 LCS | nota nella scheda rule list | la variante Pittsburgh coincide con una rule list |
+| N6 Reservoir | nota nella famiglia «reti» | memoria non da indicatori qualificati, interpretabilità bassa |
+
+AC-01 è soddisfatto da N1 (e N2) come «forma emersa dallo Step 4».
+
+### Fonti
+
+Verificate raggiungibili e coerenti con titolo, autori e anno, **il 2026-10-11**:
+- [F1] K. O. Stanley, R. Miikkulainen, *Evolving Neural Networks through Augmenting Topologies*, Evolutionary Computation, 2002. https://www.cse.unr.edu/~sushil/class/gas/papers/NEAT.pdf (verificato il 2026-10-11, titolo e autori letti nel PDF).
+- [F2] J. F. Miller, *Cartesian Genetic Programming*, capitolo in J. F. Miller (a cura di), *Cartesian Genetic Programming*, Springer, 2011. https://gpbib.cs.ucl.ac.uk/gp-html/Miller_2011_CGP_ch2.html (verificato il 2026-10-11, solo titolo/autore/anno).
+- [F3] J. F. Miller, *Cartesian Genetic Programming: its status and future*, Genetic Programming and Evolvable Machines, vol. 21, 2020. https://gpbib.pmacs.upenn.edu/gp-html/Miller_GPEM20.html (verificato il 2026-10-11, solo scheda bibliografica; le affermazioni su mutazione e neutralità non sono state lette nel testo).
+- [F4] C. Ryan, M. O'Neill, J. J. Collins, *Introduction to 20 Years of Grammatical Evolution*, in *Handbook of Grammatical Evolution*, Springer, 2018. https://gpbib.pmacs.upenn.edu/gp-html/Ryan_2018_hbge_intro.html (verificato il 2026-10-11, scheda bibliografica).
+- [F5] Gruppo MINDS (Fraunhofer IAIS), *Echo State Networks and Reservoir Computing*, pagina di riferimento. https://www.ai.rug.nl/minds/esnresearch/ (verificato il 2026-10-11; è una pagina di gruppo di ricerca, non una rassegna con revisione).
+- [F6] L. R. Rabiner, *A Tutorial on Hidden Markov Models and Selected Applications in Speech Recognition*, Proceedings of the IEEE, vol. 77, 1989. https://people.engr.tamu.edu/rgutier/web_courses/cpsc689_s07/rabiner1989tutorialHMM.pdf (verificato il 2026-10-11, titolo e autore letti nel PDF; la formula di filtraggio riportata sopra è una trascrizione semplificata da ricontrollare nel testo).
+- [F7] R. E. Kalman, *A New Approach to Linear Filtering and Prediction Problems*, Journal of Basic Engineering (Trans. ASME), vol. 82, 1960. https://www.cs.yale.edu/homes/yry/readings/general/Kalman1960.pdf (verificato il 2026-10-11, titolo e autore letti nel PDF).
+- [F8] F. Allen, R. Karjalainen, *Using Genetic Algorithms to Find Technical Trading Rules*, Journal of Financial Economics, vol. 51, 1999. https://www.cs.montana.edu/courses/spring2007/536/materials/Lopez/GAsInFinance.html (verificato il 2026-10-11; l'esito riportato dalla pagina è che dopo i costi di transazione le regole non danno un rendimento in eccesso costante rispetto al buy&hold fuori campione; nessuna cifra riportata qui).
+- [F9] D. H. Bailey, J. M. Borwein, M. López de Prado, Q. J. Zhu, *The Probability of Backtest Overfitting*, Journal of Computational Finance, 2015. https://carmamaths.org/jon/backtest2.pdf (verificato il 2026-10-11, titolo e autori letti nel PDF; la tesi sull'inaffidabilità dell'hold-out proviene dal riassunto in una ricerca web, non dalla lettura del testo).
+- [F10] R. Poli, W. B. Langdon, N. F. McPhee, *A Field Guide to Genetic Programming*, 2008. https://faculty.washington.edu/seattle/GA-2008/FieldGuideGP.pdf (verificato il 2026-10-11, titolo e autori letti nel PDF; il capitolo sul GP lineare non è stato localizzato).
+
+Identificate ma **non verificate** (marcate `[ipotesi, fonte da verificare]`):
+- [F11] R. J. Urbanowicz, J. H. Moore, *Learning Classifier Systems: A Complete Introduction, Review, and Roadmap*, Journal of Artificial Evolution and Applications, 2009 (DOI 10.1155/2009/736398). La pagina dell'editore ha risposto 403; autori, titolo e anno risultano dalla ricerca web.
+- [F12] L. Breiman, J. H. Friedman, R. A. Olshen, C. J. Stone, *Classification and Regression Trees*, 1984. Titolo e autori risultano dalla ricerca web; nessuna pagina letta.
+
+Conteggio: 10 fonti verificate (accessibilità e dati bibliografici; per 3 di esse solo la scheda bibliografica), 2 identificate non verificate, e le affermazioni con marcatura `[ipotesi]` nel testo (applicazioni al trading di HMM, Kalman e reservoir; equivalenza Kalman-livellamento esponenziale; test su serie nulle; ogni indicatore a finestra come filtro). Nessuna cifra di rendimento riportata. Fonti commerciali non usate. Le affermazioni sul codice rimandano ai file indicati in apertura.
+
+### Diversità cognitiva
+Rispetto allo Step 3, che discute *come impaginare* la rassegna per forma, questo step aggiunge: (a) una *cornice* di confronto diversa, memoria = banco di filtri e forma = lettura (Alt. 2), con un legame esplicito al codice (`genome.js`) e a Kalman 1960; (b) un metodo diverso, l'esperimento nullo per misurare la capacità di sovradattare *per forma* (Alt. 3, fuori perimetro); (c) un criterio eliminatorio al posto della sola scala ordinale (Alt. 1); (d) sei forme non presenti nello Step 3, con due candidate a diventare schede; (e) la tensione, non rilevata prima, tra il requisito «non una macchina a stati» e un HMM, e tra «memoria da indicatori qualificati» e i registri del GP o il reservoir.
+
+**Prossimo step:** Step 5 — CRITIC
