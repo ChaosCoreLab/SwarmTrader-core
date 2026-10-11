@@ -1,3 +1,5 @@
+# Default instance profile (used when .swhouse/instance.local.yaml is absent).
+# Alternative profiles: .swhouse/instances/ — see docs/operations/development.md.
 framework_version: "0.1.0"
 framework_repo: "https://github.com/simpego81/software-house-ai"
 
