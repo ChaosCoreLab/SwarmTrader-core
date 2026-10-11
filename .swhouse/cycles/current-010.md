@@ -838,3 +838,71 @@ Nessun difetto Critico o Alto. Corretti nel documento tutti gli otto difetti del
 
 **Verifica dopo le correzioni** (rendering approssimato Markdown → HTML con il CSS del sito, Chromium): a 390 px lo scorrimento della pagina è sparito (`scrollWidth` 390 contro 747 prima; 11 tabelle su 13 scorrono al loro interno), a 1280 px nessuno scorrimento, nessun errore in console. Lo scorrimento a 747 px era dovuto anche agli URL lunghi nei riferimenti, non solo alle tabelle. `npm test` 28/28, `archimate:check` valido, nessuna occorrenza Liquid.
 **Rischio residuo:** il blocco `<style>` in Markdown (kramdown) e il rendering reale vanno visti sul sito dopo il merge su `main` (PENDING_HUMAN, voce `github-pages` dello Step 9). Se Jekyll rimuovesse lo stile, il documento resta leggibile a schermo largo.
+
+## Step 10 — LIBRARIAN: Update Memory
+
+**Agent:** claude-sonnet-5-5 (subagent)
+
+**Stato del ciclo:** la scelta della forma è di Luca e **non è fatta**; nessuna voce di memoria la registra. I candidati A e B sono proposte del documento. Il ciclo resta DEFERRED fino alla scelta (AC-07) e alla verifica di Pages.
+
+### Voci aggiunte (7)
+
+| Voce | Tipo | Perché ha valore durevole |
+|---|---|---|
+| `knowledge/consilium-iir-filter-orientation.md` | knowledge | Il coefficiente `c` pesa il dato nuovo (`ema = ema*(1-c) + x*c`), con i quattro valori del genoma fisso e le costanti di tempo; margini proporzionali al filtro. Serve a R2, R3 e a chi legge il genoma; evita di ripetere l'inversione dello Step 4 |
+| `knowledge/genome-forms-state-memory.md` | knowledge | Da dove viene la memoria in ogni forma («a monte» / «nel lettore»), l'HMM come macchina a stati probabilistica e il rischio di anticipazione nella stima, le varianti «solo indicatori» / «con memoria interna» con la **domanda 2 ancora aperta**, le convenzioni concorrenti nel crossover, `labels` continue. Rimanda al documento per i dettagli; dichiara che la scelta non è fatta |
+| `errors/2026-10-11-iir-formula-inverted-coefficient.md` | errors | La formula con il ruolo di `c` invertito (Step 4, scoperta dal Critic leggendo il codice) più il difetto D1 dello Step 9 (elenco dei membri del contratto non coerente con `assertStrategy`): stessa lezione, verificare sul codice prima di usare una formula o un elenco come cornice. Voce ricostruita dal file di ciclo |
+| `patterns/independent-verification-chain-research.md` | patterns | Catena Explorer → Critic (fonti sul testo e formule sul codice) → Builder (fonti prima di scrivere, stato letta/scheda) → Scientist (riverifica) → coordinatore (correzioni e controlli ripetuti), con ciò che ogni livello ha intercettato nel ciclo 010. Riutilizzabile da R2–R6 |
+| `patterns/approximate-jekyll-render-without-ruby.md` | patterns | Ricetta del rendering approssimato (Markdown → HTML con Python, CSS del sito, Chromium via Playwright a 1280 e 390 px, misura di `scrollWidth`) e i suoi limiti (non è kramdown; Liquid non elaborato). Gli script erano nello scratchpad e non sono nel repository |
+| `decisions/2026-10-11-research-document-conventions.md` | decisions | Convenzioni dei documenti di ricerca: italiano, matematica intermedia, termini di finanza alla prima occorrenza con glossario, sintesi in apertura, nessuna promessa di redditività, fonte o `[ipotesi]` per ogni affermazione, lunghezza oltre il criterio accettata da Luca, scelta lasciata all'operatore. Confidence Medium: distingue ciò che l'operatore ha detto esplicitamente da ciò che viene dai criteri del ciclo |
+| `decisions/2026-10-11-non-fsm-requirement-reading.md` | decisions | Risposta dell'operatore alla domanda 1: il requisito «non una macchina a stati» non è stringente; HMM e reti ricorrenti ammessi come forme da valutare. La domanda 2 è dichiarata ancora aperta. Non registra la scelta della forma |
+
+### Voci aggiornate (3)
+
+- `decisions/2026-10-11-parallel-cycle-exception.md`: sezione «Extension (cycle 010)» (terzo ciclo aperto, `current-010.md`, stesse condizioni sullo Step 12 e sui file di stato, il 009 si chiude prima del 010, il 010 tocca `docs/`, `_data/docs.yml` e `.swhouse/`); le sessioni sul branch leggono `current-009.md` e `current-010.md`. Aggiunto `updated:`.
+- `decisions/2026-10-11-strategy-contract.md`: due punti nelle conseguenze: `assertStrategy` non richiede `crossover` e `mutate` ma il GA di Consilium li chiama (`ga.js` 116-125, 345-351), da trattare in R3 ed E2; l'adeguatezza del contratto è stata riesaminata sulla carta per sei forme (le uscite continue richiedono `labels` derivate; solo l'HMM ha etichette naturali). Confidence invariata (Medium). Aggiunto `updated:`.
+- `patterns/jekyll-stakeholder-docs.md`: sezione «Wide tables and long URLs» con lo stile locale alla pagina (tabelle con scorrimento interno, `overflow-wrap`), il motivo per cui non si tocca `assets/css/style.css` (condiviso con la pagina del ciclo 007, NRC-H02 pendente), il rischio non verificato su kramdown, e il promemoria del controllo Liquid. Aggiunto `updated:`.
+
+### Collegamenti
+Ciclo 010 ↔ ciclo 009 (contratto di strategia: `strategy-contract`, `consilium-trader-order-timing`), epica #4 (nelle voci `non-fsm-requirement-reading`, `research-document-conventions`), ciclo 007 (condizione sul CSS condiviso e sull'eccezione al ciclo singolo). Le nuove voci si richiamano con `[[nome]]`: `consilium-iir-filter-orientation` ↔ `genome-forms-state-memory` ↔ `iir-formula-inverted-coefficient` ↔ `independent-verification-chain-research` ↔ `research-document-conventions`; `approximate-jekyll-render-without-ruby` ↔ `jekyll-stakeholder-docs`.
+
+### Voci scartate (e perché)
+- **Voce a sé sul fatto che il GA chiama `crossover`/`mutate`:** già nel capitolo 7 del documento e ora nelle conseguenze di `strategy-contract`, dove E2 la cerca; una voce `knowledge` separata sarebbe un duplicato.
+- **Voce sulla scelta dei candidati A/B, sulla forma minima o sul confronto tra forme:** è il contenuto del documento di ricerca e non è deciso; copiarlo violerebbe il vincolo di non duplicare e di non presentare come deciso ciò che è proposto.
+- **Errori sulle fonti non sostenute (Fraunhofer, F5, F6, F7, F8) come voci separate:** sono l'esito della catena di verifica, già in `independent-verification-chain-research`; ogni correzione sta nel file di ciclo (Step 5 e 7).
+- **Errori minori** (cifra 102,22 → 102,21 nell'esempio IIR, rimandi «capitolo 7.1» ambigui, scorrimento a 390 px): corretti nel ciclo, coperti dal pattern di rendering e dal pattern della catena; non servono come voci distinte.
+- **Decisione sull'accettazione della lunghezza come voce propria:** accorpata in `research-document-conventions`.
+- **Voce sull'esperimento di controllo su serie nulle (Alt. 3):** è una domanda aperta (domanda 5) e nessun ciclo l'ha adottata; resta nel documento (1.4) e nelle domande a Luca.
+
+### Cosa è ora riutilizzabile
+Per R2–R6 ed E2: l'orientamento di `c` e i valori reali; la tabella delle classi di memoria e le questioni aperte (domanda 2); il contratto con `crossover`/`mutate`; le convenzioni dei documenti di ricerca; la catena di verifica; la ricetta del rendering approssimato e lo stile locale per tabelle larghe.
+
+### Controllo di decadimento della validation matrix
+`validation_matrix.md`: `last_updated: 2026-10-03` (chiusura del ciclo 008, commit `45b241d`). Cicli aperti da allora: 007 (aperto su `main`), 009 e questo 010 → **3 cicli**, entro il limite di 10. Nessun controllo di correttezza dei target oltre il normale; i target sono invariati e lo Step 9 ha riletto la voce `github-pages`.
+
+### Esito dell'aggiornamento della validation matrix
+**Nessuna modifica necessaria:** il ciclo non aggiunge, rimuove né modifica target di deploy, credenziali o procedure di verifica. La voce `github-pages` resta «first deploy PENDING_HUMAN»; i cinque comandi di verifica della pagina `genome-forms-review` (Step 9, sezione 7) sono nel file di ciclo e non entrano nella matrice, perché non sono una procedura nuova del target.
+
+### NRC H-item
+- **H-item eseguiti in questo ciclo:** nessuno (nessun modulo NRC toccato, controllo dello Step 9 sezione 6; NRC-H01 e NRC-H02 non attivati; nessuna sessione di validazione). Nessuno stato da aggiornare.
+- **Bug segnalati da un umano e corretti in questo ciclo:** nessuno (ricerca senza codice; i difetti D1–D8 li ha trovati lo Scientist, non una persona). L'articolo 25 non richiede quindi nuove voci.
+- **Proposta facoltativa per lo Step 12** (decisione del coordinatore, non obbligatoria): una voce H per la pagina del documento, dato che il rendering reale non è stato visto:
+  `| NRC-H03 | H | `docs/architecture/genome-forms-review.md` (stile locale alla pagina) | Dopo il merge su `main` aprire la pagina pubblicata a 1280 e a 390 px: le tabelle scorrono dentro il proprio riquadro, la pagina non scorre in orizzontale, il blocco di stile non compare come testo, voce di menu presente | L'esecutore conferma ogni punto; esito nel file di ciclo | cycle 010 |`
+  Se il coordinatore preferisce registrare la verifica solo come `## Human Verification` del ciclo, non serve alcuna voce.
+
+### Da applicare allo Step 12 (dopo il 009 e la chiusura del 007)
+1. `.swhouse/metrics/summary.yaml`:
+   - `last_updated` alla data dello Step 12; `total_cycles` e `cycles_by_status` secondo l'esito dell'Arbiter (stato atteso del 010: deferred);
+   - `memory_entries` **dopo il 009 e il 010 insieme**: `decisions: 7`, `patterns: 6`, `errors: 5`, `knowledge: 4`. Il file oggi dice 3/4/3/1 e non include le voci del 009 (2 decisioni, 1 errore, 1 conoscenza, già nelle cartelle): per il solo 010 le aggiunte sono +2 decisioni, +2 patterns, +1 errore, +2 knowledge; le cartelle contano oggi 5/4/4/2 prima delle mie voci;
+   - riga di commento: `# Cycle 010: Track M, research R1 genome forms review (issue #5), DEFERRED <data>: PENDING_HUMAN = choice of the form by Luca (AC-07) and Pages build after merge to main.`
+2. `.swhouse/reputation/scores.yaml`: aggiungere, dopo lo Step 11, `- cycle: "010"` con `score` assegnato dall'Evolution Master e `source: cycles/archive/cycle-010.md#step-11--evolution-master`; `last_updated` alla data dello Step 12.
+3. `.swhouse/memory/validation/non_regression_checklist.md`: nessuna modifica obbligatoria; facoltativa la riga NRC-H03 sopra (insieme al NRC-A06 proposto dal 009); aggiornare `last_updated` solo se si aggiunge una riga.
+4. `docs/MAP.md`: nella tabella principale aggiungere, dopo `architecture/simulator-overview.md`, la riga
+   `| architecture/genome-forms-review.md | architecture | Italian research review of alternative genome forms (linear score, GP, rule list, MLP/NEAT, fuzzy, HMM) against the strategy contract; candidates and open questions for Luca (cycle 010, issue #5) | 2026-10-11 |`
+   e impostare `last_verified` (intestazione e riga `last_verified:` nel corpo) alla data di applicazione. La riga `simulator-overview.md` va aggiornata dal 009 (data e contratto di strategia). La riga della checklist per `_data/docs.yml` non serve (non è un documento).
+5. `.swhouse/memory/validation/validation_matrix.md`: nessuna modifica; `last_updated` può restare 2026-10-03.
+6. Dopo il merge su `main`: eseguire i cinque comandi dello Step 9 (sezione 7) e registrare l'esito nel blocco `## Human Verification` insieme alla scelta di Luca; verificare in particolare che il blocco `<style>` locale non sia stato rimosso da kramdown.
+
+**File toccati dal Librarian:** 7 nuovi file in `.swhouse/memory/{decisions,patterns,errors,knowledge}/`, 3 voci aggiornate (`parallel-cycle-exception`, `strategy-contract`, `jekyll-stakeholder-docs`) e questo file. Nessun file condiviso, `src/`, `docs/`, `_data/` modificato. Nota: l'incarico citava un controllo a campione del coordinatore tra i livelli della catena; nel file di ciclo è registrata la sola applicazione delle correzioni con controlli ripetuti, e il pattern descrive questo.
+
+**Prossimo step:** Step 11 — EVOLUTION MASTER

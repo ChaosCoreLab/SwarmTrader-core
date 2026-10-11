@@ -1,6 +1,7 @@
 ---
 discovered: 2026-09-30
 cycle: 005
+updated: 2026-10-11 (cycle 010 — local style for wide tables and long URLs)
 applicability: "Projects publishing the three-domain docs tree to GitHub Pages (Jekyll nativo) for a stakeholder audience"
 ---
 
@@ -26,6 +27,23 @@ A self-contained Jekyll layout system (no theme gem):
 ## Example
 
 SwarmTrader `docs/architecture/use-case-eni-replay.md` uses `layout: use-case`, `archimate_model: eni-replay`, and a `value:` frontmatter block. The diagram, matrix, and nav are derived; the page adds prose and technical-depth links. See ADR-004 and ADR-005.
+
+## Wide tables and long URLs (cycle 010)
+
+`assets/css/style.css` has `table { width: 100% }` and no scroll container, so a document with wide tables (the 8-column grid of `docs/architecture/genome-forms-review.md`) or long URLs in a reference list made the page scroll sideways at 390 px (approximate rendering: `scrollWidth` 856, then 747 after the tables alone). Fix used: a `<style>` block local to that page, right after the title:
+
+```
+.doc-content table { display: block; max-width: 100%; overflow-x: auto; }
+.doc-content li, .doc-content p { overflow-wrap: anywhere; }
+```
+
+Result in the approximate rendering: no page scroll at 390 px, tables scroll inside themselves.
+
+Why local and not in the shared CSS: the same stylesheet serves the use-case page of cycle 007, whose model walkthrough (NRC-H02) is still pending, and its look must not change under the owner's review. If more pages need it, move the two rules to the shared CSS in a cycle that also touches that page and rerun NRC-H02.
+
+Not verified on the real Jekyll build: whether kramdown keeps the raw `<style>` block (if it strips it, the page stays readable on a wide screen only). Check on the published page (`PENDING_HUMAN`). How the approximation was done: [[approximate-jekyll-render-without-ruby]].
+
+Before publishing a prose-heavy page, search it for the Liquid openers (double curly brace, curly-percent) and keep formulas in code blocks with single braces.
 
 ## Known limitations
 

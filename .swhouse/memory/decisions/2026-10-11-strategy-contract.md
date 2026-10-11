@@ -1,6 +1,7 @@
 ---
 date: 2026-10-11
 cycle: 009
+updated: 2026-10-11 (cycle 010 — crossover/mutate note)
 title: Strategy contract at the child level, vendor untouched
 status: active
 superseded_by: null
@@ -20,6 +21,8 @@ The golden trace is only evidence while the vendor code equals upstream ([[2026-
 - The UI still shows state-machine panels only for `fsm`; E4 (#15) generalises it.
 - The validator applies buys before closes of the same bar; frames still list closes first (display order to fix in E4).
 - `Algorithm.codifyGenoma()` cannot serialise the adapted genome; `serialize()` copies the raw genome instead.
+- `assertStrategy` does not require `crossover` or `mutate`, but the Consilium GA calls `parent1.crossover(parent2)` and `child.mutate(rate)` on the child (`src/vendor/consilium/ga.js`, lines 116-125 and 345-351). A form that evolves must implement both: to settle in R3 (genetic encoding) and E2. Found in cycle 010; see `docs/architecture/genome-forms-review.md`, chapter 7, and [[genome-forms-state-memory]].
+- Cycle 010 reviewed the contract on paper against six alternative forms: forms with a continuous output need derived `labels` (a contract extension request for E2); only an HMM has natural labels. The contract is still proven only with one test strategy (confidence unchanged).
 
 ## Confidence
 Medium — proven with one test-only second strategy; adequacy for real genomes is checked in E2.

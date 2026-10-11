@@ -1,6 +1,7 @@
 ---
 date: 2026-10-11
 cycle: 009
+updated: 2026-10-11 (cycle 010 added)
 title: Exception to the single-open-cycle rule while cycle 007 awaits the Owner
 status: active
 superseded_by: null
@@ -16,11 +17,14 @@ Operator Luca authorises, for this epic only, a second open cycle in the epic br
 - Cycle 009 does not edit `archimate/**`, `scripts/gen-archimate.mjs`, `_includes/use-cases/*` or `docs/architecture/use-case-eni-replay.md` while NRC-H02 is pending. Model updates caused by the epic go to a later cycle.
 - Cycle numbers are taken from the highest number on `main` or in the epic branch, not from `total_cycles`.
 
+## Extension (cycle 010)
+Cycle 010 (R1, issue #5, research document `docs/architecture/genome-forms-review.md`) is the third open cycle and falls under "later cycles of the epic". It lives in `.swhouse/cycles/current-010.md`, may run Steps 1-11, and follows the same conditions: Step 12, the archive move and every update of `metrics/summary.yaml`, `reputation/scores.yaml`, the non-regression checklist and `docs/MAP.md` wait for the closing of cycle 007 and the merge into this branch; cycle 009 closes before cycle 010. Cycle 010 touches `docs/`, `_data/docs.yml` (a menu file, not a shared state file) and `.swhouse/`; it does not touch `src/`, `tests/`, `scripts/` or `archimate/**`. The cycle stays DEFERRED until the operator chooses the form and the Pages build is verified.
+
 ## Rationale
 The two cycles touch disjoint areas (documentation model versus `src/engine`). The shared state files are the only conflict source (17 conflicts when cycle 008 was merged with `main`), so they are written once, after cycle 007 has closed.
 
 ## Consequences
-- A session that reads `current.md` finds cycle 007, which is not the epic's cycle: sessions on this branch must read `current-009.md` as well.
+- A session that reads `current.md` finds cycle 007, which is not the epic's cycle: sessions on this branch must read `current-009.md` and `current-010.md` as well.
 - Operator Luca informs cycle 007's Owner (Simone) of the exception; the confirmation is recorded in the cycle 009 file when received.
 - The exception ends when cycle 007 is closed and merged; the cycle file is then renamed to `cycles/archive/cycle-009.md` at close as usual.
 
