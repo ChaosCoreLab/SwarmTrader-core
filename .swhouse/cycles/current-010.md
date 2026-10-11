@@ -462,3 +462,7 @@ Rispetto agli Step 3 e 4 questo step aggiunge informazione non presente prima: (
 **Confidence:** Medium — le correzioni su codice e fonti sono verificate sul testo (F-code-1, F1, F6, F7, F9), ma sei fonti non sono state lette, le critiche sulle forme (N2a, N5a) poggiano in parte su conoscenza generale non confermata da fonti lette qui e la scala e il volume dipendono da scelte del Builder.
 
 **Prossimo step:** Step 7 — BUILDER (Step 6 omesso per track).
+
+### Risposte dell'operatore alle domande del Critic (2026-10-11)
+1. Il requisito «non una macchina a stati» **non è stringente**: sono ammesse come forme da valutare l'HMM (stati nascosti) e le reti con connessioni ricorrenti. Il documento le tratta come candidate normali, segnalando la loro vicinanza a una macchina a stati dove c'è.
+2. Ricorrenze e registri in NEAT e GP: **in attesa di risposta** (l'operatore ha chiesto chiarimenti).
