@@ -21,4 +21,7 @@ cycle_quality_scores:
   - cycle: "006"
     score: 4
     source: cycles/archive/cycle-006.md#step-11--evolution-master
+  - cycle: "007"
+    score: 4
+    source: cycles/archive/cycle-007.md#step-11--evolution-master
 operators: []

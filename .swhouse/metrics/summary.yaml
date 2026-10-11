@@ -1,8 +1,8 @@
 version: 1
-last_updated: 2026-10-05
-total_cycles: 6
+last_updated: 2026-10-11
+total_cycles: 7
 cycles_by_status:
-  decided: 6
+  decided: 7
   deferred: 0
   escalated: 0
 # Cycle 001: DEFERRED 2026-09-28, reopened ACCEPTED WITH CONDITIONS 2026-09-29 (C1, resolved cycle 002).
@@ -11,6 +11,7 @@ cycles_by_status:
 # Cycle 004: Track F, GitHub Pages rendering, DEFERRED 2026-09-29, ACCEPTED 2026-09-30 (PENDING_HUMAN resolved by cycle 005).
 # Cycle 005: Track F, embed snapshot + stakeholder UI + ArchiMate browser redesign, ACCEPTED 2026-09-30 (C1: Owner visual confirmation).
 # Cycle 006: Track SA, ArchiMate modeling protocol from Owner content review, ACCEPTED 2026-10-05.
+# Cycle 007: Track M, ENI ArchiMate model rebuilt per layer with automated checks, ACCEPTED 2026-10-11 (NRC-H02 Owner walkthrough passed; Consilium engine added as its own element).
 average_cycle_duration_days: 1.8
 memory_entries:
   decisions: 2

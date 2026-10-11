@@ -1,7 +1,9 @@
 ---
 cycle: 007
-status: open
+status: closed
 opened: 2026-10-05
+closed: 2026-10-11
+decision: ACCEPTED
 problem: "Rebuild the ENI replay ArchiMate model per the Owner review, in one editable file per layer, with automated model checks and a full-width diagram"
 track: M
 ---
@@ -96,3 +98,37 @@ Removed the unused SVG emitter and `archimate:svg`/`archimate:html` scripts; one
 2. Should the trace consistency check stay in the business-facing "Replay findings", given the decision to hide data-integrity checks?
 
 **NRC:** Type-A: NRC-A01/A02/A05 via `npm test` + `archimate:check` — pass. NRC-A03/A04 not triggered (`src/` untouched). **NRC-H02: PENDING_HUMAN** — Owner walkthrough on the published page.
+
+### Step 9 — resumed 2026-10-11 (Owner walkthrough)
+
+**NRC-H02: ✅ VERIFIED** — Owner (Simone, U422756) walked through the published model (deploy of `ed2aeb0`, Pages run successful 2026-10-05). Verdict: pass ("esito ottimo"), no disagreement noted.
+
+**Owner answers to the open questions:**
+1. The Consilium trading engine is its own Application element → added `app_consilium` "Trading engine (Consilium)" (application-component): serves the replay engine, reads the engine-format genome, writes the broker operations; realized by the published app files. The replay engine's `tech` text now points to it instead of naming the vendored modules.
+2. The trace consistency check stays in "Replay findings" → no change.
+
+**Re-check after the change:** `npm run archimate:check` → valid, 33 elements, 55 relations, generated files up to date; `npm test` → 20 pass, 0 fail. The change adds one element and four relations required by the Owner's answer; it does not alter the walked-through content, so NRC-H02 is not repeated.
+
+## Step 10 — LIBRARIAN
+
+- Memory updated: `errors/2026-10-05-archimate-model-semantic-defects.md` (resolution: cycle 007 accepted on Owner content walkthrough, first application of Rule 6).
+- NRC: NRC-H02 marked ✅ VERIFIED 2026-10-11. No human-reported product bug fixed in this cycle, so no new NRC item is required; NRC-A05 and NRC-H02 were added in Step 7.
+- Documentation: `docs/MAP.md` dates for the use-case page and the layer files; ADR-005 written in Step 7; operations updated in Step 7.
+
+**Close checklist:**
+- [x] `metrics/summary.yaml` — `total_cycles` 7, status counts, `last_updated` 2026-10-11
+- [x] Memory entry updated (error record above)
+- [x] Failures logged: the semantic-defect error is the one that opened cycles 006–007; no new failure in this cycle
+- [x] No deployment target added or removed: validation matrix unchanged
+- [x] `docs/MAP.md` updated; architecture page `last_verified` updated by the generator run; ADR-005 present; operations reflects `archimate:watch`/`gen`/`check`
+
+## Step 11 — EVOLUTION MASTER
+
+**Cycle quality score:** 4 — the rules from cycle 006 turned into automated checks and a content gate that worked: the independent review (Step 9) caught the remaining content errors before the Owner saw the model, and the Owner walkthrough passed at the first attempt.
+**Process observation:** the cycle stayed open six days waiting for NRC-H02 while a second operator worked in parallel; the same cycle number (006) was used on two machines and the follow-up proposal "cycle 008" in Step 9 was taken by another cycle. Cycle numbers should be assigned after checking open PRs and remote branches (see `memory/decisions/2026-10-11-parallel-cycle-exception.md` in branch `epic-genoma-non-fsm`).
+
+## Step 12 — ARBITER
+
+**Decision:** ACCEPTED.
+**Rationale:** every content and editability AC (AC-01–AC-08) is met and verified by `archimate:check`, the unit tests and the Step 9 independent review. AC-09, the Owner model walkthrough (NRC-H02), passed on 2026-10-11, and the Owner's two open questions are answered and applied. The Type-A NRC items for the touched modules pass, and the Step 10 close checklist is complete.
+**Carried forward:** the latent sell-marker bug in `src/main.js` (Step 9) is still open; it goes to the next free cycle number (not 008, which is already used), Track S, red test first.

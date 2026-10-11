@@ -1,7 +1,7 @@
 ---
 use_case: eni-replay
 layer: application
-last_verified: 2026-10-05
+last_verified: 2026-10-11
 ---
 
 # Application layer — ENI replay
@@ -22,7 +22,14 @@ Come modificare questo file
 - aspect: active-structure
 - type: application-component
 - role: Runs the replay: creates the trader from the supplied fixed genome, hands the Consilium trading engine one ENI trading day at a time and records what happened on each day.
-- tech: src/engine/simulationController.js, using the vendored Consilium engine in src/vendor/consilium/. FixedGenomeGA and the genome adapter are internal helpers of this component.
+- tech: src/engine/simulationController.js, driving the Consilium trading engine through Life. FixedGenomeGA and the genome adapter are internal helpers of this component.
+
+### Trading engine (Consilium)
+- id: app_consilium
+- aspect: active-structure
+- type: application-component
+- role: The upstream trading engine the replay drives: on each trading day the genome's state machine decides whether to buy, hold or sell, and the trader and its broker open and close positions, including take-profit and stop-loss.
+- tech: Vendored modules in src/vendor/consilium/ (life.js, individual.js, algorithm.js, trader.js, portfolio.js), pinned to upstream commit 30ae93f, MIT license; trading logic unchanged from upstream.
 
 ### Market data loader (DataTrainer)
 - id: app_data_trainer
@@ -119,6 +126,9 @@ Come modificare questo file
 | app_validator | realizes | app_svc_verify | |
 | app_chart_ui | realizes | app_svc_display | |
 | app_sim_ctrl | serves | app_chart_ui | |
+| app_consilium | serves | app_sim_ctrl | |
+| app_consilium | accesses | app_data_genome | reads |
+| app_consilium | accesses | app_data_ops | writes |
 | app_data_trainer | accesses | app_data_stockdata | writes |
 | app_svc_feed | accesses | app_data_stockdata | reads |
 | app_sim_ctrl | accesses | app_data_genome | reads |

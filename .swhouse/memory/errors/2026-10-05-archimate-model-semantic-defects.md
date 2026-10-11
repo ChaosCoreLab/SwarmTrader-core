@@ -23,7 +23,7 @@ Owner review (`human-interaction/02-human-feedback-of-archimate-doc.md`) found w
 Owner content review of the published page, after cycle 005 had closed ACCEPTED on visual confirmation.
 
 ## Resolution
-Cycle 006 (Track SA) added `software-house-ai/protocols/archimate-modeling.md` and the content-vs-rendering rule in `operational-cycle.md` Step 2. Cycle 007 rebuilds the model in per-layer files with automated checks.
+Cycle 006 (Track SA) added `software-house-ai/protocols/archimate-modeling.md` and the content-vs-rendering rule in `operational-cycle.md` Step 2. Cycle 007 rebuilt the model in per-layer files with automated checks; ACCEPTED 2026-10-11 after the Owner content walkthrough (NRC-H02) passed at the first attempt.
 
 ## Lesson
 A model is accepted on content, not on looks. Model the product only; keep significant elements; connect every element and every layer; check `tech` text against the code. The Owner's content walkthrough is a separate gate from visual confirmation.
