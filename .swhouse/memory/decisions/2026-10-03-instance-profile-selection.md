@@ -1,6 +1,6 @@
 ---
 date: 2026-10-03
-cycle: 006
+cycle: 008
 title: Per-machine instance profiles selected by an untracked local file
 status: active
 superseded_by: null
