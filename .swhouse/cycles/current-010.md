@@ -684,3 +684,6 @@ Non eseguito: build Jekyll (non installato; resta PENDING_HUMAN dopo il merge). 
 - Il documento non è stato aperto nel sito: tabelle, blocchi di codice e `last_verified` ripetuto nel corpo (come negli altri documenti) vanno visti allo Step 9.
 
 **Prossimo step:** Step 9 — SCIENTIST
+
+### Decisione dell'operatore sulla lunghezza (2026-10-11)
+Luca **accetta la lunghezza del documento oltre il criterio** (circa 8.100 parole contro le 5.500–6.500 indicate). AC-06 resta soddisfatto con la riserva registrata allo Step 8, ora **accettata**: il documento si legge dal capitolo 1 (sintesi) e dalla griglia (capitolo 8); il resto è consultazione. Nessuna modifica di AC-02.
