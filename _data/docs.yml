@@ -5,6 +5,9 @@ architecture:
   - id: use-case-eni-replay
     title: Use case — ENI Replay
     path: /docs/architecture/use-case-eni-replay/
+  - id: genome-forms-review
+    title: Genome Forms Review
+    path: /docs/architecture/genome-forms-review/
 decisions:
   - id: ADR-001-static-snapshot
     title: ADR-001 Static Snapshot

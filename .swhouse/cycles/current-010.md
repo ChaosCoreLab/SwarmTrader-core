@@ -466,3 +466,136 @@ Rispetto agli Step 3 e 4 questo step aggiunge informazione non presente prima: (
 ### Risposte dell'operatore alle domande del Critic (2026-10-11)
 1. Il requisito «non una macchina a stati» **non è stringente**: sono ammesse come forme da valutare l'HMM (stati nascosti) e le reti con connessioni ricorrenti. Il documento le tratta come candidate normali, segnalando la loro vicinanza a una macchina a stati dove c'è.
 2. Ricorrenze e registri in NEAT e GP: **in attesa di risposta** (l'operatore ha chiesto chiarimenti).
+
+## Step 7 — BUILDER: Produce a Solution
+
+**Agent:** claude-sonnet-5-5 (subagent)
+**Confidence:** Medium — il documento è completo rispetto alla struttura dello Step 5 e i fatti sul codice e sulle fonti principali sono controllati sul testo; la confidenza non sale perché (a) 8 delle 20 fonti numerate sono state viste solo come scheda o abstract, (b) i livelli della griglia sono giudizi dell'autore (dichiarati tali), (c) l'adeguatezza al contratto è sulla carta fino a E2, (d) la build di Pages non è stata provata.
+**Assunzioni**
+- «Builder» in un ciclo di ricerca = chi scrive il documento sulla base di Step 1–5 (Step 6 omesso per track).
+- Il Product Owner ha confermato AC-01: una scheda per «MLP e NEAT»; punteggio lineare, forma minima e osservatore di Kalman in una scheda con sottosezioni; HMM con scheda piena. Le schede sono sette: FSM (riferimento) più sei alternative (lineare, alberi/GP, rule list, reti, fuzzy, HMM).
+- Risposte dell'operatore già date (Q1: requisito non stringente; HMM e reti ricorrenti ammessi) e Q2 ancora aperta: per NEAT e GP le due varianti sono descritte, non scelte.
+- L'esperimento nullo (Alt. 3) non entra nel ciclo: tre righe in «ciò che non si è potuto accertare» e domanda 5.
+
+### Questioni non risolte (dichiarate prima del resto)
+- **Q2 (ricorrenze e registri in NEAT e GP) aperta:** il documento mostra le due varianti con pro e contro e la riga per entrambe nella griglia; la scelta è di Luca.
+- **Fonti:** 20 fonti numerate; testo letto per 12, solo scheda o abstract per 8 (6 è solo un riassunto di corso, non l'articolo di Allen e Karjalainen). Nessuna fonte letta per il punteggio lineare (descrizione marcata `[ipotesi, fonte da verificare]`), per i sistemi fuzzy a regole (solo Zadeh, scheda, e un lavoro di conferenza), per l'uso di HMM/Kalman/reti ricorrenti con un GA nel trading, per l'equivalenza Kalman stazionario-livellamento esponenziale doppio. LCS (Urbanowicz e Moore) e CART restano non verificate e non sono usate come prova.
+- **Volume (A1):** 485 righe, circa 10300 parole contro il limite «mezza pagina per scheda» dello Step 5: ridotto con una sola tabella del contratto, una griglia e il glossario, ma non portato a un formato breve. Rischio per AC-06 dichiarato; il lettore può fermarsi ai capitoli 7 e 9.
+- **Build di Pages non provata** (Jekyll non è installato): PENDING_HUMAN dopo il merge. Le tabelle larghe (8 colonne nella griglia) non sono state viste su schermo stretto.
+- **`docs/MAP.md` e gli altri file di stato** non toccati: restano allo Step 12.
+- **Rilievo del Builder, non del Critic:** `assertStrategy` non richiede `crossover` né `mutate`, ma il GA di Consilium li chiama (`src/vendor/consilium/ga.js` righe 116-125, 345-351; `individual.js` 191 e 350): lo scrivo nel capitolo 6 come materia di R3 ed E2.
+- **Nota sulle fonti interne:** il rapporto di Consilium riguarda titoli e panieri quotati diversi da ENI (per esempio PST.MTA e partizioni da 14-19 titoli), fitness CAGR, finestre da 2 a 5 anni; il documento lo dice e non riporta cifre.
+
+### Prodotto
+- `docs/architecture/genome-forms-review.md` (nuovo, italiano): 11 capitoli come da «Struttura finale» dello Step 5: metodo e fonti; cornice memoria/lettura (formula IIR come nel codice, esempio numerico con i quattro coefficienti reali, classi «a monte» e «nel lettore»); riga di riferimento FSM dal codice; scala a tre livelli per dimensione definita **prima** delle schede; sei schede alternative con le sette dimensioni, rischi a tre voci, genotipo di massima e fonti con stato; tabella unica del contratto con «cosa si perde» e frasi uniche su `hold`, `labels`, `crossover`/`mutate` e forme con stato; griglia (12 righe, senza punteggio totale, con colonne «contratto» e «memoria; ricorrenza», senza riga buy&hold); famiglie; sintesi per Luca con 2 candidati, forme di confine e di riserva, condizioni di scarto, ciò che non si è accertato, domande 2-5; riferimenti con stato; glossario.
+- **Candidati portati:** A = punteggio lineare con soglie (la forma minima come metro); B = alberi di espressioni/GP, variante «solo indicatori». Riserva: rule list. Forma di confine, non candidata: HMM. Motivati solo sulle dimensioni, mai sul rendimento. La scelta resta di Luca.
+- `_data/docs.yml`: una voce `genome-forms-review` sotto `architecture` (caso limite 11).
+
+### Risposte ai rilievi del Critic (Step 5)
+
+| Rilievo | Risoluzione |
+|---|---|
+| **A1** Volume del documento (Alta) | **Mitigato, non risolto del tutto.** Una sola tabella del contratto; formule solo dove servono; glossario in coda; misura riportata (485 righe, 10326 parole al momento del conteggio). Non ho raggiunto «mezza pagina per scheda»: le tabelle delle sette dimensioni con fonte pesano; dichiarato sopra. |
+| **A2** Scala ordinale soggettiva (Alta) | **Risolto.** Capitolo 4: per ciascuna dimensione una grandezza osservabile con soglie e livelli con nome (affine / a tratti / universale; piccolo / medio / grande; diretta / con calcolo / solo simulando; decine / centinaia / migliaia; naturale / con accorgimenti / solo mutazione; diretto / con adattamento / non soddisfatto; classi di memoria). Dichiarato che l'assegnazione è un giudizio dell'autore e che i fatti sono nelle grandezze. Nessun punteggio totale. |
+| **A3** AC-04 non coperto per le forme obbligatorie (Alta) | **Mitigato.** Fonti raccolte prima di scrivere: GP (Poli e altri, letto), rule list (Rivest 1987, letto), MLP (Hornik e altri 1989, abstract letto), fuzzy (Zadeh, scheda; Raimondi e altri 2007, letto in parte), HMM (Rabiner, letto; Hamilton, Ang e Timmermann, Gupta e altri), Kalman (letto), trading (rassegna Hu e altri 2015, abstract; F8 solo riassunto). Per il punteggio lineare nessuna fonte letta: marcato `[ipotesi, fonte da verificare]` e listato in «ciò che non si è accertato». Nessun riferimento ricordato a memoria. |
+| **A4** Ottava voce «rischi» e attribuzione alla forma (Media) | **Risolto.** Checklist fissa a tre voci (anticipazione, soluzioni degeneri, sfruttamento della fitness); capitolo 1: parametri di rischio e fitness comuni a tutte le forme e non decisi dalla forma. |
+| **A5** Scheda del contratto con tre esiti non discriminanti (Media) | **Risolto.** Colonna «cosa si perde» e frase unica sull'etichetta contro il numero (il punteggio si espone comunque in `describe()`); dichiarato che il contratto è provato con una sola strategia (confidence Medium) e che l'adeguatezza è sulla carta fino a E2. |
+| **A6** Riga FSM con margini «percentuali» (Media) | **Risolto.** Riga riscritta dal codice: margine proporzionale al filtro (`algorithm.js` 381), valori divisi per 100 (`genome.js` `toFraction`), coefficiente IIR = peso del dato nuovo, un margine negativo, solo SW con azione nel genoma fisso, 36 transizioni e 135 id (conteggio eseguito). |
+| **A7** Termini finanziari prima del glossario (Bassa) | **Risolto.** Spiegati alla prima occorrenza nel capitolo 1 (stop loss, take profit, buy&hold, OHLCV, indicatori tecnici, backtest, overfitting, look-ahead bias, CAGR) e raccolti nel glossario (rimosso il termine «drawdown» perché il testo non lo usa). |
+| **B1** Vocabolario controllato per la memoria (Media) | **Risolto.** Vocabolario chiuso nel capitolo 4 (a monte / ritardi in ingresso / stato discreto / stato continuo nel lettore) più «ricorrenza interna: sì/no/opzionale» in ogni scheda e riga di griglia. |
+| **B2** Scarto di B confermato (Bassa) | Nessuna azione: B non è usato come struttura; si legge dalla griglia. |
+| **C1** Genotipo di massima nella scheda (Bassa) | **Risolto.** Una riga per scheda («Genotipo di massima»), senza operatori; GE rimandata a R3 in una frase. |
+| **1a** Il cancello non discrimina (Alta) | **Risolto.** Nessuna eliminazione; colonna «contratto (vincoli duri)» e memoria nella griglia; eliminazione solo nella sintesi, motivata. |
+| **1b** Conflitto con AC-01/AC-02 (Alta) | **Risolto.** Tutte le forme obbligatorie e l'HMM hanno scheda piena in formato compatto; nessuna scheda breve da tre righe. |
+| **1c** Incoerenza cancello/N1 (Alta) | **Risolto** con la risposta di Luca a Q1: HMM trattato come forma normale, dichiarata di confine, con avviso di vicinanza all'FSM. |
+| **1d** Requisito di memoria non uniforme (Alta) | **Risolto.** Ogni scheda e ogni riga di griglia dichiarano «ricorrenza interna»; per NEAT, MLP, GP, Kalman le due varianti sono trattate con lo stesso metro; non sono scartate in anticipo; Q2 resta a Luca. |
+| **1e** Vantaggio dell'imbuto (Bassa) | Recepito: ordine di lettura via capitolo 7 e 9; nessuna azione ulteriore. |
+| **2a** Formula IIR con ruoli invertiti (Alta) | **Risolto.** `y[t] = y[t-1] + c*(x[t] - y[t-1])` e la forma del codice `ema = ema*(1-c) + x*c`, con `c` peso del dato nuovo, costante di tempo circa 1/c, righe 369-372 e `genome.js`; esempio numerico dichiarato come tale con i quattro coefficienti reali (calcolato con uno script di una riga). |
+| **2b** «Ogni indicatore è lineare» falso (Alta) | **Risolto.** Capitolo 2.2: memoria = funzione causale della storia; lineari solo medie e differenze; non lineari massimi/minimi, stocastico, RSI, ATR; l'elenco è di R2. |
+| **2c** «La memoria sta tutta nel banco» falsa per HMM, Kalman, NEAT (Alta) | **Risolto.** Cornice usata come classificazione «a monte» / «nel lettore». |
+| **2d** Sovraffermazione sull'attribuzione (Media) | **Risolto.** Detto che la cornice non isola l'effetto della forma e non separa forma e fitness. |
+| **2e** Perimetro R2 (Media) | **Risolto.** Gli ingressi sono «di esempio» (n = 6: prezzo, volume, quattro IIR); R2 li sostituisce (capitolo 1). |
+| **2f** Kalman 1960 usato oltre la fonte (Bassa) | **Risolto.** [3] citato solo per la stima ricorsiva; esplicito che non tratta livellamento esponenziale né prezzi. |
+| **3a** Alt. 3 fuori perimetro (Alta) | **Risolto.** Non adottata; tre righe in 9.4 e domanda 5; nessun codice. |
+| **3b** Difetti di metodo dell'esperimento nullo (Media) | **Mitigato.** In 9.4: l'esito dipenderebbe dalla fitness e misurerebbe forma e fitness insieme; i dettagli (blocchi, volume e prezzo insieme) restano a un ciclo futuro, non scritti per non progettare l'esperimento. |
+| **3c** Rischio di svuotare la rassegna (Bassa) | **Risolto.** Una sola frase in 9.4. |
+| **4a** Buy&hold nella griglia (Media) | **Risolto.** Nessuna riga; buy&hold spiegato in testo e il rapporto Consilium citato con le sue condizioni e senza cifre. |
+| **4b** Sovrapposizione lineare/minima/Kalman (Media) | **Risolto.** Una sola scheda 5.1 con tre istanze; una riga di griglia per la minima come metro. |
+| **4c** Uso scorretto di F8 (Media) | **Risolto.** F8 spostata nella scheda GP; descritta come ricerca con GA di combinazioni logiche di regole su medie mobili e massimi/minimi; solo riassunto, dichiarato. |
+| **N1a** HMM e requisito dell'operatore (Alta) | **Risolto.** Paragrafo «Vicinanza alla macchina a stati» in 5.6; colonne memoria e interpretabilità valgono per K stati nascosti; non si sostiene che rispetti o violi il requisito (Q1 già risposta). |
+| **N1b** Anticipazione nella stima (Alta) | **Risolto.** In 5.6 due strade esposte (GA senza stima globale; stima solo su dati precedenti, a cura di R6), senza scegliere; Baum-Welch e Viterbi usano l'intera sequenza [2]. |
+| **N1c** Simboli in conflitto con Rabiner (Media) | **Risolto.** Simboli di Rabiner (`alfa_t(j)`, `a_ij`, `b_j(O_t)`, `pi_i`) con induzione e scaling; nessuna notazione alternativa. |
+| **N1d** Convenzioni concorrenti nel crossover (Media) | **Risolto.** Menzione in dimensione crossover di MLP, NEAT e HMM, con fonte [1] e l'ordinamento dei regimi marcato `[ipotesi]`. |
+| **N1e** Campione e applicazione al trading (Media) | **Mitigato.** Fonti [12], [13], [14] trovate (non per HMM+GA nel trading); «applicazione non accertata» in 5.6 e 9.4; conteggio parametri riportato (circa 44 per K=3, n=6). |
+| **N2a** Kalman: fonte e filtro alfa-beta (Media) | **Risolto.** Convergenza e «alfa-beta» scritte come `[ipotesi, fonte da verificare]`; [15] citata per livellamento esponenziale e modelli di stato, precisando che non presenta l'equivalenza. |
+| **N2b** Ipotesi gaussiana (Bassa) | **Risolto.** Una frase come ipotesi nei rischi di 5.1. |
+| **N3a** CGP per sola mutazione (Media) | **Risolto con verifica.** Letto nel Field Guide, capitolo 7.2.3: tradizionalmente la mutazione è l'operatore principale (e un crossover è stato proposto più tardi) [5]. |
+| **N3b** «Solo indicatori» presentato come proprietà (Media) | **Risolto.** Scritto come scelta di progetto, non proprietà della forma (5.2). |
+| **N4a** GE ricrea un FSM (Bassa) | **Risolto.** Capitolo 8: la grammatica decide le forme raggiungibili; rimando a R3. |
+| **N5a** Pittsburgh ≠ rule list (Media) | **Risolto.** «Simile, non identica», `[ipotesi, fonte da verificare]`; F11 non letta (403 e verifica anti-robot). |
+| **N6a** Attribuzione errata di F5 (Bassa) | **Risolto.** «Gruppo MINDS, pagina `ai.rug.nl/minds/esnresearch`»; nessun Fraunhofer; nessun raggio spettrale. |
+| **N6b** Giudizi sul reservoir senza fonte (Bassa) | **Risolto.** Marcati `[ipotesi]`. |
+| **T1** Conteggio schede (Alta) | **Risolto.** Sette schede (FSM più sei) con MLP e NEAT in una; PO ha confermato. |
+| **T2** Decisione su Alt. 2 e Alt. 4 (Media) | **Risolto.** Alt. 2 adottata come classificazione (cap. 2); Alt. 4 come forma minima nella scheda 5.1, senza riga buy&hold. |
+| Casi limite 1-12 | 1 (imbuto/AC-01): risolto come 1b. 2 (fonti non lette): stato per ogni fonte nel capitolo 10; «foreste» corretto in CART (esclusa come ipotesi, fuori dall'epica). 3 (contratto/forme continue): frase unica in capitolo 6. 4 (tensione requisito/forme): per variante, lasciato a Luca. 5 (promesse di redditività): nessuna cifra; i risultati esterni sono attribuiti a «quello studio» con le sue condizioni; verificati con ricerca di `guadagn|batter|rend` (nessun uso promissorio). 6 (R2): ingressi di esempio. 7 (scala e FSM): stesso vocabolario e fatti corretti. 8 (`hold`): frase unica. 9 (anticipazione): frase unica nel capitolo 1. 10 (campione piccolo): 2517 barre citate; nessuna conclusione sul sovradattamento senza [4]. 11 (AC-08/09): voce di menu aggiunta; `docs/MAP.md` rimane allo Step 12. 12 (ciclo parallelo): nessuna interferenza. |
+| Verifica a campione delle fonti (F1, F5-F9, F11, F12, F2-F4, F10) | Correzioni applicate: F9 senza rivista/anno (versione di novembre 2014, working paper); F8 solo riassunto, articolo non letto; F5 come pagina di gruppo; F11 non verificata; F12 non usata; F10 ora localizzata (sezioni 7.1, 7.2.3, 11.3 lette). |
+| Domande per Luca | Q1 non riproposta (già risposta); Q2 aperta; Q3, Q4, Q5 rinumerate 3, 4, 5. |
+
+### Self-Test Log (obbligatorio)
+
+```
+Self-Test Log:
+  Component: docs/architecture/genome-forms-review.md (controllo Liquid)
+  Test method: grep -nE '\{\{|\{%' docs/architecture/genome-forms-review.md
+  Actual output: nessuna riga, exit code 1
+  Expected output: nessuna occorrenza
+  Result: PASS
+  Notes: i blocchi di codice usano solo graffe singole ({ label, indicators }). Letto il pattern jekyll-stakeholder-docs: nessun uso di Liquid nel corpo.
+
+Self-Test Log:
+  Component: intestazione e link (docs/architecture/genome-forms-review.md, _data/docs.yml)
+  Test method: head del file confrontato con docs/architecture/simulator-overview.md; ls dei bersagli dei link relativi; yaml.safe_load di _data/docs.yml
+  Actual output: front matter title/layout: doc/last_verified come gli altri (senza mermaid); riga "last_verified: 2026-10-11" nel corpo; link ../simulator-overview/ e ../simulator-overview/#strategy-contract verso docs/architecture/simulator-overview.md (esiste); YAML valido, ids: simulator-overview, use-case-eni-replay, genome-forms-review; tabelle Markdown con numero di colonne coerente (script Python: 0 tabelle incoerenti)
+  Expected output: intestazione identica per forma, link a file esistenti
+  Result: PASS
+  Notes: il titolo del layout non mostra il menu; la resa nel sito non è verificata (vedi SKIPPED).
+
+Self-Test Log:
+  Component: URL citati
+  Test method: curl -sL (User-Agent browser) su ciascuno dei 19 URL del documento
+  Actual output: 200 per 18 URL; https://mathnet.ru/eng/fssc12 ha dato 503 e poi 200, 503, 200 (intermittente)
+  Expected output: tutti raggiungibili
+  Result: PASS (con nota)
+  Notes: la pagina dell'editore ScienceDirect (Hu e altri) ha dato 403 (per questo si cita la scheda PolyU); Wiley/Hindawi (LCS) 403 e PMC con verifica anti-robot: LCS non usata come prova. Un URL fuori dal documento (eprints.ucm.es, fuzzy trading) non raggiungibile: non citato.
+
+Self-Test Log:
+  Component: struttura e lunghezza del documento
+  Test method: wc -l -w; script Python che conta le righe delle sette dimensioni nelle tabelle di ogni scheda
+  Actual output: 485 righe, 10326 parole; FSM, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6: 7/7 dimensioni presenti in ciascuna
+  Expected output: sette dimensioni in ogni scheda; lunghezza misurata
+  Result: PASS (presenza); lunghezza oltre l'obiettivo dello Step 5 (rilievo A1 dichiarato)
+  Notes: ricerca di termini promissori: solo usi non promissori.
+
+Self-Test Log:
+  Component: nessun cambiamento ai test e al modello ArchiMate
+  Test method: npm test; npm run archimate:check
+  Actual output: "# tests 28 / # pass 28 / # fail 0"; "archimate: modello "eni-replay" valido (32 elementi, 51 relazioni); file generati aggiornati."
+  Expected output: verdi
+  Result: PASS
+  Notes: il ciclo non tocca src/, tests/, scripts/, archimate/.
+
+Self-Test Log:
+  Component: file toccati
+  Test method: git status --short; git diff --stat
+  Actual output: " M _data/docs.yml" (3 inserzioni), "?? docs/architecture/genome-forms-review.md", " M software-house-ai" (modifica del puntatore già presente prima dello Step 7, non mia), più questo file del ciclo
+  Expected output: solo i tre file consentiti
+  Result: PASS
+  Notes: nessun comando git di scrittura eseguito.
+
+Self-Test: SKIPPED (build Jekyll del sito)
+Reason: Jekyll, Ruby e Bundler non sono installati in questa macchina (which jekyll bundle ruby: nessun risultato), quindi la pagina non può essere costruita né aperta nel browser.
+Risk: errori di Liquid o di Markdown che solo la build rivela; rendimento di tabelle larghe su schermo stretto; menu e breadcrumb della pagina.
+Mitigation: controllo statico di Liquid (PASS sopra); build di Pages e osservazione della pagina allo Step 9 (SCIENTIST), PENDING_HUMAN dopo il merge su main, come negli altri cicli.
+```
+
+**Prossimo step:** Step 8 — OPTIMIZER (da svolgere in una nuova sessione; qui non eseguito).
