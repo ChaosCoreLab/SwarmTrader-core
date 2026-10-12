@@ -3,7 +3,7 @@ cycle: 008
 status: closed
 opened: 2026-10-03
 closed: 2026-10-03
-decision: DEFERRED
+decision: ACCEPTED
 problem: "Riallineare i riferimenti obsoleti allo snapshot, rendere la documentazione operativa multi-piattaforma (Windows/Linux/macOS) e introdurre l'istanza Ubuntu + Claude come alternativa selezionabile a quella Windows + Copilot"
 track: M
 ---
@@ -293,3 +293,11 @@ Performed by: Luca
 Target: AC-07 — skill Claude Code (condizione 2 dello Step 12)
 Result: VERIFIED
 Notes: nuova sessione aperta dall'app Claude sul branch `cycle-006-docs-platforms-instance`. Esito positivo riferito dall'operatore su tutti i punti della procedura: (1) le quattro skill `/open-cycle`, `/close-cycle`, `/vote`, `/query-memory` compaiono nell'elenco; (2) `/query-memory "instance"` eseguita in sola lettura; (3) avvio di sessione come COORDINATOR con istanza `ubuntu-workstation`. `/open-cycle` non è stata eseguita, per non aprire un ciclo. Resta aperta la condizione 1 (target `github-pages`, verificabile solo dopo il merge su `main`): la decisione rimane DEFERRED.
+
+## Human Verification — 2026-10-12
+Performed by: Luca (operator), with automated checks run by Claude
+Target: github-pages (condizione 1 dello Step 12)
+Result: VERIFIED
+Notes: PR #2 unita in `main` (merge `e69a090`) il 2026-10-12; il workflow "Deploy GitHub Pages" su quel commit è terminato `success`, come riferito dall'operatore e confermato con `gh run list`. Pagina `/docs/architecture/use-case-eni-replay/`: risponde 200, cita `src/data/eni-ohlcv.json` (11 occorrenze) e non contiene più `public/data`. Il servizio "Local static load and render" citato nella condizione non esiste più: il ciclo 007 ha ricostruito il modello per layer e il layer Technology ora ha "Static hosting"; la condizione è soddisfatta nella sostanza (nessun riferimento obsoleto, percorso nuovo presente). Pagina `/docs/operations/development/`: risponde 200, nessun testo Liquid grezzo (`{%`, `{{`). La condizione 1 assegnava la verifica all'Owner (U422756): l'esito qui registrato è dell'operatore e dei controlli automatici; l'Owner può confermare in revisione della PR.
+
+Con la condizione 2 (AC-07, 2026-10-03) e la condizione 1 entrambe VERIFIED, lo stato del ciclo passa a `ACCEPTED`.
