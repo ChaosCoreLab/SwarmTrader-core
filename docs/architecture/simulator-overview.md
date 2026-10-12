@@ -15,7 +15,7 @@ SwarmTrader replays one immutable Consilium genome over ENI daily OHLCV data thr
 
 ## Components
 
-- [Data acquisition script](https://github.com/ChaosCoreLab/SwarmTrader-core/blob/main/scripts/fetch-eni-data.mjs) downloads and validates the Borsa Italiana response offline. It writes `src/data/eni-ohlcv.json` atomically with date coverage and SHA-256 metadata.
+- [Data acquisition script](https://github.com/ChaosCoreLab/SwarmTrader-core/blob/main/scripts/fetch-eni-data.mjs) downloads and validates the Borsa Italiana response offline. It writes `src/data/eni-ohlcv.json` atomically with date coverage and SHA-256 metadata; the app imports that file as a JSON module, so it is embedded in the bundle at build time.
 - [DataTrainer](https://github.com/ChaosCoreLab/SwarmTrader-core/blob/main/src/engine/dataTrainer.js) validates the snapshot and exposes Consilium `StockStream` objects from memory. It performs no network request.
 - [Genome adapter](https://github.com/ChaosCoreLab/SwarmTrader-core/blob/main/src/engine/genome.js) validates the provided snake_case genome and maps percentage fields to the fractional camelCase values expected by Consilium.
 - [FixedGenomeGA](https://github.com/ChaosCoreLab/SwarmTrader-core/blob/main/src/engine/fixedGenomeGA.js) supplies exactly one `Individual`; it does not mutate, cross, or evolve the genome.
