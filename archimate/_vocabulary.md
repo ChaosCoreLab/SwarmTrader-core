@@ -1,17 +1,18 @@
 # ArchiMate Vocabulary (minimal)
 
-last_verified: 2026-09-29
+last_verified: 2026-10-05
 
-Minimal vocabulary for the cell-based ArchiMate source pattern. Each cell file in `archimate/<use-case>/<layer>--<aspect>.md` declares `elements[]` and `relationships[]` in its YAML frontmatter; types MUST come from this vocabulary (the generator warns on unknown types and fails on unknown relationship types).
+Minimal vocabulary for the per-layer ArchiMate source. Each use case has one file per layer in `archimate/<use-case>/` (`motivationlayer.md`, `businesslayer.md`, `applicationlayer.md`, `technologylayer.md`). Element and relation types MUST come from this vocabulary; the generator rejects anything else. What belongs in a model is governed by `software-house-ai/protocols/archimate-modeling.md`.
 
 ## Layers
 
-| Layer | Key |
-|-------|-----|
-| Business | `business` |
-| Application | `application` |
-| Technology | `technology` |
-| Physical | `physical` |
+| Layer | Key | File |
+|-------|-----|------|
+| Motivation | `motivation` | `motivationlayer.md` |
+| Business | `business` | `businesslayer.md` |
+| Application | `application` | `applicationlayer.md` |
+| Technology | `technology` | `technologylayer.md` |
+| Physical | `physical` | (optional, inside `technologylayer.md` with `layer: physical`) |
 
 ## Aspects
 
@@ -24,11 +25,11 @@ Minimal vocabulary for the cell-based ArchiMate source pattern. Each cell file i
 
 ## Element types by (layer, aspect)
 
-A cell may only declare elements whose type is listed for its (layer, aspect). Motivation-aspect elements are cross-layer (the same motivation types apply to every layer).
+An element may only use a type listed for its (layer, aspect). Motivation-layer elements always use the `motivation` aspect.
 
 ### Motivation (any layer)
 
-`goal`, `outcome`, `requirement`, `principle`, `constraint`, `meaning`, `value`
+`stakeholder`, `driver`, `assessment`, `goal`, `outcome`, `principle`, `requirement`, `constraint`, `meaning`, `value`
 
 ### Business
 
@@ -50,7 +51,7 @@ A cell may only declare elements whose type is listed for its (layer, aspect). M
 
 | Aspect | Element types |
 |--------|---------------|
-| active-structure | `node`, `system-software` |
+| active-structure | `node`, `device`, `system-software` |
 | behaviour | `technology-service` |
 | passive-structure | `artifact` |
 
@@ -64,17 +65,18 @@ A cell may only declare elements whose type is listed for its (layer, aspect). M
 
 ## Relationship types
 
+Use the ArchiMate name and direction: the arrow goes from `from` to `to`.
+
 | Type | Direction | Meaning |
 |------|-----------|---------|
-| `used-by` | A → B | A uses B (active → passive/service) |
-| `realizes` | A → B | A realizes B (component → service) |
-| `assigned-to` | A → B | A is assigned to B (actor → role, role → process) |
-| `flows-to` | A → B | A flows to B (process → process) |
-| `composes` | A → B | A composes B (parent → child) |
-| `specializes` | A → B | A specializes B |
-| `triggers` | A → B | A triggers B (event → process) |
-| `accesses` | A → B | A accesses B (process → data-object) |
-
-## PlantUML mapping
-
-The generator renders each element as an ArchiMate-style box with a label derived from its type, grouped by layer. Relationships become arrows labelled with their type. The mapping is internal to `scripts/gen-archimate.mjs` and follows the PlantUML ArchiMate conventions (one package per layer, element shape per type).
+| `realizes` | A → B | A realizes B (data object → business object, component → service, process → goal) |
+| `serves` | A → B | A provides its functionality to B (service → process or component) |
+| `assigned-to` | A → B | A performs or hosts B (role → process, node → artifact) |
+| `accesses` | A → B | A reads or writes B (behaviour → passive structure) |
+| `flows-to` | A → B | A passes control or data to B (process → process) |
+| `triggers` | A → B | A starts B |
+| `composes` | A → B | B is part of A |
+| `aggregates` | A → B | A groups B |
+| `influences` | A → B | A affects B (motivation elements) |
+| `specializes` | A → B | A is a kind of B |
+| `association` | A → B | A is related to B (when no stronger relation applies) |

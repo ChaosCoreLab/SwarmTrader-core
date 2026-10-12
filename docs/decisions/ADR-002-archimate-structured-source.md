@@ -7,7 +7,7 @@ layout: doc
 
 Date: 2026-09-29
 Cycle: 003
-Status: active
+Status: partly superseded by [ADR-005](../ADR-005-archimate-per-layer-source/) (2026-10-05) — the structured source and generated views remain; the one-file-per-cell layout is replaced by one file per layer.
 
 ## Context
 

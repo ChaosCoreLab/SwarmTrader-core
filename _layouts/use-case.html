@@ -2,38 +2,39 @@
 layout: default
 ---
 <link rel="stylesheet" href="{{ '/assets/css/archimate-browser.css' | relative_url }}">
+<header class="doc-header uc-header">
+  <p class="breadcrumb"><a href="{{ '/' | relative_url }}">Home</a> › <a href="{{ '/docs/MAP/' | relative_url }}">Documentation</a> › Use case</p>
+  <h1>{{ page.title }}</h1>
+  <div class="uc-meta">
+    {% if page.status == 'done' %}<span class="pill pill-done">Done</span>{% elsif page.status == 'active' %}<span class="pill pill-active">Active</span>{% else %}<span class="pill pill-planned">Planned</span>{% endif %}
+    {% if page.last_verified %}<span class="last-verified">Last verified: {{ page.last_verified }}</span>{% endif %}
+  </div>
+</header>
+
+{% if page.value %}
+<details class="value-frame">
+  <summary>Value frame</summary>
+  <div class="value-grid">
+    {% if page.value.who %}<div><h3>Who</h3><p>{{ page.value.who }}</p></div>{% endif %}
+    {% if page.value.problem %}<div><h3>Problem</h3><p>{{ page.value.problem }}</p></div>{% endif %}
+    {% if page.value.impact %}<div><h3>Impact of solving</h3><p>{{ page.value.impact }}</p></div>{% endif %}
+    {% if page.value.not_solving %}<div><h3>Impact of NOT solving</h3><p>{{ page.value.not_solving }}</p></div>{% endif %}
+  </div>
+</details>
+{% endif %}
+
+<section class="archimate-section">
+  <h2>ArchiMate diagram</h2>
+  <p class="archimate-hint">Hover an element to highlight its relationships; click it for its role, technology, relationships and a link to edit its source.</p>
+  {% case page.archimate_model %}
+  {% when 'eni-replay' %}{% include use-cases/eni-replay.html %}
+  {% else %}<p class="mermaid-fallback">ArchiMate diagram not available for this use case.</p>
+  {% endcase %}
+</section>
+
 <div class="doc-shell">
   {% include use-case-nav.html %}
   <article class="doc-content use-case">
-    <header class="doc-header">
-      <p class="breadcrumb"><a href="{{ '/' | relative_url }}">Home</a> › <a href="{{ '/docs/architecture/' | relative_url }}">Architecture</a> › Use case</p>
-      <h1>{{ page.title }}</h1>
-      <div class="uc-meta">
-        {% if page.status == 'done' %}<span class="pill pill-done">Done</span>{% elsif page.status == 'active' %}<span class="pill pill-active">Active</span>{% else %}<span class="pill pill-planned">Planned</span>{% endif %}
-        {% if page.last_verified %}<span class="last-verified">Last verified: {{ page.last_verified }}</span>{% endif %}
-      </div>
-    </header>
-
-    {% if page.value %}
-    <details class="value-frame">
-      <summary>Value frame</summary>
-      <div class="value-grid">
-        {% if page.value.who %}<div><h3>Who</h3><p>{{ page.value.who }}</p></div>{% endif %}
-        {% if page.value.problem %}<div><h3>Problem</h3><p>{{ page.value.problem }}</p></div>{% endif %}
-        {% if page.value.impact %}<div><h3>Impact of solving</h3><p>{{ page.value.impact }}</p></div>{% endif %}
-        {% if page.value.not_solving %}<div><h3>Impact of NOT solving</h3><p>{{ page.value.not_solving }}</p></div>{% endif %}
-      </div>
-    </details>
-    {% endif %}
-
-    <section class="archimate-section">
-      <h2>ArchiMate diagram</h2>
-      {% case page.archimate_svg %}
-      {% when 'eni-replay' %}{% include use-cases/eni-replay.html %}
-      {% else %}<p class="mermaid-fallback">ArchiMate diagram not available for this use case.</p>
-      {% endcase %}
-    </section>
-
     {{ content }}
 
     <nav class="uc-prev-next">

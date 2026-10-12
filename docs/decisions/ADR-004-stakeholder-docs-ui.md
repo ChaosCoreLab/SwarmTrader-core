@@ -8,7 +8,7 @@ last_verified: 2026-09-30
 
 Date: 2026-09-30
 Cycle: 005
-Status: active
+Status: active, except item 4 — the inline SVG with layer tabs was replaced in cycle 005 by the ArchiMate browser (HTML grid + relationship overlay, `_includes/use-cases/<use-case>.html`, `assets/js/archimate-browser.js`); see [ADR-005](../ADR-005-archimate-per-layer-source/).
 
 ## Context
 

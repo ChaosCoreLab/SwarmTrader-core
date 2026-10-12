@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-Aprire `http://127.0.0.1:5173/`. Lo snapshot ENI (`src/data/eni-ohlcv.json`) è versionato; `npm run data:update` serve solo per aggiornarlo dalla fonte Borsa Italiana.
+Aprire `http://127.0.0.1:5173/`. Lo snapshot ENI (`src/data/eni-ohlcv.json`) è versionato e incorporato nell'app al build; `npm run data:update` serve solo per aggiornarlo dalla fonte Borsa Italiana.
 
 I comandi valgono su Linux, macOS e Windows `cmd`; in Windows PowerShell usare `npm.cmd` al posto di `npm`.
 
