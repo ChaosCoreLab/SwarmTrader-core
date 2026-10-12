@@ -1,6 +1,6 @@
 # Non-Regression Checklist
 
-last_updated: 2026-10-11 (cycle 007, merged with cycle 008)
+last_updated: 2026-10-12 (cycle 008)
 owner: U422756 (VALIDATOR role not configured; Owner acts as validator)
 
 Constitution Article 25. Commands are written as `npm …` (Linux, macOS, Windows `cmd`); in Windows PowerShell use `npm.cmd`. Type-A items must pass before the Arbiter may issue ACCEPTED for any cycle touching the listed modules. The list only grows; duplicates are merged.
@@ -13,7 +13,7 @@ Constitution Article 25. Commands are written as `npm …` (Linux, macOS, Window
 | NRC-A04 | A | `src/engine/simulationController.js`, `src/main.js` | `npm test` (positionOpen test) and `npm run test:e2e` (replay test) | `frame.positionOpen` equals shares held per ledger on all 2,517 frames; the "Posizione" label shows "Aperta" inside an `isHolding()` gap | cycle 002 |
 | NRC-A05 | A | `archimate/**`, `scripts/gen-archimate.mjs`, `docs/architecture/use-case-*.md`, `_includes/use-cases/*` | `npm run archimate:check` and `npm test` (`tests/archimate.test.js`) | Model valid (no isolated element, every layer linked to the one above, known types and ids, relations in the `from` file, no stale `tech` path); generated files up to date; no software-house roles or code helpers in the ENI model | cycle 007 |
 | NRC-H01 | H | UI as a whole | Human session, see procedure below | Owner confirms each point; outcome recorded in the cycle file | cycle 001 — ✅ VERIFIED 2026-09-29 (cycles 001, 002) |
-| NRC-H02 | H | `archimate/**` (any model content change) | Owner model walkthrough, see procedure below | Owner confirms every cell of the published model; outcome recorded in the cycle file | cycle 007 |
+| NRC-H02 | H | `archimate/**` (any model content change) | Owner model walkthrough, see procedure below | Owner confirms every cell of the published model; outcome recorded in the cycle file | cycle 007 — ✅ VERIFIED 2026-10-11 (cycle 007) |
 
 ## NRC-H01 — Human UI validation procedure
 

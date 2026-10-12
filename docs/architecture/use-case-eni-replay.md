@@ -1,7 +1,7 @@
 ---
 title: "Use Case: Replay ENI with Fixed Genome"
 layout: use-case
-last_verified: 2026-10-05
+last_verified: 2026-10-11
 status: active
 archimate_model: eni-replay
 value:
@@ -26,7 +26,7 @@ The model is written in four Markdown files, one per layer, in [`archimate/eni-r
 |---|---|---|---|---|
 | Motivation | — | — | — | Need to evaluate a trader genome, Inspect how the supplied fixed genome would have traded ENI, Historical analysis only |
 | Business | Analyst, Borsa Italiana | Acquire ENI market history, Replay supplied fixed genome, Inspect replay | ENI price history (historical OHLCV snapshot), Supplied fixed genome, Replay findings | — |
-| Application | Replay engine (SimulationController), Market data loader (DataTrainer), Consistency checker (FitnessValidator), Replay screen (Chart UI) | Advance one trading day, Record decisions and trades, Check replay consistency, Display replay | ENI trading days in memory (StockData), Fixed genome, engine format (Genoma), Day-by-day replay record (trace), Broker operations, Consistency check result | — |
+| Application | Replay engine (SimulationController), Trading engine (Consilium), Market data loader (DataTrainer), Consistency checker (FitnessValidator), Replay screen (Chart UI) | Advance one trading day, Record decisions and trades, Check replay consistency, Display replay | ENI trading days in memory (StockData), Fixed genome, engine format (Genoma), Day-by-day replay record (trace), Broker operations, Consistency check result | — |
 | Technology | Web browser, GitHub Pages, Node.js toolchain, Borsa Italiana chart service | Static hosting, Price data refresh | ENI price file (src/data/eni-ohlcv.json), Published app files (dist/) | — |
 <!-- archimate:matrix end -->
 
@@ -83,6 +83,7 @@ package "business" {
 
 package "application" {
   component "Replay engine (SimulationController)" as app_sim_ctrl
+  component "Trading engine (Consilium)" as app_consilium
   component "Market data loader (DataTrainer)" as app_data_trainer
   component "Consistency checker (FitnessValidator)" as app_validator
   component "Replay screen (Chart UI)" as app_chart_ui
@@ -115,6 +116,9 @@ app_sim_ctrl ..> app_svc_capture : realizes
 app_validator ..> app_svc_verify : realizes
 app_chart_ui ..> app_svc_display : realizes
 app_sim_ctrl --> app_chart_ui : serves
+app_consilium --> app_sim_ctrl : serves
+app_consilium ..> app_data_genome : reads
+app_consilium ..> app_data_ops : writes
 app_data_trainer ..> app_data_stockdata : writes
 app_svc_feed ..> app_data_stockdata : reads
 app_sim_ctrl ..> app_data_genome : reads
@@ -158,6 +162,7 @@ tech_art_bundle ..> app_chart_ui : realizes
 tech_art_bundle ..> app_sim_ctrl : realizes
 tech_art_bundle ..> app_data_trainer : realizes
 tech_art_bundle ..> app_validator : realizes
+tech_art_bundle ..> app_consilium : realizes
 tech_svc_refresh --> bus_proc_acquire : serves
 @enduml
 ```

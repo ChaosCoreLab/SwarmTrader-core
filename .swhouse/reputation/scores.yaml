@@ -1,5 +1,5 @@
 version: 1
-last_updated: 2026-10-11
+last_updated: 2026-10-12
 # Per-intervention voting suspended: single-model deployment. Active metric: Cycle Quality Score (Step 11).
 cycle_quality_scores:
   - cycle: "001"
@@ -21,6 +21,9 @@ cycle_quality_scores:
   - cycle: "006"
     score: 4
     source: cycles/archive/cycle-006.md#step-11--evolution-master
+  - cycle: "007"
+    score: 4
+    source: cycles/archive/cycle-007.md#step-11--evolution-master
   - cycle: "008"
     score: 3
     source: cycles/archive/cycle-008.md#step-11--evolution-master

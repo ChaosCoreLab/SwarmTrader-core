@@ -1,9 +1,9 @@
 version: 1
-last_updated: 2026-10-11
-total_cycles: 7
+last_updated: 2026-10-12
+total_cycles: 8
 cycles_by_status:
-  decided: 6
-  deferred: 1
+  decided: 8
+  deferred: 0
   escalated: 0
 # Cycle 001: DEFERRED 2026-09-28, reopened ACCEPTED WITH CONDITIONS 2026-09-29 (C1, resolved cycle 002).
 # Cycle 002: Track S, resolved C1, ACCEPTED 2026-09-29; O1/O2 accepted as known limits.
@@ -11,7 +11,8 @@ cycles_by_status:
 # Cycle 004: Track F, GitHub Pages rendering, DEFERRED 2026-09-29, ACCEPTED 2026-09-30 (PENDING_HUMAN resolved by cycle 005).
 # Cycle 005: Track F, embed snapshot + stakeholder UI + ArchiMate browser redesign, ACCEPTED 2026-09-30 (C1: Owner visual confirmation).
 # Cycle 006: Track SA, ArchiMate modeling protocol from Owner content review, ACCEPTED 2026-10-05.
-# Cycle 008: Track M, stale snapshot references + multi-platform docs + Ubuntu/Claude instance profile and Claude Code adapter, DEFERRED 2026-10-03 (PENDING_HUMAN: Pages build after merge to main; Claude Code skills VERIFIED by Luca 2026-10-03). Renumbered from 006 on 2026-10-11 after merging with main, where cycle 006 was already taken (Track SA).
+# Cycle 007: Track M, ENI ArchiMate model rebuilt per layer with automated checks, ACCEPTED 2026-10-11 (NRC-H02 Owner walkthrough passed; Consilium engine added as its own element).
+# Cycle 008: Track M, stale snapshot references + multi-platform docs + Ubuntu/Claude instance profile and Claude Code adapter, DEFERRED 2026-10-03, ACCEPTED 2026-10-12 (PENDING_HUMAN resolved: Claude Code skills VERIFIED 2026-10-03, Pages build green after merge 2026-10-12).
 average_cycle_duration_days: 1.8
 memory_entries:
   decisions: 3

@@ -1,12 +1,12 @@
 ---
 title: "Development and Operations"
 layout: doc
-last_verified: 2026-10-11
+last_verified: 2026-10-12
 ---
 
 # Development and Operations
 
-last_verified: 2026-10-11
+last_verified: 2026-10-12
 
 ## Requirements
 

@@ -1,7 +1,7 @@
 ---
 use_case: eni-replay
 layer: technology
-last_verified: 2026-10-05
+last_verified: 2026-10-11
 ---
 
 # Technology layer — ENI replay
@@ -90,4 +90,5 @@ Come modificare questo file
 | tech_art_bundle | realizes | app_sim_ctrl | |
 | tech_art_bundle | realizes | app_data_trainer | |
 | tech_art_bundle | realizes | app_validator | |
+| tech_art_bundle | realizes | app_consilium | |
 | tech_svc_refresh | serves | bus_proc_acquire | |
