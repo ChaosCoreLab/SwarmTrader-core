@@ -10,7 +10,7 @@ last_verified: 2026-10-12
 
 | File | Domain | One-line topic | Last verified |
 |------|--------|----------------|--------------|
-| architecture/simulator-overview.md | architecture | Browser simulator components, data flow, and replay state | 2026-09-30 |
+| architecture/simulator-overview.md | architecture | Browser simulator components, strategy contract, data flow, and replay state | 2026-10-12 |
 | architecture/use-case-eni-replay.md | architecture | ENI replay use case; interactive ArchiMate diagram and matrix generated from `archimate/eni-replay/` | 2026-10-11 |
 | decisions/ADR-001-static-snapshot.md | decisions | Why the PoC uses a static OHLCV snapshot and no runtime backend; Consilium engine v1 choice | 2026-09-29 |
 | decisions/ADR-002-archimate-structured-source.md | decisions | ArchiMate as a structured source with generated views (layout superseded by ADR-005) | 2026-10-05 |

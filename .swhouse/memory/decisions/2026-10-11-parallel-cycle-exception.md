@@ -30,3 +30,6 @@ The two cycles touch disjoint areas (documentation model versus `src/engine`). T
 
 ## Confidence
 Medium — a deviation from the protocol, bounded by the conditions above; not verified by a prior run.
+
+## Update 2026-10-12
+Cycle 007 was closed on `main` and merged into the epic branch (`c66df59`); `npm test`, `archimate:check` and the e2e were rerun. Cycle 009 then ran Step 12 (DEFERRED, `PENDING_HUMAN` on github-pages) and moved to `cycles/archive/cycle-009.md`, updating the shared state files. Cycle 010 stays open as `current-010.md` until the operator chooses the genome form.

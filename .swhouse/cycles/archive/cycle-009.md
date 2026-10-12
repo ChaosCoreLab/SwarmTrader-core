@@ -1,7 +1,9 @@
 ---
 cycle: 009
-status: open
+status: closed
 opened: 2026-10-11
+closed: 2026-10-12
+decision: DEFERRED
 problem: "Il replay, il validatore e la UI conoscono solo il genoma a macchina a stati: manca un confine che permetta a un secondo tipo di genoma di essere eseguito dallo stesso motore (issue #11, epica #4)"
 track: M
 parallel_with: "007 (aperto su main, in attesa della verifica umana NRC-H02); eccezione in memory/decisions/2026-10-11-parallel-cycle-exception.md"
@@ -213,7 +215,18 @@ Status: PENDING_HUMAN
 - Validation matrix: nessun target aggiunto o rimosso; `last_updated` 2026-10-11 non modificato qui (file condiviso: Step 12).
 - NRC: proposta di una nuova voce **NRC-A06** (`npm test`, `tests/strategy.test.js`: contratto e strategia non-FSM su ENI) — **da inserire allo Step 12**, nel file condiviso.
 
-**Da applicare allo Step 12, dopo l'assorbimento del 007:** `metrics/summary.yaml`, `reputation/scores.yaml`, `non_regression_checklist.md` (NRC-A06), `docs/MAP.md` (riga di `simulator-overview.md` e data), `validation_matrix.md` se serve.
+**Applicato allo Step 12 (2026-10-12), dopo l'assorbimento del 007 nel branch:** `metrics/summary.yaml`, `reputation/scores.yaml`, `non_regression_checklist.md` (NRC-A06), `docs/MAP.md` (riga di `simulator-overview.md` e data), `validation_matrix.md` se serve.
+
+**Close checklist**
+- [x] `metrics/summary.yaml` — `total_cycles` 9, `memory_entries` aggiornati (decisioni 7, pattern 6, errori 5, knowledge 4), `last_updated` 2026-10-12
+- [x] Almeno una entry di memoria scritta (decisione, knowledge, errore: vedi sopra)
+- [x] Fallimenti del ciclo registrati: `errors/2026-10-11-e2e-port-5173-reused.md`
+- [x] Target di deployment aggiunti/rimossi: nessuno (validation matrix invariata)
+- [x] `docs/MAP.md` aggiornato: riga di `simulator-overview.md` (data 2026-10-12)
+- [x] `architecture/simulator-overview.md`: `last_verified` 2026-10-12
+- [x] Decisione nuova: `memory/decisions/2026-10-11-strategy-contract.md`; nessun ADR (il contratto è una scelta interna al motore, documentata in `simulator-overview.md`)
+- [x] Procedure nuove: nessuna in `operations/` (nessun comando o ambiente cambiato)
+- [x] NRC-A06 inserita nella checklist
 
 ## Step 11 — EVOLUTION MASTER: Evaluate the Process
 
@@ -227,4 +240,16 @@ Status: PENDING_HUMAN
 
 **Proposte (Article 11, non adottate):** (1) rendere configurabile la porta degli e2e, o non riusare il server esistente; (2) ordinare nella UI le operazioni di una stessa barra in ordine di esecuzione (E4).
 
-**Step 12 — sospeso** per l'eccezione concordata: parte dopo che il ciclo 007 è chiuso o DEFERRED su `main` e il branch lo ha assorbito.
+## Step 12 — ARBITER: Decide
+
+**Agent:** claude-opus-5-5
+
+**Decision: DEFERRED**
+
+Il contenuto è completo e verificato per esecuzione: dopo l'assorbimento del ciclo 007 nel branch (merge `c66df59`) sono stati rieseguiti `npm test` (28/28, golden incluso), `npm run archimate:check` (valido) ed e2e (10/10 sulla porta predefinita 5173, libera). Gli Type-A NRC-A01…A05 passano, la close checklist dello Step 10 è completa e le aree escluse (vendor, UI, ArchiMate, script) non sono state toccate. Lo Step 9 contiene però il target `github-pages` con stato `PENDING_HUMAN`: il bundle cambia (il motore ha un nuovo contratto) ma il deploy parte solo dal merge su `main`, e in quel caso il protocollo non consente ACCEPTED.
+
+**Condizione per la rivalutazione**
+Target `github-pages` — dopo il merge del branch `epic-genoma-non-fsm` su `main`: il workflow "Deploy GitHub Pages" termina verde e l'app si carica su `https://chaoscorelab.github.io/SwarmTrader-core/app/` mostrando lo snapshot ENI e il replay (stato, IIR, ledger) come prima.
+
+**Responsabile:** Owner (U422756); l'operatore Luca può registrare l'esito se il controllo è fatto in sua presenza.
+**Riapertura:** appendere a `cycles/archive/cycle-009.md` il blocco `## Human Verification — [data]` (Performed by / Target / Result / Notes). Con esito VERIFIED lo stato diventa `ACCEPTED`; se fallisce si apre un ciclo Sprint che referenzia `cycle-009`. La registrazione passa da un branch e una PR dedicati.
