@@ -1,5 +1,5 @@
 ---
-cycle: 006
+cycle: 008
 status: closed
 opened: 2026-10-03
 closed: 2026-10-03
@@ -286,7 +286,7 @@ Il contenuto è completo e verificato per esecuzione su Linux: riferimenti corre
 2. AC-07 — in una nuova sessione Claude Code nel repository: `/open-cycle`, `/close-cycle`, `/vote`, `/query-memory` compaiono tra le skill.
 
 **Responsabile:** Owner (U422756) per la condizione 1; operatore Luca per la condizione 2.
-**Riapertura:** appendere a `cycles/archive/cycle-006.md` il blocco `## Human Verification — [data]` (Performed by / Target / Result / Notes) per ciascuna condizione. Con entrambe VERIFIED lo stato diventa `ACCEPTED`; se una fallisce si apre un ciclo Sprint che referenzia `cycle-006`.
+**Riapertura:** appendere a `cycles/archive/cycle-008.md` il blocco `## Human Verification — [data]` (Performed by / Target / Result / Notes) per ciascuna condizione. Con entrambe VERIFIED lo stato diventa `ACCEPTED`; se una fallisce si apre un ciclo Sprint che referenzia `cycle-006`.
 
 ## Human Verification — 2026-10-03
 Performed by: Luca

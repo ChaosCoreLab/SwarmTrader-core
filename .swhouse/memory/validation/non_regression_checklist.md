@@ -1,6 +1,6 @@
 # Non-Regression Checklist
 
-last_updated: 2026-10-03 (cycle 006)
+last_updated: 2026-10-03 (cycle 008)
 owner: U422756 (VALIDATOR role not configured; Owner acts as validator)
 
 Constitution Article 25. Commands are written as `npm …` (Linux, macOS, Windows `cmd`); in Windows PowerShell use `npm.cmd`. Type-A items must pass before the Arbiter may issue ACCEPTED for any cycle touching the listed modules. The list only grows; duplicates are merged.
