@@ -906,3 +906,18 @@ Per R2–R6 ed E2: l'orientamento di `c` e i valori reali; la tabella delle clas
 **File toccati dal Librarian:** 7 nuovi file in `.swhouse/memory/{decisions,patterns,errors,knowledge}/`, 3 voci aggiornate (`parallel-cycle-exception`, `strategy-contract`, `jekyll-stakeholder-docs`) e questo file. Nessun file condiviso, `src/`, `docs/`, `_data/` modificato. Nota: l'incarico citava un controllo a campione del coordinatore tra i livelli della catena; nel file di ciclo è registrata la sola applicazione delle correzioni con controlli ripetuti, e il pattern descrive questo.
 
 **Prossimo step:** Step 11 — EVOLUTION MASTER
+
+## Revisione richiesta dall'operatore (2026-10-14)
+
+**Feedback di Luca:** ha letto il documento e ne ha capito «poco o niente»: non riesce a scegliere su quella base. **Rimuove il vincolo di dimensione** (la riserva su AC-06 viene chiusa in questo senso) e chiede di **estendere il documento** per renderlo più esaustivo e comprensibile anche a chi non ha competenze finanziarie: spiegazioni approfondite con esempi concreti e, **per ogni approccio, un esempio di applicazione al nostro problema**, semplice e con semplificazioni dichiarate, che mostri come l'approccio sarebbe applicato e come funzionerebbe. **Deve nascere un elaborato nuovo**, senza eliminare quello attuale, così da poter consultare entrambi.
+
+**Stato del ciclo:** Steps 1–10 completi sul documento attuale; Step 11 e 12 **sospesi** finché Luca non rilegge l'elaborato nuovo. Il ciclo 007 è nel frattempo chiuso e unito, quindi lo Step 12 non dipende più da Simone, ma solo dalla scelta di Luca (AC-07) e dalla verifica di Pages.
+
+**Nuovi criteri di accettazione (si aggiungono a quelli dello Step 2; AC-06 è sostituito da AC-10)**
+- AC-10 **Comprensibilità da zero.** Il lettore è uno sviluppatore senza competenze finanziarie né di apprendimento automatico: ogni termine è spiegato nel capitolo in cui compare, con un esempio; nessun vincolo di lunghezza.
+- AC-11 **Un esempio applicato per approccio.** Per ciascuna forma (macchina a stati attuale, punteggio lineare, alberi/GP, lista di regole, reti MLP/NEAT, fuzzy, HMM) un esempio semplice sul nostro problema (decidere buy/sell/hold ogni giorno), con tabella giorno per giorno, esito e commento, e un esempio di mutazione e crossover.
+- AC-12 **Stesso banco di prova.** Tutti gli esempi usano lo stesso dataset inventato di 20 giorni e lo stesso valutatore, così sono confrontabili; i numeri sono generati da script, le semplificazioni dichiarate, e il testo dice che i valori sono inventati e non provano nulla sulla qualità degli approcci.
+- AC-13 **Elaborato nuovo, il vecchio intatto.** `docs/architecture/genome-forms-review.md` non si modifica; il nuovo documento è un file a parte con voce di menu propria.
+- AC-14 **Prova di lettura.** Un lettore simulato senza competenze finanziarie legge il documento e segnala ciò che non si capisce; le segnalazioni si correggono prima di riconsegnarlo a Luca.
+
+**Piano di coordinamento** (sub-agent, il coordinatore integra): (1) banco di prova comune e guida di stile; (2) nove capitoli in parallelo: introduzione e indicatori, algoritmo genetico e valutazione, FSM attuale, punteggio lineare, alberi/GP, lista di regole, reti, fuzzy, HMM; (3) un integratore compone il documento, aggiunge la guida alla scelta, il glossario esteso e i riferimenti; (4) due revisori indipendenti, uno di numeri e fonti, uno di leggibilità (lettore senza competenze); (5) correzioni, pubblicazione come nuovo artefatto, riconsegna a Luca.
