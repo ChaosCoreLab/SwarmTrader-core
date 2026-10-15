@@ -962,3 +962,10 @@ Per R2–R6 ed E2: l'orientamento di `c` e i valori reali; la tabella delle clas
 - Le domande 2-5 restano a Luca (la 2 è ancora aperta); le opzioni di default del capitolo 10 sono suggerimenti.
 - `docs/MAP.md` non è stato modificato (vincolo del compito): quando il ciclo si chiude va aggiunta la riga della guida, come già previsto per la rassegna.
 - Gli script di lavoro restano nello scratchpad e non sono nel repository; il testo lo dichiara nella premessa.
+
+## Esito della revisione richiesta dall'operatore (2026-10-15)
+
+- Guida estesa `docs/architecture/genome-forms-guide.md` (~75.000 parole) completata: due giri di lettori simulati e verificatori indipendenti (ricalcolo numerico ~1250 valori, 0 differenze sostanziali), poi un ultimo giro di correzioni mirate (Q1/Q2 chiarite, condizioni 12/13 misurate su dati ENI reali, rinomine, percorsi ch.10 bilanciati, terza via con nome unico).
+- Controlli: nessun Liquid, 96 recinti pari, `npm test` verde, `archimate:check` valido; modificata solo la guida. La rassegna compatta resta invariata.
+- Residui cosmetici: collisione etichette R, doppio senso di "azione" nel cap. 3, nomi P1/P2 nel cap. 6; fonti web e rendering Jekyll non verificati.
+- Steps 11 e 12 restano sospesi in attesa di revisione e risposte di Luca (Q2–Q5, scelta candidati).
