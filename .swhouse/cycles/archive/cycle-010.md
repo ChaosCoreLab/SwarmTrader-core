@@ -2,7 +2,7 @@
 cycle: 010
 status: closed
 closed: 2026-10-18
-decision: DEFERRED
+decision: ACCEPTED
 opened: 2026-10-11
 problem: "Non è noto quali forme di genoma, oltre alla macchina a stati, siano adatte a decidere buy/stay/sell da prezzi e volumi giornalieri e a evolvere con un algoritmo genetico: la scelta della forma blocca E2 e le ricerche R3 e R4 (issue #5, epica #4)"
 track: M
@@ -1046,3 +1046,12 @@ Per R2–R6 ed E2: l'orientamento di `c` e i valori reali; la tabella delle clas
 
 ---
 *Cycle 010 closed by ARBITER — 2026-10-18*
+
+## Human Verification — 2026-10-18 (github-pages, NRC-H03)
+
+**Performed by:** Luca (operator), con controlli automatici eseguiti da Claude (sessione OpenCode)
+**Target:** github-pages — pagine della rassegna e della guida (condizione per la rivalutazione dello Step 12; NRC-H03)
+**Result:** VERIFIED
+**Notes:** dopo il merge della PR #18 in `main` (merge `471b9ca`) il workflow "Deploy GitHub Pages" è terminato `success` (run 39141827228). `/docs/architecture/genome-forms-review/` e `/docs/architecture/genome-forms-guide/` rispondono 200, senza Liquid grezzo (`{{`, `{%`), con i titoli presenti e le voci di menu. Verifica con Playwright sulle pagine pubblicate a 1280 e 390 px: nessuno scorrimento orizzontale della pagina, nessuna tabella fuori dal proprio riquadro scorrevole (13 tabelle nella rassegna, 97 nella guida), blocco `<style>` presente come elemento del DOM e non visibile come testo, voci di menu presenti per entrambi i documenti, nessun errore in console. NRC-H03 soddisfatta su ogni punto. Registrazione eseguita con commit diretto su `main` su richiesta dell'operatore.
+
+Con la condizione VERIFIED, lo stato del ciclo passa a `ACCEPTED`.

@@ -3,7 +3,7 @@ cycle: 009
 status: closed
 opened: 2026-10-11
 closed: 2026-10-12
-decision: DEFERRED
+decision: ACCEPTED
 problem: "Il replay, il validatore e la UI conoscono solo il genoma a macchina a stati: manca un confine che permetta a un secondo tipo di genoma di essere eseguito dallo stesso motore (issue #11, epica #4)"
 track: M
 parallel_with: "007 (aperto su main, in attesa della verifica umana NRC-H02); eccezione in memory/decisions/2026-10-11-parallel-cycle-exception.md"
@@ -253,3 +253,12 @@ Target `github-pages` — dopo il merge del branch `epic-genoma-non-fsm` su `mai
 
 **Responsabile:** Owner (U422756); l'operatore Luca può registrare l'esito se il controllo è fatto in sua presenza.
 **Riapertura:** appendere a `cycles/archive/cycle-009.md` il blocco `## Human Verification — [data]` (Performed by / Target / Result / Notes). Con esito VERIFIED lo stato diventa `ACCEPTED`; se fallisce si apre un ciclo Sprint che referenzia `cycle-009`. La registrazione passa da un branch e una PR dedicati.
+
+## Human Verification — 2026-10-18
+
+**Performed by:** Luca (operator), con controlli automatici eseguiti da Claude (sessione OpenCode)
+**Target:** github-pages (condizione per la rivalutazione dello Step 12)
+**Result:** VERIFIED
+**Notes:** branch `epic-genoma-non-fsm` unito in `main` con la PR #18 (merge `471b9ca`, 2026-10-18); il workflow "Deploy GitHub Pages" su quel commit è terminato `success` (run 39141827228, confermato con `gh run list`). L'app su `https://chaoscorelab.github.io/SwarmTrader-core/app/` si carica e mostra lo snapshot ENI e il replay come prima, verificati con Playwright sulla pagina pubblicata: 2.517 barre (ultima 28 set 2026), stato (`N`, `W`), IIR (es. 8,85 €), valore totale, replay oltre il primo trade (barra 901, 2020-04-22) con ledger di 11 eventi coerenti con le operazioni del broker (in testa BUY 8,84 € × 1.299), posizione «Aperta», nessun errore in console, nessuno scorrimento orizzontale. Registrazione eseguita con commit diretto su `main` su richiesta dell'operatore (deroga al branch e alla PR dedicati previsti qui sopra).
+
+Con la condizione VERIFIED, lo stato del ciclo passa a `ACCEPTED`.
