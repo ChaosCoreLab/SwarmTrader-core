@@ -11,7 +11,7 @@ last_verified: 2026-10-12
 ## Requirements
 
 - Node.js 20 or newer and npm.
-- Windows PowerShell: use `npm` to avoid execution-policy issues with `npm.ps1`.
+- Windows PowerShell: use `npm.cmd` to avoid execution-policy issues with `npm.ps1`.
 - Borsa Italiana network access only when refreshing data.
 
 ## Select the agent instance

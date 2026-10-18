@@ -5,6 +5,12 @@ architecture:
   - id: use-case-eni-replay
     title: Use case — ENI Replay
     path: /docs/architecture/use-case-eni-replay/
+  - id: genome-forms-review
+    title: Rassegna delle forme di genoma
+    path: /docs/architecture/genome-forms-review/
+  - id: genome-forms-guide
+    title: Guida alle forme di genoma
+    path: /docs/architecture/genome-forms-guide/
 decisions:
   - id: ADR-001-static-snapshot
     title: ADR-001 Static Snapshot

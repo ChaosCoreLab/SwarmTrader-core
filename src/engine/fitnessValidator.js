@@ -3,7 +3,9 @@ const VALID_STATES = new Set(['NW', 'N', 'NE', 'W', 'C', 'E', 'SW', 'S', 'SE']);
 const VALID_REASONS = new Set(['signal', 'sell', 'take profit', 'stop loss']);
 
 export class FitnessValidator {
-  validate(trace) {
+  /** `labels` are the state labels the strategy declares; without them the nine Consilium states apply. */
+  validate(trace, { labels = null } = {}) {
+    const allowedLabels = labels ? new Set(labels) : VALID_STATES;
     const errors = [];
     const warnings = [];
     let openQuantity = 0;
@@ -20,12 +22,18 @@ export class FitnessValidator {
         continue;
       }
       previousTime = frame.time;
-      if (!VALID_STATES.has(frame.state)) errors.push(`Unknown algorithm state at ${frame.time}.`);
-      if (![frame.iirPrice1, frame.iirPrice2, frame.iirVolume1, frame.iirVolume2].every(Number.isFinite)) {
-        errors.push(`Non-finite IIR value at ${frame.time}.`);
+      if (!allowedLabels.has(frame.state)) errors.push(`Unknown algorithm state at ${frame.time}.`);
+      const indicators = frame.strategy
+        ? Object.values(frame.strategy.indicators ?? {})
+        : [frame.iirPrice1, frame.iirPrice2, frame.iirVolume1, frame.iirVolume2];
+      if (indicators.length === 0 || !indicators.every(Number.isFinite)) {
+        errors.push(`Non-finite indicator value at ${frame.time}.`);
       }
 
-      for (const operation of frame.operations ?? []) {
+      // Buys fill at the open, before any stop or take-profit close of the same bar, whatever order the frame lists them in.
+      const operations = frame.operations ?? [];
+      const inFillOrder = [...operations.filter((operation) => operation.side === 'buy'), ...operations.filter((operation) => operation.side !== 'buy')];
+      for (const operation of inFillOrder) {
         operationCount++;
         if (operation.time !== frame.time) errors.push(`Operation timestamp mismatch at ${frame.time}.`);
         if (!['buy', 'sell'].includes(operation.side)) errors.push(`Invalid operation side at ${frame.time}.`);
