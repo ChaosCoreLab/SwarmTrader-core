@@ -974,3 +974,8 @@ Per R2–R6 ed E2: l'orientamento di `c` e i valori reali; la tabella delle clas
 
 - Q2 (dove sta la memoria dentro la forma scelta): **solo negli indicatori**. Esclusi: variabili aggiuntive portate dal genoma e stato del portafoglio fornito dal motore (coerente col commento del 2026-10-15: il genoma non porta informazioni «ambientali»).
 - Conseguenza: la «terza via» (cap. 5.5.3-bis) e le reti ricorrenti con stato libero non sono ammesse; restano valide le forme con memoria negli indicatori (EMA e simili). Da riportare nel blocco Human Verification (AC-07) con Q3–Q5 ancora aperte.
+
+## Risposta dell'operatore alla Q3 (2026-10-18, commento sull'artefatto)
+
+- Q3 (interpretabilità vs espressività): chi decide deve poter **intuire** le decisioni del genoma, anche senza calcolarle banalmente. Lo sforzo dedicato all'interpretabilità in R4 va tenuto **bilanciato**: è solo uno degli elementi della ricerca, non un vincolo dominante. Quindi niente esclusione di forme per scarsa leggibilità, purché la decisione sia spiegabile a grandi linee.
+- Aperte: Q4, Q5, scelta candidati.
