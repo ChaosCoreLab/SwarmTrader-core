@@ -375,7 +375,7 @@ Per i primi giorni la variazione su 5 giorni non è definita (trattino): servono
 
 #### 1.3.5 Indicatori che non sono una semplice media
 
-Non tutti gli indicatori si ottengono con una media: esistono per esempio i massimi e i minimi degli ultimi N giorni, l'RSI (confronta i rialzi recenti con i ribassi recenti), lo stocastico e l'ATR (quanto si muove il prezzo in un giorno). Gli esempi della guida non li usano. Scegliere quali indicatori adottare è un compito di ricerca a parte (R2, la ricerca sugli indicatori da usare). Una descrizione breve di questi quattro è nell'appendice, sezione «Dal capitolo 1: Altri indicatori».
+Non tutti gli indicatori si ottengono con una media: esistono per esempio i massimi e i minimi degli ultimi N giorni, l'RSI (confronta i rialzi recenti con i ribassi recenti), lo stocastico e l'ATR (quanto si muove il prezzo in un giorno). Gli esempi della guida non li usano. Scegliere quali indicatori adottare è un compito di ricerca a parte (R2, la ricerca sugli indicatori da usare), svolto nel [Catalogo degli indicatori del genoma](../genome-indicators-catalog/). Una descrizione breve di questi quattro è nell'appendice, sezione «Dal capitolo 1: Altri indicatori».
 
 #### 1.3.6 Gli ingressi usati negli esempi dei capitoli
 
@@ -3511,7 +3511,7 @@ Non tutti gli indicatori si ottengono con una media. Quattro esempi, senza calco
 - **Stocastico**: dice dove si trova il prezzo di oggi dentro l'intervallo tra il minimo e il massimo degli ultimi N giorni, da 0 (sul minimo) a 100 (sul massimo).
 - **ATR** (average true range, escursione media vera): misura quanto il prezzo si muove in un giorno, includendo i salti tra la chiusura di ieri e l'apertura di oggi. Dice quanto è «nervoso» il titolo, non in che direzione va.
 
-Quali indicatori usare davvero è un compito di ricerca a parte (R2, la ricerca sugli indicatori da usare).
+Quali indicatori usare davvero è un compito di ricerca a parte (R2, la ricerca sugli indicatori da usare): vedi il [Catalogo degli indicatori del genoma](../genome-indicators-catalog/).
 
 ### Dal capitolo 2: Crossover e mutazione per le sette forme
 

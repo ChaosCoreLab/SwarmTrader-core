@@ -804,3 +804,205 @@ Rispetto agli Step 3 e 4 questo step ha cambiato **strumento**: invece di argome
 - **Q2 conteggio degli ingressi:** accettata la proposta del Critic (C2): ogni termine della somma conta uno, e sono escluse le combinazioni lineari esatte di altri ingressi.
 - **Q3 dati per le correlazioni:** accettata la proposta del Critic: identità algebriche e serie sintetica come prova principale; lo snapshot ENI solo come controllo di contorno dichiarato, senza guidare la scelta degli ingressi.
 - **Q4 prezzo di vendita del simulatore:** segnalato come rischio a R6 ed E2, **senza toccare il codice di Consilium** e senza aprire una issue a parte.
+
+## Step 7 — BUILDER: Produce a Solution
+
+**Agent:** claude-opus-5-5 (subagent; ripreso dopo un'interruzione di rete, stato dei file controllato prima di continuare)
+**Confidence:** Medium — formule, identità e numeri sono prodotti e ricontrollati da script (incrementale = diretto su tutte le barre controllate, tabelle del documento identiche a `out/`); la confidenza non sale perché (a) i testi originali degli autori non sono letti e il CMF non ha una fonte con la formula, (b) la soglia di ridondanza R² ≥ 0,90 e la composizione del blocco livello/tendenza sono giudizi dell'autore, (c) la serie sintetica ha volatilità costante e non misura le ridondanze dovute all'agitazione variabile, (d) la verifica indipendente (AC-10) e la lettura simulata (AC-11) non sono ancora fatte, (e) la build di Pages non è provata.
+**Assunzioni**
+- Vincoli di Luca applicati: chiusura (Q1), regola C2 (Q2), identità e serie sintetica come prova principale con ENI solo controllo di contorno (Q3), prezzo di vendita come rischio per R6/E2 senza toccare Consilium né aprire issue (Q4), famiglie evolvibili ammesse, limite 10 (12 se motivato), memoria solo negli indicatori, forma lineare con soglie.
+- «Ingressi» = termini della somma; i parametri sono geni e non contano nel limite (Step 3, Step 1 risposta 2).
+- `docs/MAP.md` non si tocca qui (Step 12).
+
+### Questioni non risolte (dichiarate prima del resto)
+- **AC-10 verifica indipendente:** non fatta (è lo Step 9). `verify/` contiene solo un README; lo Scientist ricalcola senza leggere `ref/`.
+- **AC-11 lettura simulata:** non fatta; da eseguire allo Step 8 o 9 su «In breve», capitolo 7 e almeno tre schede (proposta: N1, ATR, N17).
+- **Lunghezza:** 965 righe, 15132 parole (conteggio `check-doc.mjs`), oltre la guida per densità. Le schede hanno voci fuse (A1) ma 16 schede con esempio restano lunghe; il percorso di lettura (In breve → capitolo 7 → capitolo 9) è dichiarato in apertura. Riduzione da valutare allo Step 8 (OPTIMIZER).
+- **Blocco livello/tendenza collineare:** sulla serie sintetica d lenta (R² 0,95) e RSI centrato (R² 0,97) superano la soglia di ridondanza rispetto agli altri ammessi. L'RSI è ammesso per un argomento algebrico nuovo (identità I5, sotto), non sui dati ENI; d lenta per avere due velocità. Portato a Luca come domanda D2.
+- **Soglia R² ≥ 0,90:** scelta dell'autore, marcata `[ipotesi]` nel documento.
+- **Limite della serie sintetica:** volatilità costante e volume indipendente dal prezzo; per ATR/N6/Parkinson le correlazioni ENI (0,97-0,98) e sintetiche (0,63-0,64) divergono. Dichiarato in 5.5.
+- **Fonti:** il Builder ha riaperto le pagine TA-Lib ATR, EMA, STOCH, ADOSC, OBV, RSI, MACD (periodi predefiniti, formula OBV) e controllato che i 22 URL del documento rispondano 200; le altre fonti hanno lo stato attribuito allo Step 4/5. CMF senza fonte con formula; N10, N17, forma log del volume relativo e I5 sono costruzioni senza fonte.
+- **Build Jekyll non provata** (nessun Ruby/Jekyll): PENDING_HUMAN dopo il merge, come NRC-H03.
+- **Memoria:** la correzione di `knowledge/consilium-trader-order-timing` (vendita alla media OHLC/4, chiusure al prezzo di soglia) resta allo Step 10.
+
+### Prodotto
+- `docs/architecture/genome-indicators-catalog.md` (nuovo, 965 righe, 15132 parole, 26 tabelle): front matter come la guida (`title`, `layout: doc`, `last_verified: 2026-10-18`), blocco `<style>` locale per tabelle e URL lunghi, nessun costrutto Liquid. Struttura: avvertenza e percorso di lettura; **In breve** (proposta di 8 ingressi, riserve, tre fatti trasversali); 1 metodo, notazione e regola del tempo (acquisto all'apertura, vendita alla media OHLC/4, stop al prezzo di soglia, `describe()` finito dalla barra 1; dataset esteso con regola dichiarata); 2 prezzo di ingresso e filtri IIR (forma dal codice, **età media `(1-c)/c` come unica costante di tempo**, `1/c` come regola pratica, barre di avvio al 5 %; conversioni `2/(N+1)` [2] e `1/N` [1][17]; perché la chiusura; rischio del prezzo di vendita); 3 mattoni di stato con politica di avvio e **regola unica del salto** sui denominatori nulli, con la tabella della barra ENI di indice 1738; 4 sedici schede raggruppate per lacuna (A, L1-L4) — EMA, SMA, N1, MACD, ROC, N16; RSI, Bollinger; ATR/NATR, N6, N9, stocastico; N14; OBV, N17, CMF — e la tabella «variante / perché no»; 5 scala, normalizzazione, ridondanza (identità I1-I5, serie sintetica, regola R², controllo ENI su intero/40 %/60 %); 6 famiglie evolvibili; 7 esito (regola di conteggio prima delle tabelle, due tabelle trasversali, elenco motivato, non accertato); 8 rischi per R3-R6/E2; 9 domande D1-D4; glossario; 24 riferimenti numerati con stato.
+- **Proposta:** 8 ingressi — d veloce e d lenta (N1), RSI centrato, distanza dal massimo N9, NATR, CLV in EMA (N14), log volume relativo (N16), OBV normalizzato (N17); riserve N15 (gap) e CMF; 18 numeri nel genoma (8 pesi, 2 soglie, 8 parametri), almeno un grado di libertà ridondante. Nessun motivo strategico trovato per 11-12.
+- **Fatto nuovo del Builder (identità I5):** `EMA0(dC; c) = c/(1-c) * (C - EMA(C; c))` (scarto relativo 8,4e-17 su sintetica e ENI). Ne segue che l'RSI centrato è la distanza dalla EMA divisa per la variazione assoluta media: spiega la correlazione RSI-distanza (0,98 su sintetica a volatilità costante, 0,85 su ENI) e colloca l'RSI in L4. Da ricontrollare allo Step 9.
+- Script in `/home/luca/Workspace/swarmtrader-r2-work/`: `dataset/make-toy-ohlcv.mjs` (rilegge la tabella della guida e si ferma se chiusura o volume differiscono) → `dataset/toy20-ohlcv.json`; `ref/indicators.mjs` (versioni incrementale e diretta di 24 indicatori), `ref/catalog.mjs` (parametri), `ref/data.mjs` (dataset, ENI in sola lettura, serie sintetica seme 20261018), `ref/stats.mjs`, `ref/check-incremental.mjs`, `ref/identities.mjs`, `ref/corr.mjs`, `ref/examples.mjs`, `ref/check-doc.mjs`; output in `out/` (`toy20-table.md`, `check-incremental.md`, `identities.md`, `corr.md`, `examples.md`); `verify/README.txt`.
+- `_data/docs.yml`: voce `genome-indicators-catalog` sotto `architecture`.
+- `docs/architecture/genome-forms-guide.md`: due collegamenti al catalogo (sezione 1.3.5 e appendice «Dal capitolo 1: Altri indicatori»), nessun'altra modifica. `genome-forms-review.md` invariato.
+
+### Risposte ai rilievi del Critic (Step 5)
+
+| Rilievo | Risoluzione |
+|---|---|
+| A1 Volume (Alta) | **Mitigato.** Voci fuse (Calcolo, Avvio e casi limite, Campi e parametri, Ingresso nel punteggio); anticipazione dei dati in una regola unica (1.3); «forse» ed escluse come righe in 4.6. Misura: 965 righe, 15132 parole; resta lungo (questione non risolta). |
+| A2 Tabella da 11 colonne (Media) | **Risolto.** Due tabelle trasversali (7.2 fatti di calcolo, 6 colonne; 7.3 fatti per il punteggio, 7 colonne) e `<style>` locale. |
+| A3 Ordine per elenco dell'issue (Bassa) | Nessuna azione: ordine per lacuna. |
+| B1 Famiglie come giudizio, quote (Media) | **Risolto.** Appartenenza = lacuna colmata (L1-L4 dedotte dal codice, 4.0), più il gruppo A per ciò che i filtri vedono già; nessuna quota per famiglia; colonna «lacuna» in 7.3. |
+| B2 ROC isolato in «slancio» (Bassa) | **Risolto.** ROC nel gruppo A con le distanze; R² 0,79-0,83. |
+| C1 Mattoni senza i fatti del contratto (Media) | **Risolto.** 3.2 politica di avvio (finito dalla barra 1, finestra crescente, valore neutro, avvio da zero per i rapporti di EMA) e 3.3 regola del salto con NaN che dura 779 barre. |
+| 1a L5 e quote dell'Alt. 1 (Media) | **Risolto.** L5 spostata in 5.2 come proprietà; nessuna quota. |
+| 1b Interazioni (Bassa) | **Risolto.** Frase in 4.0: materia di R4. |
+| 2a Alt. 2 come struttura (Alta) | **Risolto.** Non usata come struttura; serie sintetica con seme come controllo di costruzione (5.5). |
+| 3a Alt. 3 (Bassa) | **Risolto** in forma ridotta: i modi di fallire stanno nella voce «Avvio e casi limite» (saturazione, scala, divisione per zero, dipendenza dall'inizio, avvio delle librerie). |
+| 4a Alt. 4 retina (Media) | **Risolto.** Un paragrafo in 5.4 marcato come analogia, fonte [15] solo abstract; conteggio per termini. |
+| 5a Alt. 5 ottave (Bassa) | **Risolto.** Una frase in 6 come opzione per R3, `[ipotesi]`. |
+| S1 N3 e N2/%B (Media) | **Risolto.** N3: funzione di `d[t]` della stessa barra, correlazione 0,9995 con `d[t]` e 0,904 con `d[t-1]` (sintetica). %B: affine al proprio z (I4, 2,7e-15); con N2 solo vicino (0,931). |
+| S2 Grandezze senza direzione (Bassa) | **Risolto.** Due forme descritte in 5.2; un solo termine senza direzione proposto (NATR), uso come divisore/prodotto lasciato a R4 (D3). |
+| N1a Scala dipende da `c` (Alta) | **Mitigato.** 5.3 con i numeri rigenerati (1,7e-4 … 6,0e-2) e le due opzioni (N2 o forma RSI; limite di `c` in R3); scelta a R3. |
+| N6a Orientamento EWMA (Bassa) | **Risolto.** `c = 1 - beta` scritto; 0,94 «non verificata» [24]. |
+| N8a Parkinson/GK (Bassa) | **Risolto** in forma ridotta: N8 è una riga di 4.6 (solo la seduta, non i salti); efficienze non riportate per non appesantire. |
+| N9a Lemire (Bassa) | **Risolto.** «al più tre confronti per elemento», lavoro costante solo in media (3.1). |
+| N14a CLV su barra piatta (Media) | **Risolto.** Salto (TA-Lib ADOSC [9]); differenza con «porre 0» spiegata; valori sulla barra 1738 in 3.3. |
+| N16a `max(V,1)` (Media) | **Risolto.** Salto su V = 0; effetto di `max(V,1)` (circa -16) detto nella scheda. |
+| N17a Avvio N17 (Bassa) | **Risolto.** EMA avviate da zero, valore 0 alla barra 1; con V = 0 il rapporto non cambia (3.3). |
+| RSIa Valore prima dell'avvio (Media) | **Risolto.** RSI 0 alla barra 1 e finché B = 0; scarti dall'avvio TA-Lib 0,0061 / 0,0095 / 0,0066 / 1,7e-7 (barre 15, 30, 60, 200); ATR con TR = H - L alla barra 1. |
+| T1 Ruoli mescolati (Media) | **Risolto.** Colonne «Ruolo» (ingresso / mattone / variante / normalizzatore) ed «Esito» in 7.3. |
+| T2 Conteggio del genoma (Bassa) | **Risolto.** 18 numeri senza bias, almeno un grado di libertà ridondante (cap. 6); il «19» non è riportato. |
+| Conteggio 10/12 (Media) | **Risolto.** Regola di conteggio in 7.1 prima delle tabelle; 8 ammessi; motivo per non arrivare a 12 scritto. |
+| `c` continuo vs finestra, warm-up variabile (Media) | **Risolto.** Cap. 6 con i due costi e le barre di avvio (15, 75, 41, 50); warm-up comune passato a R6 (cap. 8). |
+| Rischio di selezione Q3 (Media) | **Risolto** secondo la risposta di Luca: identità e sintetica come prova; ENI solo contorno (intero, 40 %, 60 %), con l'instabilità mostrata (0,79 → 0,93). |
+| Q1/Q4 prezzo (Media) | **Risolto.** Chiusura (1.2, 2.4 con 0,242 contro 0,009 sulla sintetica, 0,232/0,031 su ENI); vendita alla media OHLC/4 come rischio per R6/E2 (2.5, cap. 8); codice invariato; nota «Con OHLC/4» in ogni scheda. |
+| Casi limite 1 (NaN, Alta) | **Risolto.** Regola unica in 3.3; per ogni indicatore del catalogo il comportamento sulla barra 1738 (tabella o voce della scheda); requisito per E2 nel cap. 8. |
+| Casi limite 2 (finito dalla barra 1) | **Risolto.** 3.2 e voce «Avvio» di ogni scheda. |
+| Casi limite 3 (costante di tempo) | **Risolto.** Età media `(1-c)/c` come unica definizione; tabella con `1/c`, `-1/ln(1-c)` solo nello script, N e barre di avvio (2.2). |
+| Casi limite 4 (correzioni) | **Risolto**: N3, N2/%B, %B come derivazione, MACD esatta solo con velocità coincidenti (R² 0,9968 altrimenti), conteggio del genoma. |
+| Casi limite 5 (memoria) | **Rinviato** allo Step 10 (correzione di `knowledge/consilium-trader-order-timing`); il documento cita il codice. |
+| Casi limite 6 (debito di conoscenza) | **Risolto** in 7.5 «Che cosa non si è potuto accertare». |
+| Casi limite 7 (script non persistenti) | **Risolto.** Tutti i numeri rigenerati in `ref/` → `out/`; nessun numero copiato dagli Step 4-5. |
+| Verifica fonti (S11 %B, Working) | **Risolto.** %B scritta come derivazione; Working «solo scheda, testo non accessibile». |
+
+### Errori degli Step 3-4 e come sono stati trattati
+- **N3 «N1 con un giorno di ritardo»** (Step 4): corretto (I2, stessa barra).
+- **«N2 assorbe %B»** (Step 4): corretto (I4; %B affine al proprio z, non a N2).
+- **«MACD nello spazio dei pesi»** (Step 4): vale solo con velocità coincidenti (regola C2); altrimenti R² 0,9968, esclusa per ridondanza.
+- **Costante di tempo «circa `1/c`»** (Step 3, AC-03) contro centro di massa (Step 4): unificata come età media.
+- **Genoma da 19 numeri** (Step 4): sostituito con 18 numeri e la nota sui gradi ridondanti.
+- **Tre velocità di N1** (Step 4): con velocità fisse la terza è spiegata al 98 % (R² 0,980) dalle altre due; il Builder ne propone due. Scelta motivata, da rivedere con D2.
+- **Numeri `[esplorativo]`** (Step 4) e di controllo (Step 5): non citati; rifatti dagli script (alcuni cambiano, per esempio la correlazione distanza-RSI dipende dalla serie: 0,98 sintetica, 0,85 ENI).
+- **`knowledge/consilium-trader-order-timing` incompleta** (Step 5): Step 10.
+
+### Self-Test Log (obbligatorio)
+
+```
+Self-Test Log:
+  Component: dataset di esempio (dataset/make-toy-ohlcv.mjs)
+  Test method: node dataset/make-toy-ohlcv.mjs
+  Actual output: "guida: 20 righe coincidono; controlli O/H/L/C: OK"
+  Expected output: chiusura e volume identici alla guida 1.2; L <= min(O,C), H >= max(O,C)
+  Result: PASS
+
+Self-Test Log:
+  Component: indicatori, versione incrementale contro diretta (ref/check-incremental.mjs)
+  Test method: node ref/check-incremental.mjs (giocattolo 20 barre x 20 indicatori;
+    ENI 157 barre campione comprese 1735-1742 x 24; sintetica 150 barre x 24)
+  Actual output: 68 righe PASS, 0 FAIL, 0 valori non finiti; scarto relativo massimo
+    5,2e-13 (Bollinger, ENI) e 4,8e-12 (Bollinger, sintetica), gli altri <= 4,2e-14
+  Expected output: scarto <= 1e-9, nessun non finito
+  Result: PASS
+  Notes: 75 s; il diretto della MACD è cubico, per questo il campionamento.
+
+Self-Test Log:
+  Component: identità e conversioni (ref/identities.mjs -> out/identities.md)
+  Test method: node ref/identities.mjs
+  Actual output: I1 3,1e-16; I2 2,7e-16 e 4,1e-16; I3 8,9e-16; I4 2,7e-15; I5 8,4e-17
+    (sintetica) e 8,5e-17 (ENI); C1 = 0; età media numerica 7,500051 = formula;
+    barra 1738 unica con H = L e V = 0; CLV senza salto NaN su 779 barre
+  Expected output: identità entro l'arrotondamento; conversioni coerenti
+  Result: PASS
+
+Self-Test Log:
+  Component: ridondanza (ref/corr.mjs -> out/corr.md)
+  Test method: node ref/corr.mjs (sintetica seme 20261018, 10000 barre; ENI contorno)
+  Actual output: matrici e R² come nel capitolo 5.5 del documento
+  Expected output: tabelle riproducibili; ENI marcato come contorno
+  Result: PASS
+  Notes: la soglia 0,90 è un'ipotesi; i valori dipendono dai parametri d'esempio.
+
+Self-Test Log:
+  Component: documento (ref/check-doc.mjs)
+  Test method: node ref/check-doc.mjs
+  Actual output: PASS Liquid; PASS codice <= 80 colonne; PASS tabelle coerenti (26);
+    PASS rimandi (2 interni, 1 relativo); PASS tabelle di dati identiche a out/ (16);
+    PASS numeri del testo rintracciati; righe 966, parole 15132, tabelle 26
+  Expected output: tutti PASS
+  Result: PASS
+  Notes: il controllo dei numeri accetta un elenco dichiarato nello script (numeri del
+    codice, della regola del dataset, derivati come 99,68 % da R² 0,9968); i valori
+    delle tabelle 2.2, 3.3, 7.3 sono stati riletti a mano contro out/ oltre al
+    controllo automatico di presenza.
+
+Self-Test Log:
+  Component: Liquid su catalogo e guida
+  Test method: grep -nE '\{\{|\{%' docs/architecture/genome-indicators-catalog.md docs/architecture/genome-forms-guide.md
+  Actual output: nessuna riga, exit code 1
+  Expected output: nessuna occorrenza
+  Result: PASS
+
+Self-Test Log:
+  Component: citazioni del codice
+  Test method: sed/grep sulle righe citate (algorithm.js 20-62, 345-348, 369-384;
+    stockStream.js 32-34; trader.js 97, 153; portfolio.js 215; life.js 622-623,
+    646-650; strategy.js 40-60; genome.js 14-17, 86; fitnessValidator.js 29, 57;
+    simulationController.js 43, 90-94)
+  Actual output: tutte le righe contengono quanto citato
+  Expected output: corrispondenza
+  Result: PASS
+  Notes: stop e take profit al prezzo di soglia non riletti (citati come rilievo F-code-4).
+
+Self-Test Log:
+  Component: URL dei riferimenti
+  Test method: curl -s -L -A 'Mozilla/5.0' -w '%{http_code}' su 22 URL
+  Actual output: 200 per tutti e 22
+  Expected output: raggiungibili
+  Result: PASS
+  Notes: riaperte e lette nel contenuto solo le pagine TA-Lib MACD, STOCH, ADOSC, OBV,
+    RSI, ATR, EMA (periodi predefiniti, formula OBV); le altre hanno lo stato degli Step 4-5.
+
+Self-Test Log:
+  Component: voce di menu
+  Test method: python3 yaml.safe_load(_data/docs.yml)
+  Actual output: architecture = simulator-overview, use-case-eni-replay,
+    genome-forms-review, genome-forms-guide, genome-indicators-catalog
+  Expected output: YAML valido con la nuova voce
+  Result: PASS
+
+Self-Test Log:
+  Component: nessun cambiamento a test e modello ArchiMate
+  Test method: npm test; npm run archimate:check
+  Actual output: "# tests 28 / # pass 28 / # fail 0"; "archimate: modello "eni-replay"
+    valido (33 elementi, 55 relazioni); file generati aggiornati."
+  Expected output: verdi
+  Result: PASS
+
+Self-Test Log:
+  Component: file toccati
+  Test method: git status --short; git diff --stat
+  Actual output: " M _data/docs.yml" (3 inserzioni), " M docs/architecture/genome-forms-guide.md"
+    (2 righe), "?? docs/architecture/genome-indicators-catalog.md", più questo file del ciclo
+  Expected output: nessun file in src/, tests/, scripts/, archimate/**; genome-forms-review.md invariato
+  Result: PASS
+  Notes: nessun comando git di scrittura eseguito.
+
+Self-Test: SKIPPED (build Jekyll e resa su schermo stretto)
+Reason: Ruby/Jekyll non installati in questa macchina.
+Risk: kramdown potrebbe trattare diversamente il blocco <style>, i blocchi di codice dentro
+  gli elenchi (schede RSI, Bollinger, N17) o le tabelle larghe a 390 px.
+Mitigation: controlli statici sopra; resa approssimata e Pages allo Step 9, PENDING_HUMAN
+  dopo il merge (NRC-H03).
+
+Self-Test: SKIPPED (lettura simulata AC-11, verifica indipendente AC-10)
+Reason: sono compiti degli Step 8-9 per costruzione (verificatore diverso dall'autore).
+Risk: termini non chiari per Luca; errori di formula o di numero non visti dall'autore.
+Mitigation: verify/ predisposta; check-doc.mjs rieseguibile dopo ogni correzione.
+```
+
+### Domande aperte per Luca (dal documento, capitolo 9)
+- **D1 — Elenco finale:** quali ingressi entrano nel genoma (proposta: gli 8 della sezione 7.4)? Si registra nel blocco `## Human Verification`.
+- **D2 — Blocco livello e tendenza:** tenere quattro ingressi molto correlati sulla serie sintetica (due distanze, RSI, distanza dal massimo) o ridurli a tre togliendo una distanza?
+- **D3 — Termine senza direzione:** tenere l'ATR normalizzato come ingresso diretto, o lasciarlo a R4 come divisore o fattore di un prodotto?
+- **D4 — Distanza dal massimo:** finestra intera N (con fonte per il calcolo) o «massimo che dimentica» con `c` continuo (senza fonte)?
+
+**Prossimo step:** Step 8 — OPTIMIZER
