@@ -802,5 +802,5 @@ Rispetto agli Step 3 e 4 questo step ha cambiato **strumento**: invece di argome
 
 - **Q1 prezzo degli indicatori:** **prezzo di chiusura**. Il documento dichiara il rischio del prezzo di vendita del simulatore.
 - **Q2 conteggio degli ingressi:** accettata la proposta del Critic (C2): ogni termine della somma conta uno, e sono escluse le combinazioni lineari esatte di altri ingressi.
-- **Q3 dati per le correlazioni:** **ancora aperta**: l'operatore ha chiesto una spiegazione della proposta del Critic.
+- **Q3 dati per le correlazioni:** accettata la proposta del Critic: identità algebriche e serie sintetica come prova principale; lo snapshot ENI solo come controllo di contorno dichiarato, senza guidare la scelta degli ingressi.
 - **Q4 prezzo di vendita del simulatore:** segnalato come rischio a R6 ed E2, **senza toccare il codice di Consilium** e senza aprire una issue a parte.
