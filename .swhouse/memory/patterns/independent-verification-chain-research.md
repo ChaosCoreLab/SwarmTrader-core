@@ -19,7 +19,7 @@ Separate who proposes, who checks sources, who writes and who verifies, and give
 Keep the document's own statement of source status (read / card only) honest at every step: the Scientist's count must match what the document declares.
 
 ## Example
-Cycle 010, `.swhouse/cycles/current-010.md` Steps 5, 7, 9 and the corrections table after Step 9; product `docs/architecture/genome-forms-review.md`. The error caught by step 2: [[2026-10-11-iir-formula-inverted-coefficient]].
+Cycle 010, `.swhouse/cycles/archive/cycle-010.md` Steps 5, 7, 9 and the corrections table after Step 9; product `docs/architecture/genome-forms-review.md`. The error caught by step 2: [[2026-10-11-iir-formula-inverted-coefficient]].
 
 ## Known limitations
 - All roles ran on the same model; independence is of task and object, not of mind.

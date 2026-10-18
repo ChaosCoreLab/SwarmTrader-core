@@ -1,9 +1,9 @@
 version: 1
-last_updated: 2026-10-12
-total_cycles: 9
+last_updated: 2026-10-18
+total_cycles: 10
 cycles_by_status:
   decided: 8
-  deferred: 1
+  deferred: 2
   escalated: 0
 # Cycle 001: DEFERRED 2026-09-28, reopened ACCEPTED WITH CONDITIONS 2026-09-29 (C1, resolved cycle 002).
 # Cycle 002: Track S, resolved C1, ACCEPTED 2026-09-29; O1/O2 accepted as known limits.
@@ -14,9 +14,10 @@ cycles_by_status:
 # Cycle 007: Track M, ENI ArchiMate model rebuilt per layer with automated checks, ACCEPTED 2026-10-11 (NRC-H02 Owner walkthrough passed; Consilium engine added as its own element).
 # Cycle 008: Track M, stale snapshot references + multi-platform docs + Ubuntu/Claude instance profile and Claude Code adapter, DEFERRED 2026-10-03, ACCEPTED 2026-10-12 (PENDING_HUMAN resolved: Claude Code skills VERIFIED 2026-10-03, Pages build green after merge 2026-10-12).
 # Cycle 009: Track M, strategy contract between the replay engine and the genome (epic #4, E1), DEFERRED 2026-10-12 (PENDING_HUMAN: Pages deploy after the epic branch is merged to main).
+# Cycle 010: Track M, research R1 genome forms review and extended guide (issue #5), DEFERRED 2026-10-18 (form chosen: linear score; PENDING_HUMAN = Pages build of the review and the guide after merge to main).
 average_cycle_duration_days: 1.8
 memory_entries:
-  decisions: 7
+  decisions: 8
   patterns: 6
   errors: 5
   knowledge: 4

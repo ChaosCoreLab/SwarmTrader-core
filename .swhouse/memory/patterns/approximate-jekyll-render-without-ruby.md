@@ -23,4 +23,4 @@ Also run the static checks that need no Jekyll: search the prose for the two Liq
 - The scripts of cycle 010 lived in the session scratchpad and were not kept in the repository; rebuild them from this recipe.
 
 ## Example
-Cycle 010, Step 9 section 5 and the corrections after it in `.swhouse/cycles/current-010.md`. Style fix: see [[jekyll-stakeholder-docs]] ("Wide tables and long URLs").
+Cycle 010, Step 9 section 5 and the corrections after it in `.swhouse/cycles/archive/cycle-010.md`. Style fix: see [[jekyll-stakeholder-docs]] ("Wide tables and long URLs").

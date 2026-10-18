@@ -1,16 +1,18 @@
 ---
 title: "Documentation Map"
 layout: doc
-last_verified: 2026-10-12
+last_verified: 2026-10-18
 ---
 
 # Documentation Map
 
-last_verified: 2026-10-12
+last_verified: 2026-10-18
 
 | File | Domain | One-line topic | Last verified |
 |------|--------|----------------|--------------|
 | architecture/simulator-overview.md | architecture | Browser simulator components, strategy contract, data flow, and replay state | 2026-10-12 |
+| architecture/genome-forms-review.md | architecture | Italian compact review of alternative genome forms against the strategy contract (cycle 010, issue #5) | 2026-10-18 |
+| architecture/genome-forms-guide.md | architecture | Italian extended guide to genome forms with worked examples per approach; linear score chosen (cycle 010, issue #5) | 2026-10-18 |
 | architecture/use-case-eni-replay.md | architecture | ENI replay use case; interactive ArchiMate diagram and matrix generated from `archimate/eni-replay/` | 2026-10-11 |
 | decisions/ADR-001-static-snapshot.md | decisions | Why the PoC uses a static OHLCV snapshot and no runtime backend; Consilium engine v1 choice | 2026-09-29 |
 | decisions/ADR-002-archimate-structured-source.md | decisions | ArchiMate as a structured source with generated views (layout superseded by ADR-005) | 2026-10-05 |

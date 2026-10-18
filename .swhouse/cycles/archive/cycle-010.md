@@ -1,6 +1,8 @@
 ---
 cycle: 010
-status: open
+status: closed
+closed: 2026-10-18
+decision: DEFERRED
 opened: 2026-10-11
 problem: "Non è noto quali forme di genoma, oltre alla macchina a stati, siano adatte a decidere buy/stay/sell da prezzi e volumi giornalieri e a evolvere con un algoritmo genetico: la scelta della forma blocca E2 e le ricerche R3 e R4 (issue #5, epica #4)"
 track: M
@@ -988,3 +990,59 @@ Per R2–R6 ed E2: l'orientamento di `c` e i valori reali; la tabella delle clas
 
 - Q5 (esperimento nullo, quanto ogni forma si adatta al rumore): sì, va tenuto in considerazione, con riferimento a quanto documentato in 2.6.5 (tre insiemi di dati separati: addestramento, validazione, prova). Il disegno dettagliato dell'esperimento nullo è lasciato a R6.
 - Restano da decidere: quale forma (con memoria solo negli indicatori, Q2; decisioni intuibili ma effort bilanciato, Q3; una sola forma, Q4). Poi Steps 11–12.
+
+## Human Verification — 2026-10-18
+
+**Performed by:** Luca (operator), con commenti sull'artefatto della guida
+**Target:** AC-07, scelta della forma di genoma
+**Result:** CHOSEN — punteggio lineare di indicatori con soglie
+**Notes:** Q2 memoria solo negli indicatori; Q3 decisioni intuibili, effort su interpretabilità bilanciato; Q4 una sola forma; Q5 esperimento nullo da tenere presente, con riferimento a 2.6.5 (disegno in R6). Decisione registrata in `memory/decisions/2026-10-18-genome-form-linear-score.md`. Candidati proposti dal coordinatore: punteggio lineare (scelto), lista di regole (passo successivo se contano le interazioni col volume), alberi/GP solo indicatori. Verifica di Pages (guida e rassegna) ancora PENDING_HUMAN dopo il merge su `main`.
+
+## Step 11 — EVOLUTION MASTER: Evaluate the Process
+
+**Agent:** claude-opus-5-5
+
+**Cycle quality score: 4.** La catena Explorer → Critic → Builder → Scientist ha intercettato errori reali (coefficiente IIR invertito, fonti non sostenute, elenco dei membri del contratto) e il giro di revisione richiesto da Luca ha prodotto una guida che ha permesso la scelta in tre commenti. Non 5: il primo documento è stato incomprensibile per l'operatore e il costo (due documenti, circa 75.000 parole, due giri di lettori e verificatori) era evitabile con un lettore simulato prima della consegna; un riavvio ha cancellato `/tmp` con gli script di lavoro; Destroyer omesso (giustificato) e tutti i ruoli girano nello stesso modello.
+
+**Osservazioni**
+- Il criterio di leggibilità (AC-06) era scritto per «lettori tecnico-scientifici», ma l'operatore ha dichiarato di non avere competenze finanziarie: il lettore simulato (poi AC-14) andava previsto fin dallo Step 2 per ogni documento di ricerca destinato a una decisione umana.
+- Le domande aperte ricevono risposta molto più in fretta se il documento le ripropone vicino all'argomento e se l'operatore può commentare sul punto (commenti sull'artefatto): sono arrivate Q2–Q5 in pochi minuti.
+- Gli script di lavoro vivevano solo in `/tmp` e nello scratchpad; si sono ricostruiti dai transcript. Conservarli fuori dal repository ma in una cartella persistente (come poi fatto) è sufficiente.
+- Il commento su `Q2` (dove sta la memoria) è stato frainteso da Luca finché non è stato distinto da Q1; le domande vanno scritte con una frase sola per scelta.
+
+**Proposte (Article 11, non adottate):** (1) per i cicli di ricerca, aggiungere in Step 2 il profilo del lettore dichiarato dall'operatore e un criterio di lettura simulata; (2) tenere gli script di lavoro in una cartella persistente dichiarata nello Step 1.
+
+## Step 12 — ARBITER: Decide
+
+**Agent:** claude-opus-5-5
+
+**Decision: DEFERRED**
+
+| AC | Esito | Note |
+|---|---|---|
+| AC-01…AC-05 | Soddisfatti | Verificati allo Step 9; la guida estesa li mantiene e li approfondisce (rassegna compatta intatta) |
+| AC-06 | Sostituito da AC-10 | Vincolo di lunghezza rimosso da Luca |
+| AC-07 | **Soddisfatto** | Blocco Human Verification del 2026-10-18: forma scelta (punteggio lineare), Q2–Q5 risposte |
+| AC-08 | Parziale | Intestazione, menu e assenza di Liquid verificati; la build di Pages non è verificabile in locale |
+| AC-09 | Soddisfatto | Nessuna modifica a `src/`, `tests/`, `scripts/`, `archimate/**` nel ciclo; i file di stato sono aggiornati ora, nello Step 12 |
+| AC-10…AC-14 | Soddisfatti | Guida per lettore non finanziario, esempio per approccio sullo stesso banco di prova, vecchio documento intatto, due giri di lettori simulati e verificatori indipendenti |
+
+**Evidence assessment.** Confidence in solution: Medium-High. Fonti, numeri (circa 1.250 valori ricalcolati, nessuna differenza sostanziale) e codice sono verificati; rendering Jekyll e alcune fonti web restano non verificati, e i residui cosmetici (collisione etichette R, «azione» nel capitolo 3, P1/P2 nel capitolo 6) sono noti.
+
+**Rationale.** Il ciclo ha raggiunto il suo scopo: Luca ha potuto decidere (Step 9 e Human Verification) e la scelta è registrata in memoria, sbloccando R2–R6 ed E2. Il contenuto è completo e verificato per esecuzione (`npm test` verde, `npm run archimate:check` valido), ma la build di GitHub Pages dei due documenti, con lo stile locale alla pagina che kramdown potrebbe rimuovere, può essere vista solo dopo il merge su `main` (Step 9 sezione 7). Come per il ciclo 009, il target `github-pages` resta PENDING_HUMAN e il ciclo si chiude come DEFERRED, non come ACCEPTED, finché non è verificato.
+
+**Condizione per la rivalutazione.** Dopo il merge di `epic-genoma-non-fsm` su `main`: il workflow di Pages termina verde e le pagine `/docs/architecture/genome-forms-review/` e `/docs/architecture/genome-forms-guide/` si aprono a 1280 e 390 px con tabelle che scorrono nel riquadro, nessuno scorrimento orizzontale, blocco di stile non visibile come testo, voci di menu presenti (NRC-H03).
+
+**Responsabile:** Owner (U422756); l'operatore Luca può registrare l'esito. **Riapertura:** appendere a `cycles/archive/cycle-010.md` il blocco `## Human Verification — [data]`; con esito VERIFIED lo stato diventa ACCEPTED.
+
+**Close checklist**
+- [x] `metrics/summary.yaml`: `total_cycles` 10, deferred 2, `memory_entries` decisioni 8, patterns 6, errori 5, knowledge 4, `last_updated` 2026-10-18
+- [x] Entry di memoria scritta: `decisions/2026-10-18-genome-form-linear-score.md` (più le sette del Librarian)
+- [x] Fallimenti del ciclo registrati: `errors/2026-10-11-iir-formula-inverted-coefficient.md`
+- [x] Target di deployment: nessuno aggiunto o rimosso
+- [x] `docs/MAP.md`: righe di `genome-forms-review.md` e `genome-forms-guide.md`
+- [x] NRC-H03 inserita nella checklist
+- [x] `reputation/scores.yaml`: ciclo 010 score 4
+
+---
+*Cycle 010 closed by ARBITER — 2026-10-18*
