@@ -797,3 +797,10 @@ Rispetto agli Step 3 e 4 questo step ha cambiato **strumento**: invece di argome
 **Confidence:** Medium-High — fatti sul codice, identità, conversioni e fonti sono verificati su codice, calcolo e testo; restano non verificati i testi originali, il valore 0,94, la causa della barra piatta, e le cifre `[esplorativo]` sul prezzo di vendita dipendono da una regola di condizionamento scelta da me.
 
 **Prossimo step:** Step 7 — BUILDER (Step 6 Destroyer omesso per track).
+
+### Risposte dell'operatore alle domande dello Step 5 (2026-10-18)
+
+- **Q1 prezzo degli indicatori:** **prezzo di chiusura**. Il documento dichiara il rischio del prezzo di vendita del simulatore.
+- **Q2 conteggio degli ingressi:** accettata la proposta del Critic (C2): ogni termine della somma conta uno, e sono escluse le combinazioni lineari esatte di altri ingressi.
+- **Q3 dati per le correlazioni:** **ancora aperta**: l'operatore ha chiesto una spiegazione della proposta del Critic.
+- **Q4 prezzo di vendita del simulatore:** segnalato come rischio a R6 ed E2, **senza toccare il codice di Consilium** e senza aprire una issue a parte.
