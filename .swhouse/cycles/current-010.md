@@ -979,3 +979,7 @@ Per R2–R6 ed E2: l'orientamento di `c` e i valori reali; la tabella delle clas
 
 - Q3 (interpretabilità vs espressività): chi decide deve poter **intuire** le decisioni del genoma, anche senza calcolarle banalmente. Lo sforzo dedicato all'interpretabilità in R4 va tenuto **bilanciato**: è solo uno degli elementi della ricerca, non un vincolo dominante. Quindi niente esclusione di forme per scarsa leggibilità, purché la decisione sia spiegabile a grandi linee.
 - Aperte: Q4, Q5, scelta candidati.
+
+## Risposta dell'operatore alla Q4 (2026-10-18, commento sull'artefatto)
+
+- Q4 (una forma o due): **si parte con una sola forma** (Percorso 1). Quale forma resta da scegliere tra i candidati; Q5 (esperimento nullo) ancora aperta.
