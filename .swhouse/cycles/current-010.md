@@ -969,3 +969,8 @@ Per R2–R6 ed E2: l'orientamento di `c` e i valori reali; la tabella delle clas
 - Controlli: nessun Liquid, 96 recinti pari, `npm test` verde, `archimate:check` valido; modificata solo la guida. La rassegna compatta resta invariata.
 - Residui cosmetici: collisione etichette R, doppio senso di "azione" nel cap. 3, nomi P1/P2 nel cap. 6; fonti web e rendering Jekyll non verificati.
 - Steps 11 e 12 restano sospesi in attesa di revisione e risposte di Luca (Q2–Q5, scelta candidati).
+
+## Risposta dell'operatore alla Q2 (2026-10-18, commento sull'artefatto)
+
+- Q2 (dove sta la memoria dentro la forma scelta): **solo negli indicatori**. Esclusi: variabili aggiuntive portate dal genoma e stato del portafoglio fornito dal motore (coerente col commento del 2026-10-15: il genoma non porta informazioni «ambientali»).
+- Conseguenza: la «terza via» (cap. 5.5.3-bis) e le reti ricorrenti con stato libero non sono ammesse; restano valide le forme con memoria negli indicatori (EMA e simili). Da riportare nel blocco Human Verification (AC-07) con Q3–Q5 ancora aperte.
