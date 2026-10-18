@@ -600,3 +600,200 @@ Per non ripetere i frame dell'Architect (impaginazione per indicatore, per famig
 - **Q4** (nuova): il prezzo di vendita del simulatore alla media OHLC/4 della barra di esecuzione va segnalato come rischio a R6 ed E2 o aperto come issue a parte?
 
 **Prossimo step:** Step 5 — CRITIC
+
+## Step 5 — CRITIC: Analyze Weaknesses
+
+**Agent:** claude-opus-5-5 (subagent)
+**Letti:** Step 1–4 di questo file; `software-house-ai/agents/03-critic.md`; Step 5 del ciclo 010 (`archive/cycle-010.md`, righe 279-466); memory `decisions/2026-10-18-genome-form-linear-score`, `decisions/2026-10-11-research-document-conventions`, `decisions/2026-10-11-strategy-contract`, `knowledge/consilium-iir-filter-orientation`, `knowledge/consilium-trader-order-timing`, `knowledge/consilium-holding-semantics`, `errors/2026-10-11-iir-formula-inverted-coefficient`, `patterns/independent-verification-chain-research`. Codice riletto oggi: `src/vendor/consilium/algorithm.js` (righe 20-62, 236-260, 340-400), `stockStream.js` (righe 18-34), `trader.js` (righe 88-195, 372-448), `portfolio.js` (righe 12-72, 195-242, 261-380), `life.js` (righe 617-650), `src/engine/strategy.js` (tutto), `dataTrainer.js` (righe 46-76), `fitnessValidator.js` (tutto), `simulationController.js` (righe 28-150), `genome.js` (righe 13-17, 80-87); `src/data/eni-ohlcv.json` (barre 1735-1740 e conteggi).
+**Script del Critic:** `critic.mjs` e `critic2.mjs` nella cartella temporanea di sessione (scratchpad), **non** nella cartella persistente: sono controlli, non numeri citabili. Il Builder li rifà in `ref/` o lo Scientist in `verify/` (Piano script dello Step 3).
+**Assunzioni**
+- Gravità secondo `agents/03-critic.md`. **Nessun rilievo è Critico**: ognuno ha una mitigazione.
+- Le critiche riguardano il catalogo (calcolabilità, stato, causalità, scala, ridondanza), non la bontà degli indicatori per fare trading.
+- Il Destroyer è omesso per track: anticipazione dei dati e instabilità numerica sono trattate qui (Step 1).
+
+### Fatti verificati sul codice che le critiche usano
+
+- **F-code-1. Filtri IIR e avvio.** `ema = ema * (1 - c) + x * c` (`algorithm.js`, righe 369-372): **`c` pesa il dato nuovo**, come in `knowledge/consilium-iir-filter-orientation`. `init` (righe 343-348) pone `ema = ema2 = getActualValue()` e `emaV = emaV2 = volume` della prima barra, **senza** chiamare `trader.update`; le 14 condizioni (righe 20-62) confrontano valori con valori, con margini proporzionali al filtro (righe 381-384). Coefficienti del genoma fisso: `genome.js` righe 14-17; vincolo `0 < c < 1` alle righe 86-87.
+- **F-code-2. Prezzo di ingresso.** `getActualValue()` = `(close + max + min + open) / 4` (`stockStream.js`, righe 32-34). Il costruttore è `StockData(t, open, min, max, close, volume)` (riga 19) e `dataTrainer.js` (righe 65-72) passa `bar.open, bar.low, bar.high, bar.close, bar.volume` nell'ordine giusto: `min = low`, `max = high`. Confermato.
+- **F-code-3. Ordine per barra e hook.** `Life.grows` consuma la prima barra con `child.init` (`life.js`, righe 622-623) e le successive con `child.feed` (righe 646-650). `StrategyIndividual.init` chiama `initIndicators` e `trader.init` (`strategy.js`, righe 40-44); `feed` chiama `updateIndicators` → `trader.update` → `decide()` → `trader.buy()`/`sell()` (righe 46-55); `reset` chiama `resetIndicators` (righe 57-60). Quindi l'ordine deciso alla barra `t` con i dati di `t` si esegue nel `trader.update` della barra `t+1`. **Fatto in più:** il controller cattura il primo fotogramma subito dopo `init` (`simulationController.js`, riga 43, `captureFrame(stream[0])` → `describe()`, riga 100): **`describe()` deve dare numeri finiti già alla barra 1**, cioè prima di qualunque warm-up.
+- **F-code-4. Prezzo di acquisto e di vendita: percorso completo.**
+  - *Acquisto:* `Trader.update` (riga 430) → stato `BUYING` → `buyOperation` (riga 372) → `Broker.buy` (riga 96), `stockPrice = stockData.open` (riga 97); la posizione registra la barra di esecuzione (`Portfolio.add`, riga 195; `Position`, righe 13-19). Prezzo = **apertura** della barra `t+1`.
+  - *Vendita su segnale:* `Trader.update` → stato `SELLING` (righe 439-441) → `sellOperation` (riga 411) → `Broker.sell` (riga 143), `currPrice = stockData.getActualValue()` (riga 153) per il guadagno lordo → `Portfolio.remove` (riga 207), `currPrice = stockData.getActualValue()` (riga 215), `grossProceeds = Σ quantità × currPrice` (righe 218-221), posizione chiusa a `currPrice` (riga 231). Prezzo = **`(O+H+L+C)/4` della barra `t+1`**, la stessa barra in cui l'ordine si esegue. **Sì, il prezzo di vendita contiene massimo, minimo e chiusura di `t+1`, che all'apertura di `t+1` non sono noti.** Non è anticipazione nella *decisione* (presa a fine `t`), ma è un prezzo di esecuzione che un ordine dato all'apertura non può ottenere: equivale a vendere «alla media della giornata». Il validatore lo accetta perché controlla solo che stia in `[low, high]` (`fitnessValidator.js`, righe 57-58).
+  - *Chiusure automatiche:* `Broker.update` → `Portfolio.update` (riga 261): stop e take profit scattano su `min ≤ stopLossPrice` e `max ≥ takeProfitPrice` della barra (righe 62-72) e si chiudono **al prezzo di soglia** (righe 291, 298, 306, 318), anche quando l'apertura è già oltre la soglia (stop ottimista sui salti in apertura, take profit pessimista); se scattano entrambi vince lo stop (righe 280-283).
+  - *Valore del portafoglio:* `getCurrentValue` e `getCurrentGain` usano `getActualValue()` della barra corrente (righe 359-382).
+  - **Confronto con la memoria:** `knowledge/consilium-trader-order-timing` dice «the order executes … at that bar's open»: vero per l'acquisto, **incompleto per la vendita** (media OHLC/4) e per le chiusure automatiche (prezzo di soglia). Il fatto 1 dell'Explorer (Parte 4) è corretto; la nota di memoria va corretta allo Step 10.
+- **F-code-5. Barra piatta ENI.** Indice 1738, `2023-08-15`: `open = high = low = close = 14.014`, `volume = 0`. È l'**unica** barra con `H = L` e l'unica con `V = 0` (conteggio sullo snapshot); il volume minimo non nullo è 4.029.990. La barra precedente è `2023-08-11` (chiusura 14,048): **manca il 2023-08-14**, quindi la barra piatta segue un salto di calendario `[ipotesi sulla causa: giorno riempito dalla fonte]`. Nessuna finestra di 5 barre ha `HH = LL`.
+- **F-code-6. Valori non finiti.** `FitnessValidator.validate` segna errore se un valore di `frame.strategy.indicators` non è finito o se l'oggetto è vuoto (`fitnessValidator.js`, righe 26-31); `simulationController.validateTrace` **lancia un'eccezione** a fine replay se la validazione fallisce (righe 90-94, chiamata alle righe 45, 69, 80). Calcolato: sulla barra 1738 `CLV = 0/0 = NaN` e `ln V = -Infinity`; un `NaN` entrato in una EMA **resta `NaN` per sempre** (prova: dopo 5 ingressi finiti è ancora `NaN`), cioè per le 778 barre successive. In JavaScript `NaN > x` e `NaN < x` sono entrambi falsi: un punteggio `NaN` che non finisce in `describe()` produce **silenziosamente** «nessun acquisto, nessuna vendita» per il resto del replay; se finisce in `describe()`, l'intero replay fallisce alla fine. Su questa barra restano finiti l'escursione vera (`TR = 0,034`, grazie alla chiusura precedente), il termine di Parkinson (0) e i rapporti di volume `V/EMA(V) = 0`.
+
+### Ricalcolo delle identità e delle conversioni («Sfida all'Architect» e Parte 3)
+
+Calcolato sulla chiusura dello snapshot ENI, warm-up di 60 barre escluso dove si misura una correlazione.
+
+| # | Affermazione dello Step 4 | Calcolo del Critic | Esito |
+|---|---|---|---|
+| I1 | MACD log `ln(e_v/e_l) = d_l − d_v` | scarto massimo 3·10⁻¹⁶; la forma «rapporto meno 1» differisce dal log al più di 0,0157 (correlazione 0,9993) | **Esatta.** Precisazione: è esatta solo se le due EMA della MACD **sono** due delle velocità di N1. Con velocità diverse (MACD 12/26 contro distanze a 10, 20, 50) la MACD è spiegata al 99,6 % (R² 0,996) da una combinazione delle distanze: approssimazione, non identità. Con `c` evolvibili le velocità coincidono solo per costruzione (Alt. 5) o per vincolo. |
+| I2 | pendenza EMA `e[t]/e[t−1] − 1 = c·(p[t]/e[t−1] − 1)` | scarto 3·10⁻¹⁶ | **Esatta.** **Correzione a N3:** non è «N1 con un giorno di ritardo». Posto `u = p[t]/e[t−1] − 1`, vale `d[t] = ln(1+u) − ln(1+c·u)` (scarto 4·10⁻¹⁶): la pendenza è una funzione monotona di `d[t]` **della stessa barra**; correlazione 0,995 con `d[t]` e solo 0,916 con `d[t−1]`. L'esclusione resta giusta, il motivo va scritto così. |
+| I3 | RSI centrato = media di Wilder di ΔC / media di Wilder di \|ΔC\| | scarto 6·10⁻¹⁶ con l'avvio TA-Lib | **Esatta** (le medie sono lineari con lo stesso avvio). Il legame con l'efficienza di Kaufman con segno a finestra è di **famiglia**, non un'identità: correlazione 0,89 tra le due a 14 barre. |
+| I4 | %B = 0,5 + (C − SMA)/(2kσ), quindi «%B e z-score con SMA sono lo stesso ingresso» | scarto 3·10⁻¹⁵ con σ di popolazione sui prezzi della finestra | **Esatta per lo z-score con SMA e deviazione standard dei prezzi della finestra.** **Correzione a N2:** lo z-score N2 è `ln(C/EMA)/s` con `s` volatilità dei **rendimenti** (N6): correlazione con %B 0,92, non un'identità. «N2 assorbe %B» va riscritto: %B è affine al *proprio* z-score; con N2 è solo vicino. |
+| C1 | Wilder N ≡ EMA standard 2N − 1 | `1/14 − 2/28 = 0` | Esatta (algebra). RSI 14 di Wilder = `c = 0,0714` = «EMA a 27». |
+| C2 | centro di massa `(1−c)/c` | somma numerica con `c = 0,118`: scarto 4·10⁻¹⁵ | Esatta per storia infinita. **Incoerenza da risolvere:** lo Step 3 e AC-03 usano «costante di tempo circa `1/c`». Per `c` piccolo i numeri sono vicini (EMA 20: `1/c` = 10,5, centro di massa 9,5, `−1/ln(1−c)` = 9,99), per `c` grande no (`iir_price_2`: 1,01 contro 0,01 contro 0,22). Il documento sceglie **una** definizione e la scrive. |
+| C3 | barre per portare il peso del primo valore sotto il 5 %: `ln 0,05 / ln(1−c)` | `c = 0,11765` → 24 (peso 4,96 %; con 23 è 5,6 %); EMA 20 → 30; Wilder 14 → 41 | Esatti. Con `c` dei filtri di prezzo del genoma fisso servono 1-3 barre. Seme «primo valore» contro «SMA dei primi 20» sulla EMA 20: scarto relativo 0,17 % alla barra 30. |
+| C4 | `N = 2/c − 1` e `1/c` dello Step 3 | 1,737 / 1,020 / 16,00 / 4,049; 1,369 / 1,010 / 8,50 / 2,525 | Esatti. |
+| C5 | aggiornamento a tempo costante di `LINEARREG_SLOPE` (N4) | incrementale contro diretto, finestra 20 su `ln C`: scarto 9·10⁻¹⁴; segno controllato su una retta crescente (+0,01) | **Corretto** con l'indicizzazione di TA-Lib (`i` = barre fa). |
+
+Numeri esplorativi dello Step 4 ricalcolati: autocorrelazione di primo ordine dei rendimenti 0,031 (chiusura) e 0,232 (media OHLC/4), correlazione tra le due serie 0,831: **coincidono**. Distanza a 20 contro MACD 5/20: 0,938 (Step 4: 0,94). Distanza a 20 contro RSI 14: 0,853 nel mio calcolo contro 0,88 dello Step 4 (avvii diversi; la differenza dice quanto queste cifre dipendono da scelte minori).
+
+### Critica dell'Approccio A — Per indicatore, schema uniforme, tabella trasversale
+
+| # | Rilievo | Gravità | Mitigazione |
+|---|---|---|---|
+| A1 | **Volume.** Quindici voci × (dieci schede obbligatorie + almeno cinque dello Step 4, più le «forse») superano 230 celle, ciascuna con fonte o `[ipotesi]`. Il ciclo 010 ha chiuso a circa 8.400 parole con meno voci; la lezione A1 del ciclo 010 vale qui di più. | Alta | Voci 3-4 (aggiornamento e stato) e 11-12 (anticipazione e casi limite) fuse in una riga ciascuna; per gli indicatori tutti causali la voce 11 diventa una riga unica nel metodo («tutti usano solo barre ≤ t», F-code-3) e la scheda dice solo le eccezioni; le «forse» e le escluse (N3, N4, N5, N8, N10, N12, N13, N15, N19, N20, gruppo E) sono **righe** «variante / perché no», non schede. Il Builder conta parole e celle e le riporta. |
+| A2 | **Tabella trasversale di 11 colonne:** nel ciclo 010 lo straripamento della tabella larga si è visto solo allo Step 9. | Media | Due tabelle (fatti di calcolo: campi, stato, warm-up, filtro IIR; fatti per il punteggio: forma normalizzata, intervallo, ridondanza, proposta) e il blocco `<style>` locale già previsto. |
+| A3 | L'ordine «per elenco dell'issue» è superato dalla raccomandazione (B nell'impianto). | Bassa | Nessuna. |
+
+### Critica dell'Approccio B — Per famiglia (raccomandato nell'impianto)
+
+| # | Rilievo | Gravità | Mitigazione |
+|---|---|---|---|
+| B1 | **Il criterio di famiglia è un giudizio** (lo Step 3 lo dichiara). Aggiungo che l'impianto proposto può predeterminare l'esito per un'altra via: «uno o due per famiglia» trasforma cinque famiglie in cinque-dieci posti prima di qualunque misura. | Media | Criterio di appartenenza dimostrabile: **la lacuna che l'indicatore colma** rispetto ai quattro filtri IIR (Alt. 1, L1-L4, dedotte dal codice, F-code-1/2); la famiglia resta come titolo del capitolo, la colonna «lacuna» nella tabella. Nessuna quota per famiglia. |
+| B2 | Le famiglie dello Step 3 mettono ROC in «slancio» da solo, mentre ROC, MACD e distanza sono la stessa informazione lineare (I1; ROC a N barre è un filtro lineare del prezzo `[ipotesi sull'entità della correlazione, da misurare]`). | Bassa | Capitolo «livello e tendenza» che include ROC con rimando; «slancio» non è un capitolo autonomo. |
+
+### Critica dell'Approccio C — Per catena dato → stato → indicatore → ingresso
+
+| # | Rilievo | Gravità | Mitigazione |
+|---|---|---|---|
+| C1 | Lo scarto della forma completa è giusto. Il capitolo dei mattoni preso da C è utile per E2 ma deve contenere i due fatti nuovi del contratto: **valore finito dalla barra 1** (F-code-3) e **un `NaN` avvelena l'EMA per sempre** (F-code-6). Senza, il mattone «EMA» è descritto in modo incompleto. | Media | Due righe nel capitolo dei mattoni: politica di avvio (ciò che `describe()` espone prima del warm-up) e politica dei denominatori nulli (vedi «Casi limite»). |
+
+### Critica delle Alternative dello Step 4
+
+| # | Rilievo | Gravità | Mitigazione |
+|---|---|---|---|
+| 1a | **Alt. 1 (lacune).** Il criterio è verificabile sul codice: è il miglior rimedio a B1. Ma (i) L5 «grandezze senza direzione» non è una lacuna, è una proprietà di alcuni candidati: va spostata nel capitolo «Scala»; (ii) l'allocazione «3/2/1/2/1 posti per lacuna» è una scelta di valore, non un fatto. | Media | Adottare L1-L4 come criterio di appartenenza e colonna; togliere le quote; L5 nel capitolo scala (Sfida 3). |
+| 1b | Le lacune sono dedotte dall'FSM; il nuovo genoma, senza stati, ha una lacuna in più che l'Alt. 1 non nomina: **l'interazione tra ingressi** (R4). | Bassa | Una frase: «le interazioni non si colmano con un ingresso; sono di R4». |
+| 2a | **Alt. 2 (raggruppamento per correlazione) come struttura del documento:** è il punto in cui il catalogo sceglie guardando i dati di valutazione (Q3); aggiunge scelte di metodo non fondate (distanza `1 − |ρ|`, soglia di taglio, metodo di aggregazione) e famiglie che cambiano con i parametri. | Alta | **Non** come struttura. Tenere solo il **controllo con serie sintetica**, che il mio calcolo conferma utile: distanza 20 – MACD 5/20 = 0,938 su ENI e 0,937 su una passeggiata aleatoria (seme 7): ridondanza **di costruzione**, non del mercato. Distanza – RSI: 0,85 su ENI, 0,975 sulla passeggiata. Va nel capitolo ridondanza, con seme dichiarato. |
+| 3a | **Alt. 3 (modi di fallire):** basso rischio, utile. Si sovrappone alla voce 12 «casi limite». | Bassa | Fondere: la voce 12 diventa «modi di fallire F1-F7» con una riga; F4 e F5 sono le righe obbligatorie. |
+| 4a | **Alt. 4 (retina).** La fonte [S16] è stata aperta: l'abstract sostiene «normalizzazione come computazione canonica» e il corpo tratta la retina e l'adattamento alla luce (verificato). L'uso per i mercati resta `[ipotesi]`. Il rischio è per Luca: una metafora seducente può far sembrare fondato ciò che è una scelta. Inoltre «contare per tipi × velocità» contraddice la definizione di Luca (termini della somma). | Media | Al più un paragrafo nel capitolo «Scala e normalizzazione», marcato come analogia; il conteggio resta per termini. |
+| 5a | **Alt. 5 (velocità a ottave).** Risolve la collisione delle velocità ma impone una spaziatura geometrica che esclude due velocità vicine; è parametrizzazione dei geni (R3). | Bassa | Una riga nel capitolo «Famiglie con parametri evolvibili», come opzione per R3. |
+
+### Critica della «Sfida all'Architect» e dei candidati N1–N20
+
+| # | Rilievo | Gravità | Mitigazione |
+|---|---|---|---|
+| S1 | Sfida 1-2-5 e N2-%B: identità ricalcolate (tabella sopra). Due formulazioni da correggere: N3 «con un giorno di ritardo» (I2) e «N2 assorbe %B» (I4). | Media | Riscrivere come in I2 e I4. |
+| S2 | **Sfida 3 (grandezze senza direzione):** argomento corretto per una somma pesata con soglie fisse. Ma la proposta «forma diretta sconsigliata / forma come normalizzatore» sposta una decisione di R4 (dividere un ingresso per un altro è una trasformazione dell'ingresso, ma anche una scelta d'interazione). | Bassa | Nel catalogo: le due forme descritte; l'uso come normalizzatore proposto per N2 (che è un ingresso a sé); il resto rimandato a R4. |
+| N1a | **La scala di N1 dipende dal gene `c` di due ordini di grandezza:** deviazione standard di `ln(C/EMA)` su ENI = 1,7·10⁻⁴ con `c = 0,99`, 4,9·10⁻³ con 0,73, 3,9·10⁻² con 2/21, 6,2·10⁻² con 2/51. Se `c` evolve, lo stesso peso vale cose diverse e la mutazione dei pesi ha effetti diversi: la normalizzazione di AC-04 non è fissata da una formula sola. Con `c → 1` l'ingresso tende a zero (EMA = prezzo). | Alta | Due mitigazioni da scrivere nel capitolo famiglie: (a) usare N2 (divisione per la volatilità) quando `c` evolve, oppure (b) intervallo dichiarato per `c` che escluda i valori vicini a 1 `[ipotesi sul limite, da fissare in R3]`. Il catalogo dice il fatto e le opzioni; R3 sceglie. |
+| N6a | Formula EWMA verificata su [S12] con il ruolo dei pesi: `σ̃²(t+1) = (1−β)·σ̂²(t) + β·σ̃²(t)`, β peso del passato, quindi `c = 1 − β`: **orientamento corretto** (errore del ciclo 010 evitato). `λ = 0,94` resta `[fonte da verificare]` (S24). | Bassa | Nessuna oltre allo stato «secondaria» per 0,94. |
+| N8a | [S12] conferma Parkinson (con `f = 0`, nessun intervallo a mercato chiuso), efficienza ≈ 5,2; Garman-Klass «best analytic scale-invariant» con 0,511 / 0,019 / 0,383 su `u, d, c` normalizzati all'apertura, efficienza ≈ 7,4; ipotesi `µ = 0`. L'`[ipotesi]` «ignorano il gap» è **in parte sostenuta**: le slide definiscono Parkinson con `f = 0` e normalizzano GK all'apertura, mentre lo stimatore combinato di GK (efficienza 6,2) include il termine chiusura-apertura. | Bassa | Scrivere così, con le tre efficienze attribuite alle slide. |
+| N9a | Lemire [S13]: l'abstract dice «no more than 3 comparisons per element, in the worst case» (verificato). È un limite **per elemento**: in una singola barra si possono scartare molti elementi, quindi il costo per barra è costante solo in media (ammortizzato) `[mia lettura, articolo non letto]`. Lo Step 3 e N9 lo dicono già; va mantenuto senza scrivere «tre confronti per barra». | Bassa | Nessuna oltre alla formulazione. |
+| N14a | CLV e N18 su barra piatta: `0/0` (F-code-5/6). Le due convenzioni in fonte: TA-Lib ADOSC salta la barra («only when high>low», verificato), TA-Lib STOCH pone 0 per finestra piatta (verificato). Valore `clv = 0` e «barra saltata» **non sono equivalenti** in una EMA: saltare lascia la media invariata, 0 la tira verso zero di `c`. | Media | Proposta: saltare l'aggiornamento (come ADOSC) per CLV/CMF; dichiarato nella scheda con il calcolo sulla barra 1738. |
+| N16a | `ln V` su `V = 0` è `−∞` (F-code-6); la proposta `max(V, 1)` produce `ln(1/EMA(V)) ≈ −16`, un valore enorme rispetto alla dispersione abituale, che entra nella somma e nella EMA del volume. | Media | Saltare l'aggiornamento su `V = 0` anche per il volume relativo (o porre `lv = 0`), dichiarato; non usare `max(V, 1)` senza mostrarne l'effetto. |
+| N17a | N17: rapporto di due EMA con lo stesso `c`, ∈ [−1, 1] corretto. Avvio: alla barra 1 il segno non esiste (nessuna chiusura precedente). | Bassa | Avvio `EMA(sgn·V) = 0`, `EMA(V) = V₁` (o salto della barra 1), dichiarato. |
+| RSIa | **RSI con avvio «al primo valore» alla Consilium:** alla barra 1 non c'è ΔC, quindi `U = D = 0` e `RSI = 0/0` fino alla prima variazione non nulla; con l'avvio TA-Lib il valore non esiste prima di N barre. Entrambi i casi violano F-code-3 (finito dalla barra 1) se esposti così. | Media | La scheda dice che cosa espone l'RSI prima dell'avvio (ad es. 0 nella forma centrata) e lo marca come convenzione. Vale per ATR (TR della barra 1 = H − L, senza chiusura precedente) e per ogni indicatore a finestra. |
+| T1 | **Tabella «portare/forse/escludere».** Esiti coerenti con le identità, salvo le due correzioni (N3, N2/%B). Tre «portare» (N6, N7 «in alternativa», N2) sono trasformazioni o normalizzatori, non ingressi: la tabella mescola i due ruoli. | Media | Due colonne: «ruolo» (ingresso / normalizzatore / variante) ed «esito». |
+| T2 | **Conteggio del genoma** «8 pesi + bias + 2 soglie + 8 coefficienti = 19»: con due soglie il bias è ridondante (spostare tutte e tre della stessa costante non cambia le decisioni) e moltiplicare pesi e soglie per la stessa costante positiva neppure. | Bassa | Riportarlo a R3 come «19 numeri, almeno 2 gradi di libertà ridondanti» `[algebra del Critic]`. |
+
+### Conteggio degli ingressi e famiglie evolvibili
+
+- **Conteggio (10, fino a 12).** La proposta di 8 ingressi dell'Explorer rispetta il limite. Il rischio non è aggirarlo ma **spenderlo male**: senza la regola C2 (Q2) MACD, istogramma, %B e pendenza EMA possono occupare posti pur essendo combinazioni esatte o quasi esatte di altri (I1, I2, I4). Gravità **Media**; mitigazione: regola C2 scritta prima dell'esito, con l'identità nella scheda. Non vedo motivi per 11-12 sui fatti di oggi (concordo con lo Step 4); se il Builder li usa, la motivazione «strategica» deve essere un'informazione non coperta (una lacuna), non un nome in più.
+- **`c` continuo contro finestra intera.** Concordo con la preferenza per `c` continuo; aggiungo due costi che lo Step 4 non nomina. (a) Scala (N1a). (b) Con una **finestra intera evolvibile** il warm-up cambia da individuo a individuo, quindi due genomi vengono valutati su un numero diverso di barre «affidabili»: è un fatto che R6 deve sapere (gravità **Media**, mitigazione: warm-up massimo dichiarato e comune, materia di R6). Con `c` continuo lo stesso accade in misura minore (C3: 24 barre con `c = 0,118`, 41 con Wilder 14).
+
+### Rischio di selezione: correlazioni sull'intero snapshot (Q3, R6)
+
+Il problema dello Step 3 (rischio 2) è reale ma di entità limitata, e i dati lo mostrano in due modi. (a) Buona parte della ridondanza è **di costruzione**: le stesse coppie hanno correlazioni simili o più alte su una passeggiata aleatoria (2a). (b) Le correlazioni **non sono stabili** tra tratti dello snapshot: distanza 20 – RSI centrato 0,77 sul primo 40 % e 0,92 sul restante 60 % (lo Step 4 riportava «cambiano poco» tra due metà con altre coppie). Scegliere gli ingressi guardando tutto lo snapshot è quindi una scelta fatta sugli stessi dati che R6 userà, e i numeri cambiano con il tratto. Gravità **Media**. Mitigazione che propongo (da porre a Luca, Q3): **identità algebriche + serie sintetica** come prova principale della ridondanza (nessun dato di valutazione); correlazioni su ENI **solo sul primo 40 %**, dichiarato, con l'impegno passato a R6 di considerarlo tratto di addestramento; l'intero snapshot solo se Luca preferisce la semplicità, con il limite scritto.
+
+### Q1 e Q4: prezzo d'ingresso e prezzo di vendita
+
+- **Il meccanismo di Working e Cowles è confermato da una simulazione** (non dal testo di Working, che non è accessibile: vedi fonti): passeggiata aleatoria pura con 390 passi per seduta e un passo notturno (seme 12345, 20.000 giorni), media OHLC/4 per giorno → autocorrelazione di primo ordine delle differenze **0,31**; sulle chiusure della stessa serie 0,001. Su ENI 0,23. La persistenza dei rendimenti della media OHLC/4 è quindi **in gran parte costruita dalla media**. L'`[ipotesi]` dell'Explorer sull'applicabilità alla media di quattro prezzi della barra è sostenuta dal calcolo.
+- **Vantaggio «che esiste solo nel simulatore»: ridimensionato.** L'autocorrelazione della media non è sfruttabile di per sé con gli ordini attuali, perché acquisto (apertura di `t+1`) e vendita (media di `t+1`) avvengono entrambi dopo la decisione: in una passeggiata simmetrica senza deriva `E[(O+H+L+C)/4 − O] = 0` `[algebra]`. Ciò che resta è il **prezzo di vendita alla media della barra**: su ENI la media è in media −0,005 % sotto l'apertura (deviazione 0,70 %), ma condizionata a informazioni di `t` la differenza cambia segno: +0,028 % se a fine `t` la media OHLC/4 sta sopra il filtro `iir_price_1`, −0,046 % se sta sotto `[esplorativo; ≈ 2-3 errori standard]`. Ordine di grandezza: centesimi di punto per operazione, contro costi di almeno 0,29 % più la commissione minima (`trader.js`, righe 21-22 e 88-93). Quindi un rischio di **distorsione dell'esecuzione** da dichiarare, non un'anticipazione nascosta negli indicatori. Gravità **Media** per R6/E2, **Bassa** per R2.
+- **Opinione del Critic su Q1 (non decide):** P1/P5 (chiusura per gli indicatori, prezzo di vendita segnalato) è la scelta più verificabile (fonti TA-Lib sulla chiusura) e non eredita la persistenza costruita della media; il costo è perdere l'identità «EMA del catalogo = filtro di Consilium», che serve solo al confronto con l'FSM e non alla scelta degli ingressi. P3 (due prezzi) è da sconsigliare per il rischio di errore in E2; P4 da escludere (gene discreto senza beneficio dimostrato).
+- **Q4:** il simulatore è codice del fornitore, non modificabile senza perdere il confronto con il golden (`decisions/2026-10-11-strategy-contract`); quindi la via naturale è **rischio dichiarato a R6/E2** più la correzione della nota di memoria; un'issue a parte ha senso solo se Luca vuole un'esecuzione alternativa nel motore (non nel fornitore).
+
+### Verifica a campione delle fonti
+
+Esito: **12 fonti aperte**, di cui 11 leggibili; **10 sostengono l'affermazione** attribuita, **1 con riserva** (S11 per la formula di %B), **1 non leggibile** (Working). Nessuna affermazione contraddetta dalla fonte.
+
+| Fonte | Affermazione dello Step 4 | Esito |
+|---|---|---|
+| [S1] TA-Lib ATR | TR, avvio con media dei primi `period` TR, ricorsione `(ATR·(period−1) + TR)/period`, Wilder, «Initial Unstable Period» | **Sostenuta** (citazioni sulla pagina). |
+| [S2] TA-Lib EMA | `k = 2/(period+1)`, `EMA_t = (price_t − EMA_{t−1})·k + EMA_{t−1}`, avvio con SMA dei primi `period` valori; periodo instabile senza durata | **Sostenuta**; orientamento di `k` = `c` di Consilium confermato. |
+| [S19] TA-Lib RSI | rialzi/ribassi, avvio con SMA a `t = n`, ricorsione `((n−1)·Ū + U)/n`, cita il libro di Wilder senza «Wilder smoothing» | **Sostenuta** in tutti i punti, compresa la nota sull'assenza dell'espressione. |
+| [S7] TA-Lib STOCH | %K, %D, valori predefiniti 5/3/3, finestra piatta → 0, Lane non citato | **Sostenuta.** |
+| [S9] TA-Lib ADOSC | EMA 3 e 10 con `k = 2/(N+1)`, aggiornamento «only when high>low», Chaikin | **Sostenuta.** |
+| [S4] TA-Lib LINEARREG_SLOPE | formula con `SumX`, `SumXSqr`, `Divisor = SumX² − n·SumXSqr`; pagina senza aggiornamento incrementale | **Sostenuta**; indicizzazione `y[today−i]` (barre fa), da cui il segno del divisore; aggiornamento incrementale verificato dal Critic (C5). |
+| [S11] bollingerbands.com | regola 9 (20 periodi, «two standard deviations»), 11 (2,1 a 50 periodi), 12 (SMA), 15-17 (%b), 18 (BandWidth = 4 × coefficiente di variazione), nessuna indicazione popolazione/campione | **Sostenuta**, con **riserva:** la regola 15 descrive %b come «adaptation of the formula for Stochastics» ma **non dà la formula**; `%B = (C − banda bassa)/(banda alta − banda bassa)` va scritta come derivazione, non come citazione. |
+| [S12] MIT 18.S096, lez. 9 (PDF estratto e letto) | EWMA con β peso del passato; Parkinson 1976, efficienza ≈ 5,2; GK 1980 con 0,511/0,019/0,383, ≈ 7,4; `µ = 0` | **Sostenuta** (vedi N6a, N8a). |
+| [S13] Lemire 2006 (abstract) | ≤ 3 confronti per elemento nel caso peggiore; Nordic Journal of Computing 13(4), 328-339 | **Sostenuta** (abstract); pagine dell'articolo da aggiungere al riferimento. |
+| [S16] Carandini e Heeger | normalizzazione come computazione canonica, divisione per l'attività di un insieme di neuroni | **Sostenuta** (abstract; il corpo tratta anche retina e adattamento alla luce). Data: Nat. Rev. Neurosci. 13(1), 51-62, online il 23-11-2011 (la pagina PMC indica 2011): citare «2012 (online 2011)» è accettabile se si scrive così. |
+| [S21] Cowles 1960 (abstract) | la media dentro ogni unità di una serie casuale introduce correlazione seriale positiva di primo ordine nelle differenze; Working lo segnalò | **Sostenuta** (abstract letto; nessun valore numerico). |
+| [S21] Working 1960 | scheda: Econometrica 28(4), 916-918 | **Non leggibile:** la pagina non ha abstract e il testo richiede accesso (JSTOR 1907574). Ogni valore attribuito a Working (ad es. un limite numerico) resta `[fonte da verificare]`; il meccanismo è sostenuto da Cowles e dalla simulazione del Critic. |
+
+Non riaperte da me: S3, S5, S6, S8, S10, S14, S18 (TA-Lib e `ta`), S15 (verificata nel ciclo 010), le schede S17, S20, S22-S25. Non raggiungibili nello Step 4 e non ritentate: pandas-ta (DNS) e Finch 2009.
+
+### Casi limite, incoerenze e debito di conoscenza
+
+1. **Valori non finiti (F-code-6).** Il rischio principale del catalogo per E2: un solo `0/0` alla barra 1738 rende `NaN` ogni EMA che lo riceve per 778 barre; la conseguenza è o il fallimento dell'intero replay a fine corsa, o un genoma che smette di operare senza segnalarlo. Gravità **Alta** (mitigazione semplice ma da applicare in ogni scheda). Mitigazione: una **politica unica** nel capitolo dei mattoni: denominatore nullo → l'aggiornamento della barra si salta (TA-Lib ADOSC); logaritmo di zero → idem; ogni scheda riporta il proprio valore sulla barra 1738, calcolato dallo script.
+2. **Finito dalla barra 1 (F-code-3).** Gli avvii «SMA dei primi N» di TA-Lib non danno un valore prima di N barre: la scheda dice che cosa si espone nel frattempo. Gravità **Media**.
+3. **Incoerenza «costante di tempo»** (C2): `1/c` (Step 3, AC-03), centro di massa `(1−c)/c` (Step 4), barre per il 5 % (Step 4). Gravità **Media** (il lettore trova tre numeri per la stessa cosa). Mitigazione: «età media dei dati `(1−c)/c`» come definizione, «circa `1/c` per `c` piccolo» come regola pratica, «barre per scendere sotto il 5 %» come warm-up; la tabella dei quattro coefficienti mostra tutte e tre le colonne.
+4. **Correzioni puntuali agli Step precedenti:** N3 (I2), N2/%B (I4), formula di %B non presente in S11, «MACD nello spazio dei pesi» solo con velocità coincidenti (I1), conteggio del genoma con gradi di libertà ridondanti (T2). Nessun errore di orientamento di `c` negli Step 2-4: tutte le formule rilette usano `c` come peso del dato nuovo (F-code-1, S2, S12).
+5. **Memoria inesatta:** `knowledge/consilium-trader-order-timing` (F-code-4). Da correggere allo Step 10; il catalogo cita il codice, non la nota.
+6. **Debito di conoscenza:** testi originali non letti (Wilder, Appel, Lane, Granville, Chaikin, Kaufman, Parkinson, Garman-Klass, Working); `λ = 0,94` solo secondario; la durata del «periodo instabile» di TA-Lib non è documentata sulle pagine; l'entità della ridondanza ROC-distanza non misurata; la causa della barra piatta e del giorno mancante (14-08-2023) non nota. Vanno in «Che cosa non si è potuto accertare».
+7. **Script del Critic non persistenti:** i numeri di questo step sono di controllo; il Builder li rigenera in `ref/` e lo Scientist in `verify/`, senza copiarli da qui.
+
+### Classifica degli approcci per rischio (dal più alto al più basso)
+
+1. **Alternativa 2 come struttura del documento** — sceglie guardando i dati di valutazione e introduce scelte di metodo non fondate; recuperabile solo come controllo con serie sintetica.
+2. **Approccio A da solo** — volume (A1) e tabella larga (A2); è la base delle schede, non dell'impianto.
+3. **Approccio B con famiglie come giudizio e quote per famiglia** — può predeterminare l'esito (B1).
+4. **Alternativa 4** — metafora che rischia di sembrare una prova e contraddice il conteggio di Luca.
+5. **Alternativa 1** — criterio verificabile; rischio solo nelle quote e in L5.
+6. **Alternativa 5** — fuori perimetro ma innocua come nota per R3.
+7. **Alternativa 3** — basso rischio, fondibile nella voce 12.
+8. **Approccio C** — basso rischio perché già scartato nella forma completa.
+
+### Verdetto
+
+**Inaccettabili:**
+- **Alternativa 2 come impaginazione per gruppi di correlazione:** distorsione di selezione e metodo arbitrario. Accettabile come controllo (serie sintetica, seme dichiarato).
+- **Le formulazioni «N2 assorbe %B» e «N3 = N1 con un giorno di ritardo»:** non sostenute dal calcolo (I2, I4). Accettabili corrette.
+- **Qualunque scheda che non dichiari il comportamento sulla barra 1738 e alla barra 1:** con il validatore attuale porta a un replay fallito o a un genoma silenziosamente fermo (F-code-3, F-code-6).
+
+**Accettabili con mitigazioni:** la raccomandazione dello Step 3 (B nell'impianto, schede di A, mattoni di C) con il criterio delle lacune dell'Alt. 1 (B1, 1a), il formato compatto (A1, A2) e i due fatti del contratto nei mattoni (C1); Alt. 3 fusa nella voce 12; Alt. 4 e Alt. 5 come paragrafi; la tabella dei candidati con le correzioni S1, N1a, N14a, N16a, RSIa, T1, T2.
+
+### Raccomandazione operativa per lo Step 7 (BUILDER)
+
+**Prima di scrivere**
+- Creare la cartella persistente dello Step 3 (`/home/luca/Workspace/swarmtrader-r2-work/`) e rigenerare lì, in `ref/`, i calcoli di questo step (identità I1-I4, conversioni C1-C5, barra 1738, serie sintetica con seme), oltre al dataset esteso.
+- Raccogliere le fonti con lo stato letta / solo scheda / non letta; per S11 scrivere la formula di %B come derivazione; Working come «non letto, testo non accessibile».
+
+**Struttura del documento** `docs/architecture/genome-indicators-catalog.md`, in questo ordine:
+1. **In breve** (per ultimo): tabella corta degli ammessi, conteggio rispetto a 10/12, domande per Luca. **Tenere.**
+2. **Metodo, notazione, tempo:** regola del tempo con **le tre righe nuove** — acquisto all'apertura di `t+1`, vendita alla media OHLC/4 di `t+1`, stop e take profit al prezzo di soglia (F-code-4); `describe()` finito dalla barra 1 (F-code-3). **Aggiungere.**
+3. **Prezzo di ingresso e quattro filtri IIR:** tabella dei coefficienti con `1/c`, centro di massa, `−1/ln(1−c)`, barre per il 5 % (C2-C4); decisione aperta Q1 con P1-P5 e il fatto della simulazione (0,31 su passeggiata aleatoria). **Cambiare:** definizione unica di costante di tempo.
+4. **Mattoni di stato:** i cinque dello Step 3 più **politica di avvio** e **politica dei denominatori nulli** (salto della barra), con il calcolo sulla barra 1738. **Aggiungere.**
+5. **Schede per lacuna/famiglia** (titolo di famiglia, criterio = lacuna L1-L4 colmata): schede piene per le dieci obbligatorie e per N1, N6, N9, N14, N16, N17 (N7 e N18 come varianti delle schede ATR e CMF; N2 come trasformazione nel capitolo scala; RSI con l'identità I3 e l'efficienza di Kaufman come variante); righe «variante / perché no» per N3 (motivo I2), N4, N5, N8, N10, N12, N13, N15, N19, N20 e gruppo E. Schema a voci fuse (A1); voce 12 = modi di fallire (Alt. 3). **Cambiare.**
+6. **Scala, normalizzazione e ridondanza:** grandezze senza direzione (Sfida 3, ex L5); dipendenza della scala da `c` (N1a); identità I1-I4 come prima prova di ridondanza; serie sintetica come seconda; correlazioni ENI secondo la risposta a Q3. Alt. 4 al più in un paragrafo marcato come analogia. **Cambiare.**
+7. **Famiglie con parametri evolvibili:** `c` continuo contro finestra intera, con i due costi (scala, warm-up variabile per R6); Alt. 5 come opzione per R3. **Aggiungere** i due costi.
+8. **Esito:** regola di conteggio (proposta C2) scritta prima della tabella; colonne «ruolo» ed «esito» (T1); colonna «lacuna»; conteggio dei geni con la nota sui gradi di libertà ridondanti (T2); «Che cosa non si è potuto accertare» (debito, punto 6).
+9. **Domande per Luca, glossario, riferimenti.**
+
+**Da rimandare:** scelta del limite di `c` (R3); politica di decisione durante il warm-up e ingressi prodotto (R4); warm-up comune e divisione dei dati (R6); qualunque modifica al prezzo di esecuzione (issue a parte, se Luca la vuole).
+**Fuori dal documento, nel ciclo:** correzione di `knowledge/consilium-trader-order-timing` allo Step 10.
+
+### Domande da porre a Luca nel documento (una frase per scelta, nella sezione d'origine e nell'elenco finale)
+
+- **Q1 — Prezzo degli indicatori.** (a) Chiusura: valori confrontabili con le librerie e nessuna persistenza costruita dalla media. (b) Media OHLC/4: ogni EMA del catalogo coincide con un filtro di Consilium, ma i rendimenti ereditano una persistenza artificiale (0,31 su una serie casuale simulata, 0,23 su ENI). (c) Per indicatore: ognuno fedele alla propria fonte, ma due prezzi nello stesso genoma.
+- **Q2 — Conteggio delle uscite.** (a) Ogni termine della somma conta uno e basta. (b) Ogni termine conta uno e non si ammette un termine che è combinazione esatta di altri già presenti (proposta del Critic). (c) Si contano i filtri distinti invece dei termini.
+- **Q3 — Dati per le correlazioni.** (a) Intero snapshot ENI, con il limite scritto e passato a R6. (b) Solo il primo 40 % dello snapshot, che R6 tratterà come tratto di addestramento. (c) Identità e serie sintetica come prova principale, più (a) o (b) per le sole coppie che lo richiedono (proposta del Critic).
+- **Q4 — Prezzo di vendita del simulatore** (media OHLC/4 della barra di esecuzione; stop e take profit al prezzo di soglia). (a) Rischio dichiarato a R6 ed E2, simulatore invariato. (b) Issue a parte per un'esecuzione alternativa nel motore, lasciando invariato il codice del fornitore.
+
+### Controllo UX standing
+
+Il ciclo produce un documento, senza campi, controlli né passi di flusso (Step 2 e Step 3 lo dichiarano): **Q3** («stato incoerente») e **Q5** («input sbagliato, output silenziosamente sbagliato») non si applicano all'interfaccia; nessun rilievo di processo. Segnalo però che lo **spirito di Q5** ricompare nel motore per E2: un indicatore `NaN` non esposto in `describe()` produce un genoma che smette di operare senza errore (F-code-6). Lo porto come requisito per le schede e per E2, non come rilievo UX.
+
+### Nota di diversità cognitiva
+
+Rispetto agli Step 3 e 4 questo step ha cambiato **strumento**: invece di argomentare le identità le ha ricalcolate (quattro esatte, due formulazioni da correggere), e invece di ipotizzare l'effetto della media OHLC/4 lo ha misurato su una serie senza struttura (0,31: l'effetto è di costruzione). Ha seguito **tutto** il percorso della vendita nel codice (fino a `Portfolio.remove`) e quello dei valori non finiti fino al controller, trovando due fatti che nessuno step aveva: `describe()` deve essere finito dalla barra 1, e un solo `NaN` alla barra 1738 rende inutilizzabile il replay o ferma il genoma senza errore. Ha aperto dodici fonti, una non leggibile. Ha anche ridimensionato un rischio dello Step 4 (il vantaggio «solo nel simulatore» è di centesimi di punto, non un'anticipazione) invece di amplificarlo. Limite: stesso modello degli step precedenti; l'indipendenza è di compito e di oggetto, non di mente (`patterns/independent-verification-chain-research`).
+
+**Confidence:** Medium-High — fatti sul codice, identità, conversioni e fonti sono verificati su codice, calcolo e testo; restano non verificati i testi originali, il valore 0,94, la causa della barra piatta, e le cifre `[esplorativo]` sul prezzo di vendita dipendono da una regola di condizionamento scelta da me.
+
+**Prossimo step:** Step 7 — BUILDER (Step 6 Destroyer omesso per track).
