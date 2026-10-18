@@ -983,3 +983,8 @@ Per R2–R6 ed E2: l'orientamento di `c` e i valori reali; la tabella delle clas
 ## Risposta dell'operatore alla Q4 (2026-10-18, commento sull'artefatto)
 
 - Q4 (una forma o due): **si parte con una sola forma** (Percorso 1). Quale forma resta da scegliere tra i candidati; Q5 (esperimento nullo) ancora aperta.
+
+## Risposta dell'operatore alla Q5 (2026-10-18, commento sull'artefatto)
+
+- Q5 (esperimento nullo, quanto ogni forma si adatta al rumore): sì, va tenuto in considerazione, con riferimento a quanto documentato in 2.6.5 (tre insiemi di dati separati: addestramento, validazione, prova). Il disegno dettagliato dell'esperimento nullo è lasciato a R6.
+- Restano da decidere: quale forma (con memoria solo negli indicatori, Q2; decisioni intuibili ma effort bilanciato, Q3; una sola forma, Q4). Poi Steps 11–12.
