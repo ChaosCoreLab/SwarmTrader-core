@@ -289,3 +289,314 @@ Quattro parti che seguono il percorso del dato: (1) i campi grezzi e il prezzo d
 **Confidence:** Medium — la struttura è semplice e i fatti su filtri, prezzo di ingresso, ordine della barra e caso limite sono verificati sul codice e sullo snapshot; restano non verificate le convenzioni delle fonti (conversione N ↔ `c`, avvio delle EMA nelle librerie), la regola di finitezza di `describe()` nel controller e la scelta di Luca sul prezzo di ingresso, che può cambiare gli esempi.
 
 **Prossimo step:** Step 4 — EXPLORER
+
+## Step 4 — EXPLORER: Generate Alternatives
+
+**Agent:** claude-opus-5-5 (subagent)
+**Confidence:** N/A (fase divergente: la fattibilità non si valuta qui)
+**Assunzioni:** il caso «ricerca» si legge come nel ciclo 010: gli *approcci* (Parte 1) sono modi di organizzare o produrre il catalogo; gli *indicatori e trasformazioni* (Parte 2) sono candidati a una scheda. Letti oggi: Step 1–3 di questo file; `software-house-ai/agents/02-explorer.md`; Step 4 del ciclo 010 (`archive/cycle-010.md`, righe 160-277); `memory/decisions/2026-10-18-genome-form-linear-score`, `decisions/2026-10-11-research-document-conventions`, `knowledge/consilium-iir-filter-orientation`, `knowledge/consilium-trader-order-timing`, `patterns/independent-verification-chain-research`; guida, sezioni 1.3–1.4 e capitolo 4. Codice riletto: `src/vendor/consilium/algorithm.js` (righe 20-62, 242-251, 343-348, 366-384), `stockStream.js` (righe 32-34), `trader.js` (righe 97, 153), `portfolio.js` (righe 207-221), `src/engine/genome.js` (righe 14-17, 80-87). Tecniche usate: Challenge, Provocation, Analogies (elaborazione dei segnali, elettronica, neuroscienze), Biomimicry, Lateral Thinking.
+
+**Calcolo esplorativo dichiarato.** Per orientare le idee ho eseguito un piccolo calcolo sullo snapshot ENI (`src/data/eni-ohlcv.json`, letto in sola lettura; 2517 barre dal 2016-09-29 al 2026-09-28) con uno script nella cartella temporanea di sessione (`scratchpad/explore.mjs`), **non** nella cartella persistente prevista dall'Architect. Parametri di esempio scelti da me, calcolati sulla chiusura, intero snapshot dopo le prime 60 barre. I numeri sotto marcati `[esplorativo]` **non sono citabili nel documento**: servono a dare al Critic qualcosa da contestare e vanno rifatti con `ref/eni-corr.mjs` allo Step 7, con le scelte di Q3. Non dicono nulla sulla qualità degli indicatori.
+
+### Parte 1 — Approcci alternativi per organizzare o produrre il catalogo
+
+#### Alternativa 1 — Catalogo per «lacune»: che cosa non può esprimere un punteggio sui soli quattro filtri IIR (primo principio diverso; sfida l'Architect)
+**Tecnica:** Challenge («perché partire dagli indicatori e non da ciò che manca?») e Lateral Thinking.
+**Idea:** invece di raggruppare per ruolo informativo (Approccio B), si parte da un fatto del codice: oggi tutto ciò che il genoma vede del passato sono **quattro filtri lineari** di due sole serie, il prezzo medio `(O+H+L+C)/4` e il volume (`algorithm.js` righe 369-372; `stockStream.js` righe 32-34), e le 14 condizioni confrontano solo valori con valori (righe 20-62). Da qui si elencano le **lacune** in modo deduttivo, e ogni lacuna diventa un capitolo; un indicatore entra nel catalogo per la lacuna che colma, ed esce se non ne colma nessuna:
+- **L1. Nessuna funzione non lineare del percorso del prezzo.** Una combinazione lineare di EMA di `p` è ancora un filtro lineare di `p`. Mancano tutte le grandezze che richiedono valore assoluto, quadrato, massimo o minimo: volatilità, escursione, distanza da un massimo, «efficienza» del movimento.
+- **L2. Nessuna informazione dentro la barra.** La media OHLC/4 mescola apertura, massimo, minimo e chiusura in un numero: non distingue una giornata chiusa sul massimo da una chiusa sul minimo con la stessa media, né un salto all'apertura (gap) da un movimento durante la seduta.
+- **L3. Nessun volume con segno.** I due filtri del volume dicono «quanto si scambia», mai «in quale direzione si muoveva il prezzo mentre si scambiava».
+- **L4. Nessuna normalizzazione per il regime.** I margini sono proporzionali al filtro (`marginAbs = ema * marginPercent`, righe 381-384): una distanza del 2 % pesa uguale in un anno calmo e in uno agitato.
+- **L5. Nessuna grandezza senza direzione** (quanto è forte una tendenza, quanto è agitato il mercato), e il punteggio lineare ha un problema specifico con esse (vedi «Sfida all'Architect», punto 3).
+Il limite di 10 ingressi si **alloca per lacune** (ad es. 3 posti al livello e tendenza, 2 a L1, 1 a L2, 2 a L3/volume, 1 a L4 come trasformazione), e la tabella dell'esito ha una colonna «lacuna colmata».
+**Perché vale:** rende verificabile il criterio di appartenenza che l'Architect stesso segnala come giudizio dell'autore (rischio 6): una lacuna si dimostra sul codice, una famiglia no. Per Luca, la domanda «che cosa il genoma oggi non può vedere?» è più concreta di «quale tipo di indicatore».
+**Attenzione:** le lacune sono dedotte dalla forma attuale (FSM con filtri), non dalla letteratura `[ipotesi di metodo]`; il nuovo genoma potrebbe avere lacune diverse (ad es. le interazioni, che sono di R4).
+
+#### Alternativa 2 — Prima il banco di prova, poi le famiglie: raggruppare per correlazione misurata (data-first)
+**Tecnica:** Provocation («e se le famiglie le decidessero i dati?») e Analogies (riduzione di dimensionalità per selezione di rappresentanti).
+**Idea:** si invertono gli Step: prima lo script calcola **tutti** i candidati (elenco minimo più Parte 2) con parametri di esempio, sulla stessa serie; poi si raggruppano per somiglianza (ad es. raggruppamento gerarchico sulla distanza `1 - |correlazione|`), e ogni gruppo diventa una «famiglia empirica»; per ciascun gruppo si sceglie un **rappresentante** (il più semplice, quello con stato minore, quello con fonte primaria). Le schede si scrivono in quell'ordine. Il banco si esegue su **tre** serie: lo snapshot ENI (con la regola di Q3), il dataset giocattolo e una **passeggiata aleatoria sintetica** con la stessa volatilità di ENI: una correlazione che compare anche sulla serie senza struttura è **meccanica** (dovuta alla costruzione degli indicatori), non una proprietà del mercato.
+**Indizio dal calcolo esplorativo** `[esplorativo]`: la distanza dalla EMA a 20 barre e la MACD normalizzata (EMA a 5 su EMA a 20) hanno correlazione 0,94; distanza a 20 e RSI a 14 0,88; volatilità EWMA e ATR normalizzato 0,96; il logaritmo del volume relativo ha correlazione tra -0,08 e -0,01 con tutti gli indicatori di prezzo provati. Spezzando lo snapshot in due metà, le coppie provate cambiano poco (ad es. distanza-MACD 0,94 e 0,93; distanza-RSI 0,84 e 0,93). Se lo stesso schema comparisse sulla passeggiata aleatoria, sarebbe una ridondanza di costruzione `[ipotesi da verificare con lo script]`.
+**Perché vale:** neutralizza il rischio 6 dell'Architect (famiglie che predeterminano l'esito) e il rischio 8 (tre nomi per la stessa informazione), e dà a E2 un banco di prova che servirà comunque (incrementale = diretto, Piano script).
+**Attenzione:** è il punto in cui il catalogo «guarda» i dati di valutazione (Q3); la serie sintetica attenua il problema ma non lo elimina. Le correlazioni dipendono dai parametri, e con parametri evolvibili si spostano.
+
+#### Alternativa 3 — Catalogo per modi di fallire (dai fallimenti noti degli indicatori)
+**Tecnica:** Provocation («scegliamo gli indicatori per come sbagliano, non per che cosa misurano») e Analogies (analisi dei modi di guasto, FMEA, dell'ingegneria dell'affidabilità).
+**Idea:** ogni indicatore ha pochi modi di fallire, e sono sempre gli stessi: **(F1) ritardo** (la media segue il prezzo), **(F2) saturazione** (RSI e stocastico bloccati vicino agli estremi durante una tendenza lunga), **(F3) scala che dipende dal prezzo o dal regime** (MACD in euro, ATR in euro), **(F4) divisione per zero o valore non finito** (massimo = minimo, volume 0: la barra ENI `2023-08-15`), **(F5) dipendenza dal punto di partenza** (OBV e linea di accumulo/distribuzione), **(F6) avvio diverso tra librerie** (EMA avviata con la SMA o con il primo valore), **(F7) artefatti di costruzione** (vedi la media OHLC/4 in Parte 4, Q1). La scheda si apre con la riga dei fallimenti e la proposta di ammissione dice **quali fallimenti il punteggio lineare tollera** (F1 sì, è il prezzo della memoria; F3 no, va trasformato; F5 no, va riformulato) e quale trasformazione li neutralizza.
+**Perché vale:** sposta l'attenzione dalle letture convenzionali («ipercomprato») a fatti verificabili sul calcolo, coerenti con il divieto di promesse; la colonna «casi limite» della tabella trasversale diventa la colonna principale. Si combina bene con A o B: è un ordine interno della scheda, non un'impaginazione.
+
+#### Alternativa 4 — Il catalogo come retina: pochi tipi di recettore, normalizzazione divisiva (biomimetica)
+**Tecnica:** Biomimicry e Analogies (neuroscienze sensoriali).
+**Idea:** un sistema sensoriale non misura il mondo con cento sensori diversi: usa **pochi tipi di recettore** con costanti di tempo diverse, risponde alle **variazioni relative** più che ai livelli, separa canali «on» e «off» e **divide la risposta per l'attività recente** del contesto, così il segnale resta leggibile al buio e al sole. La normalizzazione divisiva è descritta come computazione canonica del sistema nervoso in Carandini e Heeger [S16]. Tradotto per il catalogo: (a) un solo tipo di «recettore di livello», la distanza logaritmica del prezzo da una EMA, ripetuto a 2-3 velocità evolvibili (il «banco» della guida 1.3.3); (b) un «recettore di contrasto», la volatilità recente, usato soprattutto per **dividere** gli altri ingressi (lacuna L4) e non come ingresso in sé; (c) canali con segno per il volume (on = volume nei giorni di rialzo, off = nei giorni di ribasso); (d) adattamento: ogni ingresso è riferito alla propria media recente. Il catalogo si presenta come «quali recettori, e come si normalizzano», e la proposta d'esito diventa piccola per costruzione.
+**Perché vale:** dà a Luca una sola idea per tutto il documento, spiega perché i rapporti e i logaritmi sono la scala giusta per un punteggio lineare, e suggerisce che il numero di ingressi conti per **tipi di recettore × velocità**, non per nomi di indicatori. Che l'analogia regga per i mercati è `[ipotesi]`: la fonte tratta solo il sistema nervoso.
+
+#### Alternativa 5 — Banco di filtri a ottave: le velocità come una scala musicale (fuori dall'impaginazione, verso R3)
+**Tecnica:** Analogies (equalizzatore audio a bande d'ottava, banco di filtri).
+**Idea:** se le EMA sono il «recettore di livello», invece di far evolvere `k` coefficienti indipendenti (rischio che due convergano e diventino lo stesso ingresso, rischio 8 dell'Architect), il genoma evolve **due** numeri: la costante di tempo più breve `T0` e il rapporto `q > 1` tra costanti successive; le velocità sono `T0, q·T0, q²·T0, …`. Nessuna coppia può coincidere, il vincolo «veloce > lenta» del MACD è soddisfatto per costruzione, e il numero di geni non cresce con il numero di velocità.
+**Perché vale:** risolve per costruzione un problema che altrimenti R3 dovrebbe riparare con vincoli. **Esce in parte dal perimetro:** la parametrizzazione dei geni è di R3; qui si propone solo di nominarla nel capitolo «Famiglie con parametri evolvibili» `[ipotesi, nessuna fonte per l'uso in un genoma]`.
+
+#### Sfida alla raccomandazione dell'Architect
+1. **Che cosa conta come ingresso.** L'Architect conta i termini della somma (risposta 2 di Luca). Ma se gli ingressi sono distanze logaritmiche dalle EMA, `d_k = ln(p / e_k)`, allora la MACD normalizzata in forma logaritmica **è una combinazione lineare** di due distanze: `ln(e_veloce / e_lenta) = d_lenta - d_veloce` (identità algebrica). Nel punteggio lineare non aggiunge nulla: i pesi di `d_lenta` e `d_veloce` la rappresentano già. Con la forma «rapporto meno 1» della guida (`x2`) l'identità vale solo in prima approssimazione (`ln(1+u) ≈ u` per `u` piccolo). Conseguenza: l'espressività del gruppo «livello e tendenza» dipende dal **numero di filtri distinti**, non dal numero di indicatori con nomi diversi; la MACD come linea entra solo se gli altri ingressi non la generano già. La linea di segnale (EMA della MACD), invece, è un filtro nuovo (una cascata), e l'istogramma (MACD meno segnale) torna a essere ridondante se ci sono le altre due.
+2. **La pendenza di una EMA è la distanza dalla EMA di ieri.** Da `e[t] = e[t-1] + c·(x[t] - e[t-1])` segue `e[t]/e[t-1] - 1 = c·(x[t]/e[t-1] - 1)`: la «pendenza della EMA» proposta nell'elenco del compito è esattamente la distanza del prezzo dalla EMA del giorno prima, moltiplicata per `c` (identità algebrica sulla formula di `algorithm.js`, righe 369-372). Un ingresso quasi duplicato, con nome diverso.
+3. **Le grandezze senza direzione nel punteggio lineare.** Volatilità, ATR, ADX, larghezza delle Bande, efficienza di Kaufman sono **sempre positive** e non dicono «su» o «giù». In una somma pesata un ingresso così sposta il punteggio sempre nello stesso verso: con peso positivo «più il mercato è agitato, più si compra», qualunque sia la direzione. È raramente la regola voluta `[ipotesi]`; il loro uso naturale è **dividere** un ingresso con direzione (z-score, lacuna L4) o **moltiplicarlo** (ingresso prodotto, guida 4.8.2), che è materia di R4. Proposta: nel catalogo queste grandezze hanno due forme d'ingresso, «diretta» (sconsigliata, spiegata) e «come normalizzatore»; la tabella dell'esito le conta come ingressi solo nella forma diretta.
+4. **Le famiglie si possono sostituire con lacune o con gruppi misurati** (Alternative 1 e 2), così l'attribuzione non è un giudizio dell'autore. L'Approccio B resta compatibile: cambia solo il criterio con cui si formano i capitoli.
+5. **L'RSI è già un rapporto di due EMA.** Con la media di Wilder (vedi Parte 3) `RSI = 100·U/(U+D)`, con `U` e `D` medie dei rialzi e dei ribassi; quindi `2·RSI/100 - 1 = (U - D)/(U + D) = media(ΔC) / media(|ΔC|)`, perché `U - D` è la media delle variazioni con segno e `U + D` quella dei loro valori assoluti (stessa media, stesso avvio). L'RSI centrato è dunque un **rapporto di efficienza esponenziale con segno**: la versione a filtri dell'efficienza di Kaufman [S6]. Una sola scheda può coprirli entrambi; il parametro diventa continuo (`c = 1/N`), come già previsto dall'Architect al componente 8.
+
+### Parte 2 — Indicatori e trasformazioni fuori dall'elenco minimo
+
+Convenzioni: `p[t]` = prezzo di ingresso scelto (Q1); `C, O, H, L, V` = campi della barra; `r[t] = ln(C[t]/C[t-1])` rendimento logaritmico; «EMA(x; c)» = filtro nella forma di Consilium, `c` peso del dato nuovo. «Stato» = numeri da conservare tra una barra e la successiva. «Costo» = operazioni per barra. Tutti usano solo dati della barra `t` e precedenti, quindi sono noti a fine `t`; dove serve, lo segnalo. Le valutazioni «aggiunge / ridonda» sono **ipotesi** salvo il calcolo esplorativo indicato.
+
+#### Gruppo A — Livello e tendenza (forme normalizzate di ciò che c'è già)
+
+**N1. Distanza logaritmica da una EMA, a più velocità** — *famiglia, `c` evolvibile*
+- *In parole:* di quanto il prezzo sta sopra o sotto la propria media, in scala logaritmica.
+- *Formula:* `d[t] = ln(p[t] / e[t])`, `e = EMA(p; c)`. Per scarti piccoli coincide con `x1` della guida divisa per 100.
+- *Stato e costo:* 1 numero per velocità; tempo costante.
+- *Rispetto ai filtri IIR:* è il filtro IIR stesso, letto come rapporto; con P2 (prezzo OHLC/4) coincide con un filtro di Consilium.
+- *Perché aggiunge:* la forma logaritmica è simmetrica (+10 % e -10 % in log hanno lo stesso modulo) e rende esatte le identità della Sfida, punto 1: con `k` velocità, MACD e «distanza tra medie» sono già nello spazio dei pesi.
+- *Rischio:* due velocità evolvibili che convergono producono due ingressi uguali (rimedio: Alternativa 5 o vincolo di R3).
+
+**N2. Z-score della distanza: distanza divisa per la volatilità recente** — *trasformazione*
+- *In parole:* la distanza dalla media misurata in «giornate tipiche» invece che in percento: un 2 % in un periodo calmo conta più di un 2 % in un periodo agitato.
+- *Formula:* `z[t] = d[t] / s[t]`, con `s` dalla N6 (volatilità EWMA) o dalla N7 (ATR normalizzato).
+- *Stato e costo:* quello di N1 più N6; tempo costante.
+- *Perché aggiunge:* colma la lacuna L4; è la normalizzazione causale proposta dall'Architect al componente 7 (b), qui come ingresso. Le Bande di Bollinger in forma %B sono la stessa idea con SMA e deviazione standard su finestra: `%B = 0,5 + (C - SMA)/(2·k·σ)` è una funzione affine dello z-score (algebra sulla definizione di %B come posizione nelle bande [S11], regola 15), quindi nel punteggio lineare %B e z-score con SMA sono lo stesso ingresso (la costante finisce nel bias).
+- *Rischio:* volatilità vicina a zero (periodo piatto, avvio): serve un minimo per il denominatore; nelle prime barre `s` è mal stimata.
+
+**N3. Pendenza della EMA** — *escludere, con scheda breve*
+- *Formula:* `e[t]/e[t-1] - 1 = c·(p[t]/e[t-1] - 1)` (Sfida, punto 2).
+- *Motivo:* duplicato algebrico di N1 con un giorno di ritardo; lo si scrive nel documento perché è una proposta naturale che il lettore si aspetta.
+
+**N4. Pendenza di una retta di regressione su N barre** — *forse*
+- *In parole:* la pendenza della retta che meglio approssima gli ultimi N prezzi (in log): quanto sale al giorno, in media, nella finestra.
+- *Formula:* quella di TA-Lib `LINEARREG_SLOPE` [S4]: `m = (n·SumXY - SumX·SumY) / (SumX² - n·SumXSqr)`, con `SumX`, `SumXSqr` costanti in `n`. Normalizzata: applicata a `ln p`.
+- *Stato e costo:* coda di N valori; aggiornamento a tempo costante con `SumY ← SumY + y_nuovo - y_uscente` e `SumXY ← SumXY + SumY_vecchio - n·y_uscente` (derivazione mia, da ricontrollare dallo Scientist; la pagina di TA-Lib non tratta l'aggiornamento incrementale).
+- *Perché potrebbe aggiungere:* è un filtro lineare a finestra con risposta diversa dalla EMA (pesi lineari invece che esponenziali); ma resta un filtro lineare del prezzo, quindi ridondanza attesa alta con N1 `[ipotesi]`.
+- *Rischio:* parametro intero (finestra); somme correnti soggette ad accumulo di errori su 2517 barre `[ipotesi]`.
+
+**N5. Livello e pendenza alfa-beta (Holt)** — *forse, già nella guida*
+- È la variante della guida 4.5 (`alfa`, `beta` evolvibili, stato 2 numeri, tempo costante; ingresso `v/l`). Rispetto a N1 la pendenza stimata ha una dinamica del secondo ordine (risponde all'accelerazione). Scheda breve con rimando alla guida 4.5; il collegamento con Kalman [S15] resta quello già dichiarato nella guida (formula letta, uso sui prezzi `[ipotesi]`).
+
+#### Gruppo B — Volatilità ed escursione (lacuna L1)
+
+**N6. Volatilità EWMA dei rendimenti logaritmici** — *portare (soprattutto come normalizzatore)*
+- *In parole:* quanto si muove di solito il prezzo da un giorno all'altro, con più peso ai giorni recenti.
+- *Formula:* `v[t] = v[t-1]·(1 - c) + r[t]²·c`, `s[t] = √v[t]`. È la media esponenziale dei quadrati dei rendimenti presentata nelle note MIT [S12] (forma `σ̃²[t+1] = (1-β)·σ̂²[t] + β·σ̃²[t]`, con `β` peso del passato: nella notazione di Consilium `c = 1 - β`). Il valore `β = 0,94` per dati giornalieri è attribuito a RiskMetrics (J.P. Morgan, 1996) da fonti secondarie `[ipotesi, fonte da verificare sul documento tecnico RiskMetrics]`.
+- *Stato e costo:* 2 numeri (`v` e la chiusura di ieri); tempo costante. Avvio: `v` = primo `r²`, oppure un valore fisso; warm-up dell'ordine di qualche `1/c` barre.
+- *Rispetto ai filtri IIR:* è un filtro IIR della stessa forma, ma applicato a `r²`, una grandezza che i filtri attuali non vedono (lacuna L1).
+- *Perché aggiunge:* misura l'agitazione usando solo la chiusura; non richiede massimo e minimo. Media dei quadrati senza sottrarre la media dei rendimenti: per rendimenti giornalieri la media è piccola rispetto alla deviazione `[ipotesi]`.
+- *Rischio:* grandezza senza direzione (Sfida, punto 3); i gap lunghi (festività) entrano come un solo rendimento grande.
+
+**N7. ATR normalizzato (NATR)** — *portare o in alternativa a N6, non entrambi*
+- *Formula:* `NATR = ATR / C · 100` [S5]; ATR con media di Wilder `ATR[t] = (ATR[t-1]·(n-1) + TR[t]) / n` e avvio con la media dei primi `n` TR [S1].
+- *Stato e costo:* ATR e chiusura di ieri (2 numeri dopo l'avvio; `n` valori durante l'avvio con SMA, oppure avvio al primo TR nella forma di Consilium); tempo costante.
+- *Perché è una scelta e non un'aggiunta:* `[esplorativo]` correlazione 0,96 con N6 sullo snapshot ENI. La differenza concettuale: l'ATR usa massimo, minimo e gap (escursione vera), N6 solo le chiusure. Scegliere una delle due; l'altra resta in catalogo come variante.
+- *Rischio:* scala in euro se non normalizzata (è il caso dell'ATR dell'elenco minimo: la scheda ATR deve proporre la forma NATR o ATR/EMA).
+
+**N8. Volatilità da massimo e minimo (Parkinson) e da OHLC (Garman-Klass), in forma esponenziale** — *forse*
+- *In parole:* stimare l'agitazione dall'escursione del giorno invece che dalle variazioni tra chiusure.
+- *Formula:* Parkinson per una barra `σ²_P = (ln H - ln L)² / (4·ln 2)`; Garman-Klass «migliore stimatore analitico invariante di scala» `σ² = 0,511·(u - d)² - 0,019·(c·(u + d) - 2·u·d) - 0,383·c²`, con `u = ln H - ln O`, `d = ln L - ln O`, `c = ln C - ln O` [S12]; poi una EMA del valore per barra.
+- *Stato e costo:* 1 numero (l'EMA); tempo costante; nessuna dipendenza dalla barra precedente (Parkinson).
+- *Perché potrebbe aggiungere:* le note MIT riportano efficienze statistiche di circa 5,2 (Parkinson) e 7,4 (Garman-Klass) rispetto al quadrato del rendimento tra chiusure, **sotto l'ipotesi di moto browniano senza deriva** [S12]; nel catalogo vale come «stima più stabile con poche barre», non come vantaggio per le decisioni. Gestisce `H = L` senza divisioni (valore 0).
+- *Rischio:* ignora il gap tra la chiusura di ieri e l'apertura di oggi (Parkinson e GK misurano solo la seduta) `[ipotesi, da verificare sul testo]`; ridondanza attesa alta con N6/N7.
+
+**N9. Distanza dal massimo su N barre (e posizione nel canale massimo-minimo)** — *portare*
+- *In parole:* quanto il prezzo è sotto il punto più alto delle ultime N giornate (0 = siamo sul massimo).
+- *Formula:* `dd[t] = C[t] / max(H[t-N+1..t]) - 1` (≤ 0). La posizione nel canale `(C - LL)/(HH - LL)` è lo stocastico %K di Lane con finestra lunga (formula di TA-Lib `STOCH` [S7]).
+- *Stato e costo:* coda monotona di al più N valori; massimo e minimo su finestra scorrevole con al più tre confronti per elemento nel caso peggiore (Lemire [S13]); tempo costante ammortizzato, non per barra.
+- *Perché aggiunge:* è una funzione non lineare del percorso (lacuna L1) e porta l'informazione «memoria del punto più alto», che una EMA non conserva. `[esplorativo]`: con N = 50, correlazione 0,84 con la distanza dalla EMA a 50 e -0,77 con NATR: parzialmente nuova.
+- *Rischio:* parametro intero (cambia lo stato); `H = L` nell'intera finestra impossibile in pratica ma da gestire; la variante «canale» divide per `HH - LL`.
+
+**N10. Massimo che dimentica (rivelatore di picco con decadimento)** — *forse, proposta di trasformazione senza fonte*
+- *Tecnica:* Analogies (elettronica: il rivelatore di picco con condensatore che si scarica).
+- *Formula:* `m[t] = max(H[t], m[t-1]·(1 - c) + C[t]·c)`; ingresso `C[t]/m[t] - 1`.
+- *Stato e costo:* 1 numero, tempo costante, `c` **continuo** evolvibile.
+- *Perché potrebbe aggiungere:* la stessa informazione di N9 senza coda e con un parametro continuo, come richiede il componente 8 dell'Architect («il parametro continuo si muta come gli attuali coefficienti»).
+- *Rischio:* nessuna fonte, nessuna libreria lo calcola: `[ipotesi, nessuna fonte]`; il comportamento va mostrato sul dataset.
+
+**N11. Efficienza di Kaufman (efficiency ratio), con segno** — *assorbire nella scheda RSI*
+- *Formula:* `ER = |C[t] - C[t-n]| / Σ |C[k] - C[k-1]|` sulle stesse `n` barre [S6]; senza valore assoluto al numeratore si ottiene la versione con segno in [-1, 1]. Kaufman la usa dentro la media adattiva KAMA [S6].
+- *Perché assorbire:* la versione esponenziale con segno coincide con l'RSI centrato (Sfida, punto 5). La versione a finestra resta come variante nella scheda RSI.
+- *Rischio:* TA-Lib riporta 1,0 per la finestra piatta (0/0) [S6]: convenzione da dichiarare.
+
+**N12. KAMA (media mobile adattiva di Kaufman)** — *escludere*
+- *Formula (TA-Lib):* `SC = (ER·(2/3 - 2/31) + 2/31)²`, `KAMA[t] = KAMA[t-1] + SC·(p[t] - KAMA[t-1])` [S6].
+- *Motivo:* è una EMA con `c` variabile guidato da ER; nel punteggio lineare la sua informazione è approssimativamente «distanza da EMA» più «ER», entrambe già presenti `[ipotesi]`; tre parametri, uno intero, e la saturazione di `c` tra 2/31 e 2/3.
+
+**N13. ADX (indice direzionale medio di Wilder)** — *escludere come ingresso diretto, nominare come normalizzatore o prodotto*
+- *Formula (TA-Lib):* `+DI = 100·(+DM_p / TR_p)`, `-DI = 100·(-DM_p / TR_p)`, `DX = 100·|(-DI) - (+DI)| / ((-DI) + (+DI))`; `+DM`, `-DM`, `TR` lisciati con la media di Wilder; primo ADX = media dei primi `n` DX, poi `ADX = (ADX_prec·(n-1) + DX)/n` [S3].
+- *Stato e costo:* circa 6-7 numeri (H, L, C di ieri, tre medie, ADX); tempo costante; avvio di circa `2·n` barre (deduzione mia dall'avvio a cascata descritto in [S3]).
+- *Perché escludere:* senza direzione (Sfida, punto 3); la differenza `(+DI - -DI)/(+DI + -DI)`, che ha direzione, è invece un candidato da confrontare con N1 e RSI `[ipotesi]`.
+
+#### Gruppo C — Dentro la barra (lacuna L2)
+
+**N14. Posizione della chiusura nell'escursione del giorno (CLV), in media esponenziale** — *portare*
+- *In parole:* se la giornata chiude vicino al massimo (+1) o vicino al minimo (-1). Lane basava lo stocastico sull'osservazione che nelle salite le chiusure tendono a stare vicino ai massimi [S17, solo descrizione secondaria].
+- *Formula:* `clv[t] = ((C - L) - (H - C)) / (H - L)` ∈ [-1, 1], cioè il moltiplicatore del flusso di denaro di Chaikin (TA-Lib `AD` [S8]) **senza volume**; ingresso `EMA(clv; c)`.
+- *Stato e costo:* 1 numero; tempo costante.
+- *Perché aggiunge:* è l'informazione che la media OHLC/4 cancella; limitato per costruzione, adimensionale. Separa «quanto» (CMF, con volume) da «dove chiude» (questo).
+- *Caso limite:* `H = L` (barra ENI `2023-08-15`): la versione `ADOSC` di TA-Lib aggiorna solo «quando high > low» [S9]; proposta analoga: `clv = 0` o barra saltata, da dichiarare.
+
+**N15. Gap di apertura e corpo della barra** — *forse (uno dei due)*
+- *Formula:* `gap[t] = ln(O[t] / C[t-1])`; `corpo[t] = ln(C[t] / O[t])`; ingresso: EMA di ciascuno.
+- *Stato e costo:* 1-2 numeri; tempo costante.
+- *Perché potrebbe aggiungere:* `r[t] = gap[t] + corpo[t]` (identità): separa il movimento avvenuto a mercato chiuso da quello in seduta. `[esplorativo]`: deviazione standard 0,0094 per il gap e 0,0136 per il corpo sullo snapshot ENI: il gap non è trascurabile.
+- *Rischio:* l'esecuzione degli acquisti avviene all'**apertura** di `t+1` (`trader.js` riga 97): il gap di `t+1` è esattamente ciò che la strategia non può vedere, quindi qui si usa solo il gap di `t` e precedenti (causale). Ridondanza con CLV `[ipotesi]`.
+
+#### Gruppo D — Volume con segno e flusso (lacuna L3)
+
+**N16. Logaritmo del volume relativo** — *portare (sostituisce `x3` della guida)*
+- *Formula:* `lv[t] = ln(V[t] / EMA(V; c)[t])`; variante della guida `V/EMA - 1`.
+- *Stato e costo:* 1 numero; tempo costante.
+- *Perché aggiunge:* il volume ha una distribuzione molto asimmetrica (giorni con volume molte volte la media) `[ipotesi]`; il logaritmo rende simmetrici «doppio» e «metà». `[esplorativo]`: correlazione tra -0,08 e -0,01 con tutti gli indicatori di prezzo provati: è l'ingresso più «ortogonale» del banco.
+- *Caso limite:* `V = 0` (barra ENI `2023-08-15`) → logaritmo non finito: serve un minimo (ad es. `max(V, 1)`, come nel calcolo esplorativo) o la barra saltata.
+
+**N17. OBV normalizzato: volume con segno su volume totale, in media esponenziale** — *portare (sostituisce OBV grezzo)*
+- *In parole:* tra il volume recente, quanta parte è stata scambiata in giorni di rialzo e quanta in giorni di ribasso.
+- *Formula:* `f[t] = EMA(sgn(C[t] - C[t-1])·V[t]; c) / EMA(V[t]; c)` ∈ [-1, 1]. È l'idea dell'OBV di Granville (somma cumulata del volume con il segno della variazione, TA-Lib `OBV` [S10]) riscritta come rapporto di due filtri.
+- *Stato e costo:* 3 numeri (due EMA e la chiusura di ieri); tempo costante.
+- *Perché aggiunge:* risolve i difetti dell'OBV che l'Architect segnala (rischio 4: valore non limitato e dipendente dal punto di partenza); adimensionale; con `c` evolvibile. Costruzione mia `[ipotesi, nessuna fonte]`.
+- *Rischio:* ridondanza con CMF in forma esponenziale (che usa CLV invece del segno) `[ipotesi]`.
+
+**N18. CMF in forma esponenziale** — *variante della scheda CMF*
+- *Formula:* `EMA(clv·V; c) / EMA(V; c)` invece della somma su 20 barre. Tempo costante, `c` continuo; stesso caso limite di N14.
+
+**N19. Distanza dal prezzo medio ponderato per il volume (VWAP scorrevole o EMA ponderata)** — *forse*
+- *In parole:* a che prezzo, in media, si è scambiato di più di recente, e dove sta oggi il prezzo rispetto a quel livello.
+- *Formula:* `vw[t] = EMA(p·V; c) / EMA(V; c)`; ingresso `ln(p[t] / vw[t])`.
+- *Stato e costo:* 2 numeri; tempo costante.
+- *Perché potrebbe aggiungere:* la differenza tra `vw` e la EMA semplice con lo stesso `c` dice se il volume si è concentrato ai prezzi alti o bassi. La libreria `ta` documenta un VWAP con finestra (14 barre) ma lo descrive come grandezza «per la giornata corrente» [S14]: su barre giornaliere la definizione originale (intragiornaliera) non si applica, quindi questa è una **riformulazione** `[ipotesi]`.
+- *Rischio:* ridondanza alta con N1 quando il volume è stabile `[ipotesi]`.
+
+**N20. Force index normalizzato (Elder) e MFI** — *escludere*
+- *Motivo:* il force index (variazione × volume) normalizzato si riduce a N17 pesato per l'ampiezza della variazione `[ipotesi]`; l'MFI è un «RSI ponderato per il volume» (definizione di Quong e Soudack citata da TA-Lib `MFI` [S18]), quindi RSI + N17 ne coprono l'informazione `[ipotesi]`. La libreria `ta` documenta entrambi [S14].
+
+#### Gruppo E — Altre proposte, escluse a priori
+- **Rendimento logaritmico di un giorno `r[t]`** come ingresso: è N1 con `c` vicino a 1 (con `c → 1` la EMA è il prezzo di ieri) `[ipotesi sull'approssimazione]`, ed è il dato più rumoroso; resta come mattone (N6, N15), non come ingresso.
+- **Williams %R:** è lo stocastico %K riscalato (`%R = %K - 100` nella convenzione più comune) `[ipotesi, fonte da verificare]`: duplicato.
+- **Asimmetria della volatilità** (`EMA(min(r, 0)²) / EMA(r²)`, quota di varianza dovuta ai ribassi): interessante e a tempo costante, ma senza fonte né uso noto in questo contesto `[ipotesi, nessuna fonte]`; da citare in «che cosa non si è accertato».
+- **Correlazione esponenziale tra rendimenti e variazioni del volume:** quattro filtri per un numero molto rumoroso `[ipotesi]`.
+- **Indice di ulcera, Aroon (età del massimo):** stato a finestra con più livelli; informazione vicina a N9 `[ipotesi]`.
+- **Giorno della settimana, calendario, dati esterni (indici, cambio):** non sono memoria del titolo; l'ultimo esce dal perimetro (un solo titolo, nessuna fonte esterna nello snapshot).
+- **Kalman completo con guadagno adattivo:** la guida usa già la versione alfa-beta (N5); il filtro completo aggiunge la stima delle varianze, cioè parametri e stato senza un ingresso nuovo.
+- **Qualsiasi ingresso legato alla posizione** (prezzo di carico, stop mobile, giorni in posizione): escluso dalla regola «memoria solo negli indicatori» (Step 2).
+
+#### Tabella «quali portare nel catalogo»
+
+| Proposta | Esito | Motivo in una riga |
+|---|---|---|
+| N1 distanza log da EMA, più velocità | **portare** (famiglia) | forma esatta per le identità della Sfida; `c` evolvibile; con P2 coincide con i filtri IIR |
+| N2 z-score (distanza / volatilità) | **portare** come trasformazione | colma L4; assorbe %B di Bollinger |
+| N3 pendenza della EMA | escludere (riga «perché no») | duplicato algebrico di N1 |
+| N4 pendenza di regressione | forse (variante) | filtro lineare a finestra, ridondanza attesa alta |
+| N5 alfa-beta / Holt | forse (scheda breve, rimando a guida 4.5) | già nella guida; dinamica del secondo ordine |
+| N6 volatilità EWMA | **portare** (soprattutto normalizzatore) | colma L1 con la sola chiusura; tempo costante |
+| N7 NATR | **portare in alternativa a N6** | correlazione 0,96 `[esplorativo]`; forma normalizzata dell'ATR dell'elenco |
+| N8 Parkinson / Garman-Klass | forse (variante di N6) | stima dalla sola seduta; gestisce H = L |
+| N9 distanza dal massimo su N | **portare** | non lineare, memoria del picco; coda di Lemire |
+| N10 massimo che dimentica | forse | come N9 con `c` continuo; nessuna fonte |
+| N11 efficienza di Kaufman | assorbire nella scheda RSI | RSI centrato = efficienza esponenziale con segno |
+| N12 KAMA | escludere | combinazione di N1 ed ER, tre parametri |
+| N13 ADX | escludere come diretto | senza direzione; la variante con segno è un forse |
+| N14 CLV in EMA | **portare** | colma L2; limitato; separa «dove chiude» dal volume |
+| N15 gap / corpo | forse (uno solo) | separa notte e seduta; ridondanza con CLV da misurare |
+| N16 log volume relativo | **portare** (sostituisce `x3`) | il più ortogonale del banco `[esplorativo]` |
+| N17 OBV normalizzato | **portare** (sostituisce OBV grezzo) | volume con segno, limitato, senza punto di partenza |
+| N18 CMF esponenziale | variante della scheda CMF | `c` continuo, tempo costante |
+| N19 distanza da VWAP/EMA ponderata | forse | riformulazione su barre giornaliere |
+| N20 force index, MFI | escludere | coperti da RSI + N17 |
+| Gruppo E | escludere | motivi nella lista sopra |
+
+AC-01 è soddisfatto da almeno N6, N9, N14, N16, N17 (fuori dall'elenco minimo).
+
+#### Quanti ingressi sembrano sostenibili e quali famiglie
+
+Una ripartizione che resta **sotto 10** e copre tutte le lacune (proposta da discutere, non un esito):
+
+| Posto | Ingresso | Lacuna | Geni (non contano nel limite) |
+|---|---|---|---|
+| 1-3 | N1 a tre velocità (veloce, media, lenta), eventualmente divise per N6 (N2) | livello, tendenza, L4 | 3 `c` (o 2 con l'Alternativa 5) |
+| 4 | RSI centrato `2·RSI/100 - 1` (= efficienza con segno) | L1 con direzione | 1 `c` (Wilder, continuo) |
+| 5 | N9 distanza dal massimo (o N10) | L1 | 1 intero N (o 1 `c`) |
+| 6 | N14 CLV in EMA | L2 | 1 `c` |
+| 7 | N16 log volume relativo | volume | 1 `c` |
+| 8 | N17 OBV normalizzato (o CMF esponenziale) | L3 | 1 `c` |
+| (9) | N6 o N7 volatilità come ingresso diretto, solo se Luca vuole un termine «agitazione» | L1 senza direzione | 1 `c` |
+| (10) | stocastico %K o N15 gap, se la ridondanza misurata con CLV è bassa | L2 | 1 intero o 1 `c` |
+
+**8 ingressi** coprono le lacune; 9-10 se i posti tra parentesi superano la misura di ridondanza. **Non vedo un motivo strategico per arrivare a 12** con le informazioni di oggi: i posti 11-12 andrebbero a indicatori che il calcolo esplorativo suggerisce ridondanti (MACD, ROC, Bollinger %B sono già nello spazio di N1 + N2) `[ipotesi]`. Le **famiglie con parametro continuo** (`c` di una EMA) hanno più senso di quelle a finestra intera: si mutano e si incrociano come i coefficienti attuali (`genome.js` richiede `0 < c < 1`, righe 86-87) e non cambiano la dimensione dello stato. Quasi tutti i candidati portati ammettono una versione a filtri (RSI con Wilder, CMF e OBV esponenziali, N10 al posto di N9); restano a finestra intera solo N9 e lo stocastico. Con 8 ingressi a filtri i geni aggiunti sono circa 8 coefficienti, per un genoma di circa 8 pesi + bias + 2 soglie + 8 coefficienti = 19 numeri (conteggio mio, da passare a R3).
+
+### Parte 3 — Fonti
+
+**Convenzioni di conversione tra periodo N e coefficiente `c`** (tutte con `c` = peso del dato nuovo, come in `algorithm.js` righe 369-372):
+- **EMA standard:** `c = 2/(N + 1)`. Verificato su TA-Lib `EMA` [S2]: «k = 2 / (period + 1); EMA_t = (price_t - EMA_{t-1}) * k + EMA_{t-1}», che è la forma di Consilium con `k = c`. TA-Lib avvia l'EMA con la SMA dei primi N valori [S2]; Consilium al primo valore (`algorithm.js` righe 345-348).
+- **Media di Wilder:** `c = 1/N`. Verificato su TA-Lib `ATR` [S1] (`ATR_t = (ATR_{t-1}·(period-1) + TR_t) / period`, «Wilder-smoothed», riferimento al libro di Wilder), `RSI` [S19] (stessa ricorsione per le medie dei rialzi e dei ribassi, avvio con la media semplice dei primi N) e `ADX` [S3] («X = X - X/period + today's one-bar value», per somme; per l'ADX stesso la forma con `(period-1)/period`). Il testo di Wilder [S20] non è stato letto: l'attribuzione è quella di TA-Lib.
+- **Equivalenza tra le due:** una media di Wilder a N barre è una EMA standard a `2N - 1` barre (da `2/(N'+1) = 1/N`; algebra mia). Esempio: RSI a 14 di Wilder = EMA con `c = 1/14 ≈ 0,071`, che con la convenzione standard si chiamerebbe «EMA a 27».
+- **Costante di tempo:** l'Architect usa `1/c`; per una EMA il centro di massa dei pesi (età media del dato) è `(1 - c)/c` barre, e il peso residuo del valore di avvio dopo `t` barre è `(1 - c)^t` (algebra mia, da verificare dallo Scientist). Conseguenza pratica per il warm-up: per portare il peso dell'avvio sotto il 5 % servono `t ≥ ln 0,05 / ln(1 - c)` barre, cioè circa 24 con `c = 0,118` (`iir_volume_1`) e circa 30 con `c = 2/21` (EMA a 20). Le diverse convenzioni di avvio (SMA o primo valore) contano solo in quella finestra. TA-Lib segnala un «periodo instabile iniziale» per EMA, RSI, ATR, ADX [S1][S2][S3] ma le pagine lette non ne danno la durata.
+
+**Verificate il 2026-10-18** (pagina aperta; per i libri solo scheda bibliografica):
+- [S1] TA-Lib, *ATR — Average True Range*. https://ta-lib.org/functions/atr.html — formula dell'escursione vera, avvio con SMA, ricorsione di Wilder, riferimento a Wilder (letta).
+- [S2] TA-Lib, *EMA — Exponential Moving Average*. https://ta-lib.org/functions/ema.html — `k = 2/(period+1)`, avvio con SMA (letta).
+- [S3] TA-Lib, *ADX — Average Directional Movement Index*. https://ta-lib.org/functions/adx.html — formule di DI, DX, ADX, lisciatura di Wilder, avvio (letta).
+- [S4] TA-Lib, *LINEARREG_SLOPE*. https://ta-lib.org/functions/linearreg_slope.html — formula con somme (letta; nessun riferimento bibliografico).
+- [S5] TA-Lib, *NATR — Normalized Average True Range*. https://ta-lib.org/functions/natr.html — `NATR = ATR/Close·100` (letta; riferimento a John Forman, non verificato).
+- [S6] TA-Lib, *ER — Kaufman Efficiency Ratio* e *KAMA*. https://ta-lib.org/functions/er.html , https://ta-lib.org/functions/kama.html — formule, convenzione 0/0 = 1,0; riferimenti: P. J. Kaufman, *Smarter Trading*, McGraw-Hill, 1995, e *Trading Systems and Methods*, 6ª ed., Wiley, 2019 (pagine lette; **libri non letti**).
+- [S7] TA-Lib, *STOCH*. https://ta-lib.org/functions/stoch.html — %K, %D, valori predefiniti (5, 3, 3), finestra piatta → 0 (letta; la pagina **non** cita Lane).
+- [S8] TA-Lib, *AD — Chaikin A/D Line*. https://ta-lib.org/functions/ad.html — moltiplicatore `((C-L)-(H-C))/(H-L)`, somma cumulata da 0 (letta; la pagina non tratta `H = L` né cita una pubblicazione).
+- [S9] TA-Lib, *ADOSC — Chaikin A/D Oscillator*. https://ta-lib.org/functions/adosc.html — EMA 3 e 10 della linea A/D con `k = 2/(N+1)`, aggiornamento «only when high>low»; riferimento: Marc Chaikin (letta).
+- [S10] TA-Lib, *OBV*. https://ta-lib.org/functions/obv.html — ricorsione, avvio al primo volume; riferimento: J. E. Granville, *Granville's New Strategy of Daily Stock Market Timing for Maximum Profit*, Simon & Schuster (pagina letta; libro non letto).
+- [S11] J. Bollinger, *Bollinger Band Rules*. https://www.bollingerbands.com/bollinger-band-rules — regole 9 (20 periodi e 2 deviazioni come valori predefiniti), 11, 12 (SMA), 14, 15-17 (%B), 18 (BandWidth = quattro volte il coefficiente di variazione con i valori predefiniti) (letta). La pagina **non** dice se la deviazione standard è di popolazione o campionaria; TA-Lib `STDDEV` usa quella di popolazione, con divisore N (https://ta-lib.org/functions/stddev.html, letta).
+- [S12] P. Kempthorne, *Volatility Modeling*, MIT 18.S096, lezione 9, autunno 2013. https://ocw.mit.edu/courses/18-s096-topics-in-mathematics-with-applications-in-finance-fall-2013/32f868169964ba3cf5015de880cf2172_MIT18_S096F13_lecnote9.pdf — media esponenziale delle varianze, stimatori di Parkinson e Garman-Klass con efficienze (testo estratto dal PDF e letto nelle pagine 6-13). È materiale didattico, non la fonte originale; gli articoli di Parkinson (*Journal of Business* 53(1), 1980) e di Garman e Klass (*Journal of Business* 53(1), 1980, pp. 67-78) **non sono stati letti** (JSTOR). Nota: le slide datano Parkinson «1976», le schede bibliografiche 1980.
+- [S13] D. Lemire, *Streaming Maximum-Minimum Filter Using No More than Three Comparisons per Element*, Nordic Journal of Computing 13(4), 2006. https://arxiv.org/abs/cs/0610046 (letto l'abstract).
+- [S14] Libreria Python `ta`, documentazione. https://technical-analysis-library-in-python.readthedocs.io/en/latest/ta.html — elenco di RSI, ATR, ADX, CMF, KAMA, Donchian, Force Index, VWAP, Ulcer con finestre predefinite (letta la prima parte della pagina; **non dà formule**, rimanda a pagine di terzi, in parte commerciali: non utilizzabile come fonte di formule).
+- [S15] R. E. Kalman, 1960 — verificata nel ciclo 010 (`archive/cycle-010.md`, [F7]), non riaperta oggi.
+- [S16] M. Carandini, D. J. Heeger, *Normalization as a canonical neural computation*, Nature Reviews Neuroscience 13(1), 51-62, 2012 (online 2011). https://pmc.ncbi.nlm.nih.gov/articles/PMC3273486 (letto l'abstract).
+- [S18] TA-Lib, *MFI*. https://ta-lib.org/functions/mfi.html — prezzo tipico `(H+L+C)/3`, riferimento: G. Quong, A. Soudack, «Volume-Weighted RSI: Money Flow», *Technical Analysis of Stocks & Commodities* 7:3, 1989 (pagina letta; articolo non letto).
+- [S19] TA-Lib, *RSI*. https://ta-lib.org/functions/rsi.html — rialzi e ribassi, avvio con media semplice, ricorsione `((n-1)·Ū_{t-1} + U_t)/n` (letta; la pagina cita il libro di Wilder ma non usa le parole «Wilder smoothing»).
+- [S21] H. Working, *Note on the Correlation of First Differences of Averages in a Random Chain*, Econometrica 28(4), 916-918, 1960, e A. Cowles, *A Revision of Previous Conclusions Regarding Stock Price Behavior*, stesso numero, 909-915. https://www.econometricsociety.org/publications/econometrica/1960/10/01/note-correlation-first-differences-averages-random-chain e .../revision-previous-conclusions-regarding-stock-price-behavior — letta la scheda di Working (senza abstract) e l'abstract di Cowles, che riporta che fare la media all'interno di ogni unità di una serie casuale introduce una correlazione seriale positiva di primo ordine nelle differenze prime, e che fu Working a segnalarlo.
+
+**Identificate, solo scheda bibliografica da ricerca web, non aperte** (`[ipotesi, fonte da verificare]` per ogni contenuto attribuito):
+- [S17] G. C. Lane, «Lane's Stochastics», *Technical Analysis of Stocks & Commodities* 2(3), 87-90, 1984 (schede da traders.com ed eSignal; articolo a pagamento, non letto).
+- [S20] J. W. Wilder Jr., *New Concepts in Technical Trading Systems*, Trend Research, Greensboro (N.C.), 1978, ISBN 0-89459-027-8 (scheda di catalogo universitario e librerie).
+- [S22] G. Appel, *Technical Analysis: Power Tools for Active Investors*, FT Press, 2005 (schede WorldCat e InformIT); TA-Lib `MACD` (https://ta-lib.org/functions/macd.html, letta: MACD 12/26/9) cita invece G. Appel, *Stock Market Trading Systems*, Traders Press — due libri diversi, nessuno letto.
+- [S23] J. J. Murphy, *Technical Analysis of the Financial Markets*, New York Institute of Finance, 1999, ISBN 0-7352-0066-1 (schede di catalogo).
+- [S24] RiskMetrics — Technical Document, J.P. Morgan/Reuters, 4ª ed., 1996, per `λ = 0,94` giornaliero: trovate solo fonti secondarie.
+- [S25] T. Finch, *Incremental calculation of weighted mean and variance*, Università di Cambridge, 2009 (aggiornamento numericamente stabile di media e varianza esponenziali, citato dalla documentazione di TensorFlow): il server non ha risposto. Da cercare anche B. P. Welford, 1962, per la varianza incrementale su finestra o cumulata.
+- Chaikin (CMF), Granville (OBV): nessuna fonte primaria trovata; solo i riferimenti riportati da TA-Lib [S9][S10].
+- pandas-ta: il sito `pandas-ta.dev` non risolveva (DNS) il 2026-10-18; non verificata.
+
+Nessuna fonte commerciale usata come prova (pagine di piattaforme di trading e blog trovate nelle ricerche sono state scartate); nessuna cifra di rendimento riportata.
+
+### Parte 4 — Le tre domande aperte dell'Architect: opzioni e conseguenze
+
+**Q1 — Prezzo di ingresso: chiusura o media OHLC/4.** Alle opzioni P1-P4 dello Step 3 aggiungo due fatti e un'opzione.
+- *Fatto 1 (codice).* Nel simulatore gli **acquisti** si eseguono all'apertura della barra successiva (`trader.js` riga 97, `stockData.open`), ma le **vendite** al prezzo `getActualValue()` della barra di esecuzione, cioè `(O+H+L+C)/4` (`portfolio.js` righe 215-219, `trader.js` riga 153). Il prezzo di vendita contiene quindi massimo, minimo e chiusura di una giornata che, all'apertura, non è ancora avvenuta. Non è anticipazione dentro gli indicatori, ma è un'ipotesi favorevole o sfavorevole di esecuzione che `knowledge/consilium-trader-order-timing` non registra (dice «at that bar's open» per l'esecuzione, verificato solo per l'acquisto). **Da far verificare al Critic** sul percorso completo `Trader.update` → `sellOperation` → `Broker.sell` → `Portfolio.remove`, che qui ho letto solo nei punti citati.
+- *Fatto 2 (calcolo esplorativo e letteratura).* `[esplorativo]` sullo snapshot ENI l'autocorrelazione di primo ordine dei rendimenti giornalieri è 0,03 sulla chiusura e **0,23 sulla media OHLC/4**; la correlazione tra le due serie di rendimenti è 0,83. È coerente con l'effetto descritto da Working e Cowles nel 1960 [S21]: la media all'interno di ogni unità di una serie casuale introduce una correlazione seriale positiva nelle differenze. Che la media di quattro prezzi della barra ricada nello stesso caso del testo (che tratta medie di una catena casuale) è `[ipotesi, da verificare sul testo di Working]`. Conseguenza possibile: con P2 gli indicatori «di tendenza» sulla media OHLC/4 mostrano una persistenza in parte **costruita dalla media**, e se anche il prezzo di vendita è la media OHLC/4 (fatto 1), un genoma può trovare un vantaggio che esiste solo nel simulatore `[ipotesi]`.
+- *Opzione P5 (nuova).* Chiusura per gli indicatori (P1), e la questione del prezzo di vendita del simulatore portata a R6 ed E2 come rischio dichiarato, senza toccare il codice in questo ciclo.
+- *Conseguenze per la scelta:* P1 e P5 tengono i valori confrontabili con TA-Lib (che definisce sulla chiusura EMA, RSI, ATR, OBV, STOCH [S1][S2][S7][S10][S19]); P2 conserva l'equivalenza con i filtri di Consilium, ma eredita l'autocorrelazione della media; P3 e P4 come nello Step 3. **La scelta resta di Luca.**
+- **Domanda per Luca (Q1, riformulata con il fatto nuovo):** gli indicatori di prezzo del nuovo genoma usano la chiusura o la media OHLC/4, sapendo che la media OHLC/4 rende i rendimenti più persistenti di quelli sulla chiusura (0,23 contro 0,03 sullo snapshot, dato esplorativo)?
+- **Domanda nuova per Luca (Q4):** il prezzo di vendita del simulatore (media OHLC/4 della barra di esecuzione, mentre l'acquisto è all'apertura) va segnalato come rischio a R6 ed E2 o va aperta una issue a parte?
+
+**Q2 — Come si contano gli ingressi per gli indicatori a più uscite.**
+- *Opzione C1 (Architect):* ogni termine della somma conta uno. Semplice, verificabile a vista; ma non impedisce di spendere posti su combinazioni lineari di altri ingressi (MACD log con due distanze, istogramma con MACD e segnale, %B con lo z-score): posti sprecati, non un aggiramento del limite.
+- *Opzione C2:* ogni termine conta uno, **più una regola di ammissione**: un'uscita che è combinazione lineare (o affine) di ingressi già presenti non si ammette (Sfida, punto 1; N2; N3). Conseguenza: il limite misura davvero l'informazione; serve dimostrare l'identità nella scheda (facile per MACD, %B, istogramma, pendenza EMA).
+- *Opzione C3:* si contano i **filtri distinti** (stati indipendenti), non i termini. Conseguenza: più vicino all'espressività reale; ma si allontana dalla risposta 2 di Luca («termini della somma pesata») e richiede di spiegare il concetto di filtro.
+- *Conseguenza comune:* le grandezze senza direzione usate solo come normalizzatore (N2 con N6) non sono un termine della somma; se Luca accetta questa lettura, il loro costo è un gene, non un posto.
+- **Domanda per Luca (Q2, precisata):** un'uscita che è una combinazione di ingressi già presenti (ad es. la MACD quando ci sono già le due distanze dalle medie) va esclusa, oltre a contare uno se ammessa?
+
+**Q3 — Correlazioni sullo snapshot ENI.**
+- *Opzione R1:* intero snapshot, limite dichiarato. Massima stabilità delle stime; ma le scelte del catalogo guardano gli stessi dati della valutazione, una distorsione di selezione che R6 deve sapere (rischio 2 dell'Architect).
+- *Opzione R2:* solo un tratto iniziale dichiarato (ad es. il primo 40 %), che R6 si impegna a usare solo per l'addestramento. Conseguenza: R6 eredita un vincolo sulla divisione dei dati; meno dati, stime più instabili (le coppie provate cambiano poco tra le due metà `[esplorativo]`, ma non è detto per tutte).
+- *Opzione R3:* serie sintetica (passeggiata aleatoria con la volatilità di ENI) per le correlazioni «di costruzione», più R1 o R2 per quelle «di mercato» (Alternativa 2). Conseguenza: separa la ridondanza meccanica (che vale per qualunque titolo) da quella dei dati ENI; costo: un generatore nello script, con seme dichiarato.
+- *Opzione R4:* nessuna correlazione su dati veri, solo identità algebriche e serie sintetica. Conseguenza: nessuna distorsione di selezione, ma nessuna evidenza su volume e barra (che non si generano bene in modo sintetico `[ipotesi]`).
+- **Domanda per Luca (Q3, precisata):** le correlazioni si calcolano sull'intero snapshot ENI dichiarando il limite, solo su un tratto iniziale riservato all'addestramento, o anche su una serie sintetica per separare le ridondanze di costruzione?
+
+### Diversità cognitiva
+Per non ripetere i frame dell'Architect (impaginazione per indicatore, per famiglia, per catena del dato), questo step ha cambiato **oggetto** della domanda: non «come presentare gli indicatori» ma (a) che cosa il genoma attuale non può vedere (lacune dedotte dal codice, Alt. 1), (b) che cosa dicono i dati sulla somiglianza, con una serie senza struttura come controllo (Alt. 2), (c) come falliscono (Alt. 3), (d) come un sistema sensoriale risolve lo stesso problema con pochi recettori normalizzati (Alt. 4), (e) come parametrizzare le velocità senza collisioni (Alt. 5). Ha cercato **identità algebriche** invece di correlazioni attese (MACD log come differenza di distanze, pendenza EMA come distanza di ieri, RSI centrato come efficienza esponenziale con segno, %B come z-score affine), che riducono il catalogo senza dati. Ha riletto il codice del simulatore oltre i filtri e ha trovato un fatto non registrato in memoria (vendita alla media OHLC/4) e un possibile artefatto della media (Working 1960), entrambi da verificare dal Critic. Rischio dichiarato: tutte le identità sono mie e vanno ricontrollate (AC-10); i numeri `[esplorativo]` vengono da uno script non persistente.
+
+### Domande per Luca (da questo step)
+- **Q1** (riformulata): chiusura o media OHLC/4 per gli indicatori di prezzo, sapendo che la media rende i rendimenti più persistenti (0,23 contro 0,03, dato esplorativo)?
+- **Q2** (precisata): un'uscita che è combinazione di ingressi già presenti va esclusa, oltre a contare uno se ammessa?
+- **Q3** (precisata): correlazioni sull'intero snapshot dichiarando il limite, su un tratto iniziale riservato all'addestramento, o anche su una serie sintetica?
+- **Q4** (nuova): il prezzo di vendita del simulatore alla media OHLC/4 della barra di esecuzione va segnalato come rischio a R6 ed E2 o aperto come issue a parte?
+
+**Prossimo step:** Step 5 — CRITIC
