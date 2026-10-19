@@ -1157,3 +1157,215 @@ Le quattro domande D1-D4, i rischi per R3-R6 ed E2 (capitolo 8, con l'avvio dell
 - I pesi d'esempio della sezione 7.5, scelti a mano e dichiarati come illustrativi, sono accettabili, o preferisci un esempio con un solo ingresso alla volta, senza pesi combinati?
 
 **Prossimo step:** Step 9 — SCIENTIST
+
+## Step 9 — SCIENTIST: Verify
+
+**Agent:** claude-opus-5-5 (subagent)
+**Esito in apertura: nessun difetto Critico, Alto o di sostanza.** Tutte le tabelle e tutti i calcoli del dataset di 20 giorni, la sezione 7.5, le applicazioni «giorno 12», le conversioni N↔c, la tabella 2.2, la tabella ENI 3.3 e le tabelle ENI di 5.5 sono **ricalcolati da zero e coincidono** (1.041 valori di tabella, 0 differenze; circa 110 valori nel testo, 0 differenze). Le identità I1-I5 sono dimostrate di nuovo e verificate. La serie sintetica **non è riproducibile alla cifra** (il generatore non è dichiarato): rifatta con un generatore proprio sugli stessi parametri, conferma tutte le conclusioni, con scarti alla seconda decimale su alcune voci. Trovati 1 difetto Medio (riproducibilità della serie sintetica) e 12 Bassi (chiarezza delle convenzioni, stato di quattro fonti, un'etichetta al limite della soglia).
+**Confidence:** Medium-High — alta su numeri del dataset, ENI, identità, codice e fonti TA-Lib (riscontri diretti e script); media sui valori della serie sintetica (solo confronto statistico su 8 semi) e sul rendering (approssimato; Jekyll assente; Pages PENDING_HUMAN).
+**Assumptions**
+- Documento verificato: `docs/architecture/genome-indicators-catalog.md` al commit `751df26` (1.297 righe, 23.389 parole, 34 tabelle, 24 riferimenti); `git status` pulito all'inizio e alla fine.
+- **Indipendenza:** non ho letto né eseguito `ref/` né `out/` di `/home/luca/Workspace/swarmtrader-r2-work/`. Ho letto solo `dataset/toy20-ohlcv.json` (dati) e `src/data/eni-ohlcv.json` (sola lettura). Il dataset di 20 giorni è stato **rigenerato** dalla tabella della guida (sezione 1.2) e dalla regola scritta in 1.5 (arrotondamento al centesimo, metà per eccesso), poi confrontato con il JSON: 100/100 valori uguali.
+- Script miei in Python (non Node) in `/home/luca/Workspace/swarmtrader-r2-work/verify/`: `lib.py` (24 indicatori, versione incrementale e diretta), `doc.py` (legge le tabelle dal Markdown e confronta cella per cella con l'arrotondamento mostrato), `toy.py`, `eni.py`, `stats.py`, `synth_check.py` (uscita in `synth_stationary.txt`), `incdir_synth.py`, `render.py`, `shot.mjs` (solo per Chromium). Si rieseguono con `python3 -I <script>` dalla cartella.
+- Dove il documento non dichiara un parametro (c di N3, N2, N15, Parkinson; N di Kaufman), ho usato c = 2/21, volatilità EWMA con c = 0,06, N = 14 (difetto D12).
+- «Fonte letta» = pagina scaricata con `curl` (o `WebFetch` dove `curl` riceve un controllo anti-robot), convertita in testo e cercate le frasi citate.
+- La lettura simulata indipendente (AC-11) è affidata a un altro lettore: non l'ho attesa né letta.
+
+### 1. Fonti
+
+**HTTP (22 URL distinti del documento):** 22 risposte 200 con User-Agent `Mozilla/5.0`. **Eccezione di contenuto:** `https://pmc.ncbi.nlm.nih.gov/articles/PMC3273486` ([15]) a `curl` risponde 200 ma con una pagina reCAPTCHA («Checking your browser»); il testo vero si ottiene con `WebFetch` (D10).
+
+**Controllo di contenuto: 20 riferimenti su 24** (tutti quelli con URL, più [20] con una ricerca web). [21]-[24] sono libri senza URL, dichiarati «solo scheda» o «non verificata»: non verificabili e non usati come prova.
+
+| Affermazione nel documento | Fonte | Esito | Stato dichiarato onesto? |
+|---|---|---|---|
+| TR, avvio con media dei primi N TR, `ATR = (ATR_prec*(N-1)+TR)/N`, default 14 | [1] ATR | **Sostenuta** (formula, «ATR seed = simple average of first period TR values») | sì |
+| `k = 2/(period+1)`, `EMA = (prezzo - EMA_prec)*k + EMA_prec`, avvio con SMA dei primi N | [2] EMA | **Sostenuta** | sì |
+| ADX senza direzione, avvio circa 2N `[ipotesi]` | [3] ADX | **Sostenuta**: DM/TR lisciati con Wilder, poi «first ADX = mean of the first period DX» (circa 2N) | sì |
+| pendenza di regressione esiste come funzione | [4] LINEARREG_SLOPE | **Sostenuta** | sì |
+| `NATR = ATR / Close * 100` | [5] NATR | **Sostenuta** | sì |
+| efficienza di Kaufman **con segno** `(C[t]-C[t-N]) / somma abs(dC)`; finestra piatta 1,0 in TA-Lib | [6] ER | **Sostenuta con riserva**: la pagina definisce la forma **assoluta** `|close[t] − close[t−P]|`, tra 0 e 1, e cita la variante con segno di TC2000; la finestra piatta 0/0 dà 1,0 (sostenuto) | D5 |
+| KAMA: EMA con `c` guidato dall'efficienza; «tre parametri» `[ipotesi]` | [6] KAMA | **Sostenuta** la forma; la pagina espone un solo periodo (le costanti 2 e 30 sono fisse): i «tre parametri» restano `[ipotesi]`, correttamente marcati | sì |
+| STOCH: default 5, 3, 3, `%K` lisciato con media di 3, finestra piatta 0; la pagina non cita Lane | [7] STOCH | **Sostenuta** («When the high-low range over the window is zero, the raw stochastic is set to 0»; nessun riferimento a Lane) | sì |
+| moltiplicatore `((C-L)-(H-C))/(H-L)` | [8] AD | **Sostenuta** | sì |
+| aggiornamento «only when high>low» | [9] ADOSC | **Sostenuta** (frase testuale) | sì |
+| `OBV` con avvio al primo volume; Granville | [10] OBV | **Sostenuta** («seed OBV[startIdx] = V[startIdx]»; cita Granville [23]) | sì |
+| regole 9 (20 e 2 predefiniti), 12 (SMA), 15-17 (%b senza formula), 18 (larghezza = 4 × coefficiente di variazione); non dice popolazione o campione | [11] Bollinger | **Sostenuta** (regole trovate nel testo; «sample» compare solo come «sample size», non come divisore) | sì |
+| `STDDEV` con divisore N | [11] STDDEV | **Sostenuta** («population variance (divides by the period…)») | sì |
+| media esponenziale dei quadrati dei rendimenti con peso del passato beta, quindi `c = 1 - beta`; Parkinson nelle note | [12] MIT 18.S096 (PDF, 31 pagine) | **Sostenuta**: «σ̃²(t+1) = (1 − β)σ̂²(t) + βσ̃²(t)»; Parkinson (1976) e Garman-Klass presenti; 0,94 non è nelle note (il documento lo attribuisce a [24], come scrive) | sì |
+| al più tre confronti per elemento nel caso peggiore; Nordic J. Computing 13(4), 2006 | [13] arXiv | **Sostenuta** (abstract; scheda: «Volume 13, Number 4, pages 328-339, 2006») | sì |
+| libreria `ta` documenta force index e MFI; «non dà formule» | [14] | **Sostenuta**; inoltre la pagina dà per il CMF `window: int = 20`, che il documento potrebbe usare per la sua `[ipotesi]` su N = 20 (D9) | sì |
+| normalizzazione divisiva; esempio «leggibile al buio e al sole» | [15] Carandini e Heeger | **Sostenuta con riserva**: l'abstract dice che le risposte sono divise per un fattore comune che include «summed activity of a pool of neurons», nel sistema visivo e in altre modalità; non parla di luce né di attività «recente» (D8). Titolo, rivista, volume, pagine, anno: coincidono | stato «scheda (abstract)» onesto; la frase va oltre l'abstract |
+| MFI; Quong e Soudack non letti | [16] MFI | **Sostenuta** (la pagina cita Quong e Soudack, TASC 7:3, 1989) | sì |
+| RSI: rialzi e ribassi, avvio con media semplice, ricorsione `((n-1)*U_prec+U)/n`, default 14 | [17] RSI | **Sostenuta** | sì |
+| la media di una catena casuale introduce correlazione positiva delle differenze prime | [18] Cowles (abstract) | **Sostenuta** («the effect of such averaging will be to introduce a positive first-order serial correlation in the first differences … even where the original series is a random chain»); Working: solo la scheda (titolo, pagine 916-918), come dichiarato | sì |
+| MACD 12, 26, 9; cita Appel, *Stock Market Trading Systems* | [19] MACD | **Sostenuta**. Inoltre la pagina scrive «MACD = EMA_fast - EMA_slow; Signal = EMA(MACD, signalPeriod); Hist = MACD - Signal»: la struttura linea, segnale, istogramma, marcata nel documento `[ipotesi, fonte da verificare]`, **ha la fonte** (D6) | stato sottostimato |
+| Lane, «Lane's Stochastics», TASC 2(3), 87-90, 1984 | [20] | **Scheda confermata** (catalogo di Traders.com, V.2:3 pp. 87-90, maggio/giugno 1984) | sì |
+
+Nessun riferimento inventato; nessuno stato «letta» dichiarato falsamente. Le pagine TA-Lib riportano «Last Updated: 10/12/26»: il contenuto citato è quello di oggi.
+
+### 2. Formule e numeri (script Python propri, indipendenti da `ref/`)
+
+**Dataset e tabelle dei 20 giorni (`toy.py`)**: rigenerato dalla regola di 1.5 → 100/100 valori uguali al JSON e alla tabella 1.5; `L ≤ min(O,C)` e `H ≥ max(O,C)` su tutte le barre.
+
+| Tabella del documento | Valori confrontati | Differenze |
+|---|---|---|
+| 1.5 dataset | 100 | 0 |
+| SMA 5, N1 (c = 0,2), MACD, ROC 5, N16, RSI (c = 1/5), Bollinger (5, 2), ATR (c = 1/5), N6, N9 (10), stocastico (5, 3), N14, N17, CMF | 448 | 0 |
+| 7.5 ingressi giorno per giorno (20 × 8) | 160 | 0 |
+| 7.5 contributi, punteggio, decisione (20 × 10) | 200 | 0 |
+| 7.5 «togliendo un ingresso alla volta» (8 righe × 2 colonne) | 16 | 0 |
+| «In breve», colonna giorno 12 | 8 | 0 |
+| **Totale 20 giorni** | **932** | **0** |
+
+Conteggio decisioni: 11 `buy`, 5 `hold`, 4 `sell` (coincide). Punteggio del giorno 12: -3,5040.
+
+**Applicazioni «giorno 12» e calcoli nel testo (tutti coincidono):** EMA 0,5: 10,9841 → 10,7420, d = -0,0228, contributo -1,14; EMA 0,2: 10,8822 → 10,8058, d = -0,0287, -0,57; senza d veloce -2,3646; RSI: A -0,0206 → -0,0764, B 0,1762 → 0,2010, -0,3804, senza RSI -3,1237; ATR: TR 0,34, 0,2540 → 0,2712, NATR 0,0258, -0,52, contributi NATR tra -0,2400 e -0,5223; N9: massimo 11,43, -0,0814, -0,81; N14: clv -0,7241, -0,0360 → -0,1736, -0,35; N16: 1466,2 → 1612,9, 0,3104, +0,62, senza volume -4,1249; giorno 11 -1,7802, senza volume -2,2986 (`sell`); N17: numeratore -124,4 → -539,5, denominatore 1358,8 → 1527,0, -0,3533 (la barra 1 **non** entra nel denominatore: con la barra 1 dentro sarebbe -0,3494; il documento usa la prima convenzione, coerente con «EMA0» e con «barra 1: 0»); giorni in cui la decisione cambia togliendo ciascun ingresso: identici al testo delle schede e di D2-D3. Esempi a mano: 10,02 (EMA), 10,03/10,18/9,95 (giorno 2), 0,80 % (N1), 10,05 e deviazione 0,05 (SMA e Bollinger), TR 0,23 e ATR 0,142, A = B = 0,020 e 0,056 (RSI), clv 0,30 e %K 0,04, MACD 2,73 % il giorno 5, OBV 1000 → 11300 → 1200, ln(1,36) = 0,31, N2 3,26 il giorno 8, ln(1,01) = 0,00995.
+
+**Incrementale = diretto (`toy.py`, `eni.py`, `incdir_synth.py`):** 8 ingressi e 10 indicatori esclusi; 20 giorni: scarto relativo massimo 3,2e-14; serie sintetica (300 barre) e ENI (barre 1700-1760, compresa la 1738, più un campione): massimo 7,9e-12 (distanza veloce, dove il valore è vicino a zero), Bollinger 3,7e-13. Le due versioni coincidono.
+
+**Identità.** Ridimostrate a mano: I1 (`ln(C/es) - ln(C/ef) = ln(ef/es)`), I2 (`e/e_prec = 1 - c + c·C/e_prec`; `d = ln(1+u) - ln(1+cu)`), I3 (`U - D = EMA0(dC)`, `U + D = EMA0(|dC|)`), I4 (`(C - m + ks)/(2ks) = 1/2 + z/(2k)`). **I5:** con `D[t] = C[t] - e[t]` e `e[t] = (1-c)e[t-1] + cC[t]` si ha `D[t] = (1-c)(C[t] - e[t-1]) = (1-c)(D[t-1] + dC[t])`; posto `X = c/(1-c)·D`, `X[t] = c·D[t-1] + c·dC[t] = (1-c)X[t-1] + c·dC[t]`, con `X[1] = 0` perché `e[1] = C[1]`; è la ricorsione di `A = EMA0(dC; c)` con `A[1] = 0`, quindi `X = A` a ogni barra e `rsi_c = A/B = c/(1-c)·(C-e)/B`. `|A| ≤ B` per la disuguaglianza triangolare su pesi non negativi. **Corretta.** Numericamente: dataset 1,0e-15 (c = 0,2), giorno 2 A = 0,0200, giorno 12 A = -0,0764 (coincide); sintetica e ENI ≤ 8e-15 rispetto a max|A| (il documento dà 8,4e-17 «relativo»: la normalizzazione non è detta, l'ordine di grandezza è comunque arrotondamento). I1-I4 sulla mia serie: 2,9e-16; 2,7e-16 e 3,2e-16; 6,7e-16; 1,1e-16.
+
+**Conversioni e derivazioni (`eni.py`):** tabella 2.2, 30 valori, 0 differenze. Età media numerica di `iir_volume_1`: 7,500051 sommando fino a k ≥ 200 (formula 7,500051). c = 2/21: 5,49 % dopo 29 barre, 4,97 % dopo 30. Wilder N ≡ EMA 2N-1: 1/N = 2/(2N) per N = 5, 14, 20. Barre di avvio: 15 (2/11), 75 (2/51), 41 (1/14), 49 (0,06), 30 (2/21), 39 (26 giorni). 18 numeri del genoma: 8 + 2 + 7 + 1.
+
+**ENI (sola lettura, `eni.py`).** Barra piatta: unica barra con H = L e unica con V = 0 è l'indice 1738 (2023-08-15, O = H = L = C = 14,014, V = 0); la precedente è 2023-08-11 (14,048). Senza la regola: CLV in EMA `NaN` per **779 barre** (1738-2516); log volume `-inf` alla 1738; CMF esponenziale `NaN` dalla 1738. **Tabella 3.3: 27 valori, 0 differenze** (il rapporto della guida usa c = 2/21: 0,74798/0,00000/0,84783). `max(V,1)` darebbe -16,13 («circa -16», coincide). Autocorrelazione dei rendimenti: chiusura 0,031, OHLC/4 0,232 (coincide). 5.3 su ENI: 1,74e-4; 4,91e-3; 3,95e-2; 6,20e-2 (coincide all'arrotondamento). Matrice delle correlazioni ENI (28 valori) e tabella R² ENI (24 valori): **0 differenze, ma solo con una convenzione che il documento non scrive**: prime 100 barre escluse e tratti 40 %/60 % delle 2.417 barre restanti (taglio all'indice 1066). Con tutte le barre o con il 40 % di 2.517 differiscono 13 correlazioni su 28 e 17 R² su 24 alla seconda decimale (D4). Con la stessa convenzione coincidono anche: d (2/21) e RSI 0,79 e 0,93, d e z di Bollinger 0,66 e 0,87, NATR e volatilità EWMA 0,97, R² della volatilità 0,94, della larghezza delle bande 0,63, di N2 0,99, del volume relativo 0,03; Parkinson 0,98 con l'ATR **normalizzato** (0,64 con l'ATR in euro, D11). Parametri della serie sintetica stimati da ENI: deviazione dei rendimenti 0,0169, quota notturna 0,32, memoria del log volume 0,62, deviazione del log volume 0,41 (coincidono; «dispersione» è la deviazione del livello, non dell'innovazione, D2).
+
+**Serie sintetica (`synth_check.py`).** Il documento dichiara il seme (20261018) ma non il generatore né la costruzione esatta di massimo, minimo e volume: con un generatore diverso la sequenza non si ripete (D1). Ho costruito una passeggiata con gli stessi parametri (numpy `default_rng`, 30 % della varianza di notte, 78 passi, log volume AR(1) 0,6 con deviazione del livello 0,4) e confrontato con 8 semi (20261018 e 1-7).
+
+| Valore del documento (sintetica) | Ricalcolo (media ± dev. std su 8 semi) | Esito |
+|---|---|---|
+| R² degli 8 ingressi 0,84 / 0,95 / 0,97 / 0,82 / 0,35 / 0,49 / 0,00 / 0,59 | 0,830±0,004 / 0,946±0,003 / 0,962±0,001 / 0,823±0,007 / 0,321±0,025 / 0,471±0,011 / 0,001 / 0,592±0,017 | conclusioni uguali (soli d lenta e RSI ≥ 0,90); d veloce, RSI e N14 un po' più bassi della serie dell'autore |
+| 28 correlazioni (triangolo superiore) | 22 entro 2 deviazioni; 6 un po' più basse nella mia serie (1-4: 0,618 contro 0,64; 3-4: 0,837 contro 0,85; 4-6: 0,540 contro 0,57; 4-8: 0,585 contro 0,63; 1-5, 4-5 entro 0,03) | nessuna cambia segno o lettura |
+| autocorrelazione 0,009 / 0,242 | -0,001±0,009 / 0,247±0,006 | coincide |
+| std di `ln(C/EMA)`: 1,7e-4; 4,8e-3; 3,6e-2; 6,0e-2 | 1,70e-4; 4,77e-3; 3,56e-2; 5,69e-2 (fino a 5,99e-2) | coincide |
+| SMA 20: R² 0,95, ρ con RSI 0,95 | 0,945; 0,946 | coincide |
+| ROC 10 / 20: 0,79 / 0,83 | 0,790 / 0,822 | coincide |
+| z Bollinger 20: R² 0,90 | 0,891±0,002 (tutti i semi < 0,90) | **al limite**: con la mia serie non è «ridondante» per la regola R² ≥ 0,90 (D3) |
+| larghezza delle bande 0,26 | 0,195±0,029 (fino a 0,262) | entro la dispersione |
+| N2 R² 1,00; ρ(z, N2) 0,931 | 0,996; 0,930 | coincide |
+| NATR-N6 ρ 0,63; R² di N6 0,64 | 0,664±0,017; 0,645 | coincide |
+| stocastico %K 14: R² 0,87, ρ con d veloce 0,92 | 0,875; 0,919 | coincide |
+| N18: R² 0,91, ρ con N14 0,95; CMF 20: R² 0,74 | 0,899±0,006; 0,943; 0,711±0,017 | vicino; il CMF un po' più basso |
+| OBV grezzo 0,02; gap N15 0,55; corpo 0,80 | 0,034; 0,553; 0,810 | coincide |
+| d (2/21) da 2/11 e 2/51: 0,980; RSI da due distanze 0,963 | 0,980; 0,959±0,001 | coincide / poco più basso |
+| MACD 12/26: 0,9968 (su tre distanze 10, 20, 50); segnale 0,97; 7.3 «0,97 (linea)» | 0,9965 su tre distanze; **0,972 sugli 8 ingressi**; segnale 0,970 | coincide; le due cifre misurano cose diverse (D7) |
+| N3: ρ 0,9995 con `d[t]`, 0,904 con `d[t-1]` | 0,9995; 0,901 | coincide |
+| Kaufman 14 e RSI 14: 0,888 | 0,886 | coincide |
+| `x2` contro forma logaritmica: al più 0,0111 | 0,0137 con le velocità 2/11 e 2/51; 0,003 con 12/26 | ordine di grandezza coincide con le velocità degli ingressi; le velocità non sono dette (D12) |
+| scarti dall'avvio TA-Lib: EMA 20 0,373 % / 0,133 % / 0,0069 %; RSI 0,0061 / 0,0095 / 0,0066 / 1,7e-7 | dipendono dalla singola serie: mie 0,69 % / 0,26 % / 0,012 % e 0,135 / 0,002 / 0,003 / 1,7e-8 (ENI: 0,40 % / 0,15 % / 0,0068 %; 0,0016 / 0,061 / 0,0028 / 4e-7) | non riproducibili; verificata la legge di decadimento (rapporti 0,357 e 0,052 contro (19/21)^10 = 0,368 e (19/21)^30 = 0,050) e l'ordine 1e-7 a 200 barre. Per l'RSI la serie non è detta (D12) |
+
+**Totale:** 1.041 valori di tabella ricalcolati con uguaglianza alla cifra mostrata (932 sui 20 giorni, 30 in 2.2, 27 in 3.3, 52 nelle tabelle ENI di 5.5), 0 differenze; circa 110 valori nel testo, 0 differenze; 36 valori di tabella e circa 30 del testo sulla serie sintetica confrontati statisticamente, nessuno con lettura diversa, 1 al limite di soglia (D3).
+
+### 3. Coerenza con il codice
+
+Rilette tutte le righe citate (`awk` con numero di riga):
+
+- `algorithm.js` 20-62 = array `ConditionFunctions` (14 condizioni, confronti valore contro valore più margine); 345-348 = `this.ema = actualValue` … `this.emaV2 = stockData.volume`; 369-372 = quattro aggiornamenti `ema * (1 - c) + x * c` (**c pesa il dato nuovo**); 373-384 = stato d'ingresso e margini. **Coincide.**
+- `stockStream.js` 32-34 = `getActualValue()` che restituisce `(close + max + min + open) / 4`. **Coincide.**
+- `trader.js` 97 = `const stockPrice = stockData.open` dentro `buy(...)` del broker; 153 = `const currPrice = stockData.getActualValue()` dentro `sell(...)`; il `Trader` di alto livello (righe 399-448) imposta lo stato con `buy()`/`sell()` ed esegue in `update()` della barra successiva. **Coincide** con «esecuzione alla barra t+1».
+- `portfolio.js` 63 (`min <= stopLossPrice`), 71 (`max >= takeProfitPrice`), 215 (`getActualValue()` in `remove`), 291 e 298 (`markAsClosed` al prezzo di soglia). **Coincide.**
+- `life.js` 622-623 (`getNext()` e `child.init`), 646-650 (`getNext()` e `child.feed`); `strategy.js` 40-55: `init` → `initIndicators` → `trader.init`; `feed` → `updateIndicators` → `trader.update` (esegue l'ordine del giorno prima) → `decide()` → `trader.buy()/sell()`. **Coincide.**
+- `genome.js` 14-17 (quattro coefficienti, valori usati sopra), 86 (`value <= 0 || value >= 1` → errore). **Coincide.**
+- `fitnessValidator.js` 29 (`indicators.every(Number.isFinite)`, con gli indicatori presi da `frame.strategy.indicators`, che `simulationController.js` riga 100 e 134 copia da `describe()`), 57-58 (vendita su segnale solo dentro `[low, high]`). **Coincide.**
+- `simulationController.js` 43 (primo fotogramma subito dopo `grows`/`init`), 90-94 (validazione a fine replay, errore che ferma). **Coincide.**
+- `dataTrainer.js` (non citato dal documento, controllato per la barra piatta): `validateSnapshot` ammette `volume >= 0` e barre con H = L (righe 30-36) e passa tutte le barre a `StockData` nell'ordine `(t, open, low, high, close, volume)` (righe 65-72): **la barra 1738 arriva davvero al motore**, quindi il caso della sezione 3.3 è reale.
+
+**Denominatori nulli (semantica JavaScript, riprodotta in Python):** 0/0 → `NaN` (CLV, CMF esponenziale), `ln(0)` → `-Infinity` (log volume); `NaN` in una EMA resta per sempre (779 barre); `Number.isFinite` rifiuta entrambi alla riga 29; un confronto con `NaN` è sempre falso, quindi un punteggio `NaN` dà solo `hold` (resta `[ipotesi]` sulla forma di `decide()` di E2, come il documento scrive). Gli altri denominatori sono gestiti: RSI con B = 0, Bollinger con s = 0, stocastico con finestra piatta, CMF con somma nulla (valore precedente o neutro); NATR, N9, N1 hanno denominatori positivi. N17 alla barra piatta: le due EMA calano insieme e il rapporto resta 0,16285 (coincide). Unico caso non scritto: N2 alla barra 1 (`d = 0`, `s = 0`); la tabella N6 espone 0, coerente con la regola del valore neutro (3.2), non con la regola del salto. Osservazione, non difetto.
+
+### 4. Criteri di accettazione
+
+| AC | Esito | Prova |
+|---|---|---|
+| AC-01 Copertura | **Soddisfatto** | 16 schede: le 10 obbligatorie più N1, N6, N9, N14, N16, N17; tabella 4.6 con le altre proposte N2-N20 e il perché |
+| AC-02 Voci di ogni scheda | **Soddisfatto** | script sulle 16 schede: formula, calcolo, avvio e casi limite, campi e parametri, esempio presenti in tutte; «Ridondanza» manca come voce in EMA (mattone) e MACD (è dentro «Ingresso nel punteggio», D13); esempi tutti ricalcolati |
+| AC-03 Filtri IIR | **Soddisfatto** | righe 369-372, 345-348, `stockStream.js` 32-34, `genome.js` 14-17 e 86 rilette; età media come costante di tempo, conversioni 2/(N+1) [2] e 1/N [1][17] con fonte; tabella 2.2 ricalcolata |
+| AC-04 Adeguatezza al punteggio | **Soddisfatto con riserva** | scala, forma, segno del peso e ridondanza in ogni scheda; correlazioni calcolate su dati dichiarati e ripetute qui (ENI alla cifra, sintetica statisticamente). Riserve: convenzioni ENI non scritte (D4), serie sintetica non riproducibile (D1), Bollinger al limite (D3) |
+| AC-05 Nessuna anticipazione | **Soddisfatto** | regola unica in 1.3 coerente con `strategy.js` 46-55 e `trader.js` 430-443; normalizzazioni sull'intera serie escluse (1.3, 5.4); N15 usa solo il gap di `t` |
+| AC-06 Esito | **Soddisfatto** | 7.1-7.4 (8 ammessi sotto il limite di 10, esclusi con motivo, geni e intervallo di `c` lasciato a R3 come questione), 7.6 non accertato; memoria solo negli indicatori dichiarata e coerente con le formule |
+| AC-07 Tracciabilità, nessuna promessa | **Soddisfatto con riserva** | 20 fonti su 24 controllate, nessuna inventata; riserve D5, D6, D8 (stato o attribuzione di una frase). Ricerca di «rendiment», «guadagn», «profitt», «redditiv», «funziona»: solo definizioni, la negazione dell'avvertenza (riga 18) e «funziona come una soglia» (riga 666); nessuna cifra di rendimento; i pesi della sezione 7.5 sono dichiarati scelti a mano (righe 18, 1065) |
+| AC-08 Leggibilità | **Soddisfatto** (deroga dichiarata allo Step 8: «Prima di cominciare» riassume la guida) | italiano; tabella delle sigle; glossario di 69 voci; rimando a `../genome-forms-guide/` valido |
+| AC-09 Esempi su dati dichiarati | **Soddisfatto** | dataset rigenerato dalla regola e uguale al JSON; avvertenza in apertura; script in cartella persistente |
+| AC-10 Verifica indipendente | **Soddisfatto da questo step**, con le differenze elencate sotto | ricalcolo da zero in Python senza leggere `ref/`/`out/`; orientamento di `c` controllato sul codice |
+| AC-11 Lettura simulata | **In corso, non verificato qui** | il rapporto del lettore indipendente lo integra il coordinatore |
+| AC-12 Scelta di Luca | **Non soddisfatto (atteso)** | nessun blocco `## Human Verification` nel file del ciclo: il ciclo resta DEFERRED fino a D1 |
+| AC-13 Pubblicazione | **Soddisfatto con riserva** | front matter come la guida (`title`, `layout: doc`, `last_verified`); voce in `_data/docs.yml` (YAML valido); 0 occorrenze di `{{` o `{%`; recinti 14 (pari); righe di codice ≤ 80; 34 tabelle con colonne coerenti, nessuna tabella indentata; ancore interne valide; riserva: build Pages PENDING_HUMAN |
+| AC-14 Nessuna modifica | **Soddisfatto** | `git diff --stat main...HEAD`: catalogo, `_data/docs.yml` (+3), guida (2 righe con il collegamento, nient'altro), file del ciclo; le modifiche ad `archive/cycle-009.md`, `cycle-010.md`, NRC e `summary.yaml` vengono dal commit `c9c690a` di chiusura dei cicli 009-010, non dal lavoro di questo ciclo. Nessun file in `src/`, `tests/`, `scripts/`, `archimate/**` |
+| AC-15 Domande vicino all'argomento | **Soddisfatto** | D1 in 7.4, D2 in 5.5 e scheda N1, D3 in 5.2 e scheda ATR, D4 in scheda N9; tutte in «In breve» con opzioni e nel capitolo 9 con una frase per opzione |
+
+### 5. Rendering — **approssimazione, non il rendering reale di Jekyll**
+
+Metodo (`patterns/approximate-jekyll-render-without-ruby`): front matter tolto, Markdown → HTML con il modulo Python `markdown` (estensioni `tables`, `fenced_code`) dentro `doc-shell`/`doc-content` con `assets/css/style.css`; menu laterale vuoto (l'include Liquid non è eseguibile); Chromium 1243 del Playwright del repository a 1280 e 390 px (`render.py`, `shot.mjs`).
+
+- **Console:** nessun errore né avviso a entrambe le larghezze.
+- **1280 px:** `scrollWidth` 1280 = finestra; colonna di contenuto 1028 px; 34 tabelle `display: block`, nessuna scorre; il blocco `<style>` non compare come testo.
+- **390 px:** `scrollWidth` 390 = finestra: **nessuno scorrimento orizzontale della pagina**; 16 tabelle su 34 scorrono dentro il proprio riquadro (quelle a 5-11 colonne, comprese le due della sezione 7.5); un blocco di codice scorre dentro il suo `pre`; nessun elemento fuori dalle tabelle sfora. Screenshot: `verify/shot-1280.png`, `shot-390.png`, `shot-1280-75.png`, `shot-390-75.png` (tabella 7.5 leggibile, colonne scorrevoli).
+- **Limite visto qui:** Python-Markdown rende i tre blocchi di codice **dentro le voci di elenco** (formule di RSI, Bollinger, N17) come codice in linea in un paragrafo e chiude l'elenco. Kramdown con GFM probabilmente li tratta come codice nella voce (indentazione di due spazi uguale al contenuto della voce), ma non è provato: punto da guardare sulla pagina pubblicata.
+
+### 6. Non regressione (NRC)
+
+Nessun modulo dell'elenco NRC è toccato dal ciclo (`src/engine/*`, `src/vendor/consilium/*`, `src/main.js`, `src/style.css`, `index.html`, `src/data/eni-ohlcv.json`, `archimate/**`, `scripts/gen-archimate.mjs`, `docs/architecture/use-case-*.md`, `_includes/use-cases/*`): **NRC Type-A non applicabile**. Eseguiti comunque: `npm test` → 28 test, 28 passati, 0 falliti; `npm run archimate:check` → «modello "eni-replay" valido (33 elementi, 55 relazioni); file generati aggiornati». H-item: NRC-H01, H02 non attivati; **NRC-H03** è scritto per `genome-forms-review.md` e `genome-forms-guide.md` (stile locale alla pagina): la guida cambia di due righe e il catalogo usa lo stesso blocco `<style>`, quindi la stessa verifica va estesa al catalogo dopo il merge (proposta per lo Step 10: aggiungere il catalogo ai moduli di NRC-H03). `git status --short` vuoto prima di questa sezione.
+
+### 7. Target di deployment (validation matrix, voce `github-pages`)
+
+```
+Target: github-pages
+Reachable by automation: NO (la build parte dal merge su main; il ramo è
+  epic-genoma-non-fsm)
+Verification method: workflow .github/workflows/pages.yml e controllo dell'Owner
+  sulla pagina pubblicata
+Status: PENDING_HUMAN
+```
+
+Dopo il merge su `main` (esecutore: Owner U422756 o chi fa il merge):
+1. `gh run list --workflow pages.yml --branch main --limit 1` → `completed success` per il commit di merge.
+2. `curl -s -o /dev/null -w '%{http_code}\n' https://chaoscorelab.github.io/SwarmTrader-core/docs/architecture/genome-indicators-catalog/` → `200`.
+3. `curl -s <stessa URL> | grep -c -E '\{\{|\{%'` → `0`; `| grep -c 'Catalogo degli indicatori del genoma'` → almeno 2.
+4. `curl -s https://chaoscorelab.github.io/SwarmTrader-core/docs/architecture/genome-forms-guide/ | grep -c 'genome-indicators-catalog'` → almeno 3 (menu e due collegamenti).
+5. Visivo a 1280 e 390 px: tabelle scorrevoli nel riquadro, nessuno scorrimento della pagina, `<style>` non visibile come testo, formule di RSI, Bollinger e N17 come blocchi di codice dentro le voci; esito in `## Human Verification`.
+
+Gli altri target (`local-static-ui`, `simulation-engine`, `data-snapshot`) non sono toccati: `SKIPPED_JUSTIFIED`. Nessuna prova locale è presentata come VERIFIED del target `github-pages` (Articolo 16).
+
+### Difetti trovati
+
+| # | Gravità | Posizione | Difetto | Correzione proposta |
+|---|---|---|---|---|
+| D1 | Media | 5.5 «Seconda prova» (riga 941); 1.6 | Il seme è presentato come «il numero che rende la sequenza ripetibile», ma il documento non dice il generatore né la costruzione di massimo, minimo e volume: la serie non si può rifare da qui. Con un generatore proprio sugli stessi parametri le conclusioni reggono, ma alcuni valori differiscono alla seconda decimale (R² RSI 0,962 contro 0,97; d veloce 0,83 contro 0,84; correlazioni con la distanza dal massimo 0,02-0,05 più basse; RSI da due distanze 0,959 contro 0,963) | Dire che il seme riproduce la serie solo con lo script `ref/data.mjs`, nominando il generatore e la costruzione (prezzo iniziale, passi nella seduta, livello del volume); oppure riportare le cifre come «circa» con la dispersione tra semi |
+| D2 | Bassa | 5.5, riga 941 | «dispersione 0,4» è ambigua: è la deviazione del **livello** del log volume (ENI 0,41; i valori N18, CMF e N17 del documento si ottengono solo con questa lettura), non dell'innovazione (ENI 0,32) | Scrivere «deviazione standard del logaritmo del volume 0,4» |
+| D3 | Bassa | 4.2 Bollinger, 7.3 riga 1034 | z di Bollinger con R² 0,90 sta sulla soglia; nella replica indipendente 0,887-0,894 su 8 semi (sotto 0,90). L'etichetta «escluso: ridondante» di 7.3 non è robusta (la scheda dice già «al limite») | In 7.3: «al limite della ridondanza (R² circa 0,89-0,90); escluso per finestra intera e perché l'RSI porta la stessa idea» |
+| D4 | Bassa | 5.5, tabelle ENI e controllo di contorno | La convenzione dei controlli ENI non è scritta: prime 100 barre escluse e tratti 40 %/60 % delle 2.417 restanti (taglio all'indice 1066). Senza di essa 13 correlazioni su 28 e 17 R² su 24 differiscono alla seconda decimale | Una frase: «prime 100 barre escluse anche su ENI; 40 % e 60 % delle barre restanti» |
+| D5 | Bassa | 4.2 RSI, «Variante: efficienza di Kaufman con segno» (riga 591) | La forma con segno è attribuita a [6], che definisce la forma assoluta (0-1) e cita come variante con segno quella di TC2000 | «[6] definisce la forma assoluta; qui si usa la variante con segno (citata da [6] per TC2000)» |
+| D6 | Bassa | Scheda MACD, riga 471 | Struttura linea, segnale, istogramma marcata `[ipotesi, fonte da verificare]`, ma [19] la scrive: «MACD = EMA_fast - EMA_slow; Signal = EMA(MACD…); Hist = MACD - Signal» | Togliere l'`[ipotesi]` e citare [19] |
+| D7 | Bassa | Scheda MACD riga 475; 7.3 riga 1030 | «R² 0,9968 (12/26 contro 10, 20, 50)» misura la MACD sulle tre distanze 2/11, 2/21, 2/51 (non sugli ingressi proposti, dove vale 0,97, come in 7.3): il lettore vede due R² diversi per la stessa linea | Scrivere i regressori: «0,9968 sulle distanze a 10, 20 e 50 giorni; 0,97 sugli otto ingressi proposti» |
+| D8 | Bassa | 5.4, riga 923 | L'abstract di [15] (unica parte letta) parla di divisione per l'attività sommata di un gruppo di neuroni, non di attività «recente» né di luce; «leggibile al buio e al sole» va oltre ciò che è stato letto | Riformulare sull'abstract o marcare l'esempio della luce `[ipotesi]` |
+| D9 | Bassa | Scheda CMF, riga 853; [14] | La pagina di [14] dà per il CMF `window = 20` predefinito: la `[ipotesi, fonte da verificare]` su N = 20 ha una fonte (di libreria, non primaria) | Citare [14] per il valore predefinito, lasciando la mancanza di fonte primaria |
+| D10 | Bassa | Riferimenti, riga 1269 | «tutti gli URL hanno risposto 200»: PMC ([15]) risponde 200 a `curl` con una pagina reCAPTCHA; il testo si legge solo con un client diverso | Nota su [15] (stesso caso di D8 del ciclo 010) |
+| D11 | Bassa | 4.6, riga 890 (N8) | «correlazione 0,98 con l'ATR su ENI»: 0,98 è con l'ATR **normalizzato**; con l'ATR in euro 0,64 | «con l'ATR normalizzato» e dire il `c` (1/14) |
+| D12 | Bassa | 2.3, 4.2 RSI, 4.6, scheda MACD | Parametri o serie non dichiarati per alcuni numeri secondari: `c` di N2, N3, N15, N8; N di Kaufman; velocità di `x2` (0,0111); serie degli scarti dall'avvio TA-Lib dell'RSI (0,0061 … 1,7e-7). Riprodotti assumendo 2/21, 0,06, 14 e 2/11-2/51; gli scarti dall'avvio dipendono dalla singola serie e non si riproducono, se ne verifica solo la legge di decadimento | Aggiungere i parametri tra parentesi e la serie usata |
+| D13 | Bassa | Schede EMA e MACD | La voce «Ridondanza» annunciata in 4.0 manca (MACD la tratta in «Ingresso nel punteggio»; EMA è un mattone) | Aggiungere la voce o una riga «vedi Ingresso nel punteggio» |
+
+### Ipotesi non verificate
+- Rendering reale di kramdown/Jekyll (tabelle, `<style>`, codice dentro le voci di elenco): solo approssimato; Pages PENDING_HUMAN.
+- Valori esatti della serie sintetica dell'autore (generatore non dichiarato): verificati solo nella distribuzione su 8 semi di un generatore proprio.
+- Scarti dall'avvio di TA-Lib (EMA e RSI) nelle cifre del documento: dipendono dalla serie; verificata solo la legge.
+- Testi originali di Wilder, Appel, Lane, Granville, Chaikin; RiskMetrics [24]; testo di Working [18]: non letti (come dichiara il documento); [21]-[24] senza URL.
+- La lettura simulata indipendente (AC-11): non vista.
+- Comportamento di `decide()` di E2 con un punteggio `NaN`: `[ipotesi]` del documento, coerente con la semantica JavaScript dei confronti.
+- La soglia R² ≥ 0,90 e i giudizi «colma una lacuna»: scelte dell'autore, non verificabili con dati.
+
+### Verdetto
+**Solution is:** partially verified — numeri del dataset e di ENI, identità (con la dimostrazione di I5), conversioni, codice e fonti verificati; serie sintetica verificata solo statisticamente (D1); rendering approssimato; Pages PENDING_HUMAN; AC-11 in corso e AC-12 (scelta di Luca) aperto.
+**Recommended action:** proceed with conditions — correzioni del Builder per D1 (riproducibilità o «circa») e, a scelta, D2-D13, che non cambiano la proposta né le risposte D1-D4; integrazione della lettura simulata (AC-11) da parte del coordinatore; estensione di NRC-H03 al catalogo e verifica di Pages dopo il merge; Arbiter: DEFERRED finché manca la scelta di Luca (AC-12) e la voce `github-pages` è PENDING_HUMAN.
+
+**Prossimo step:** correzioni del Builder se servono, poi Step 10 — LIBRARIAN
+
+### Lettura simulata indipendente (AC-11) — integrata dal coordinatore, 2026-10-19
+
+Rapporto completo: `/home/luca/Workspace/swarmtrader-r2-work/reviews/lettore-indipendente.md` (lettore che non ha scritto né corretto il documento, profilo di Luca).
+- **Leggibilità: 3 su 5.** Indice di comprensione: 26 risposte corrette su 33, 6 incerte, 1 sbagliata; quattro dei sette casi non pienamente corretti nascono da ambiguità del testo.
+- **«In breve» non regge da solo:** 12–15 minuti invece dei 10 promessi; si può formulare una risposta a D1–D4 ma non motivarla. Termini usati prima di essere definiti (genoma, ciclo, epica, barra, snapshot ENI, Consilium, ATR, OBV, MACD, avvio); i «Tre fatti» non servono a decidere; manca un criterio di scelta per ogni domanda; le riserve (gap di apertura, CMF) non sono spiegate; D4 incomprensibile («calcolo con una fonte», «avvio»).
+- **Due insiemi di parametri non distinti** (R² e correlazioni con c = 2/11 e 2/51, RSI 14, N9 50, ATR 14 contro l'esempio con c = 0,5 e 0,2, 1/5, N = 10), entrambi chiamati «parametri d'esempio».
+- **Incoerenze:** MACD 0,97 contro 0,9968 in 7.3; sigla N15 per due proposte opposte; «Gene» e «accumulatore» nel glossario; scheda N9 («0 = sul massimo» contro −0,70 % nell'esempio, conteggio dei giorni 8–16); `c` di `iir_volume_1` stampato 0,118; regola R² ≥ 0,90 definita dopo l'uso e applicata in modo che sembra un doppio standard (SMA esclusa a 0,95, distanza lenta e RSI ammessi a 0,95 e 0,97); N6 escluso su dati ENI in tensione con Q3.
+- **Dipendenza dalla guida** (x1, x2, x3, vr, mom_5, «sezione 4.3.5»), gergo di processo (Step, Builder, verificatore) e numeri di riga nel testo per Luca.
+- **Mancano:** che cosa significa `buy` ripetuto per otto giorni, una scheda per la riserva gap, l'avvertenza sull'acquisto del giorno 2 dovuto all'avvio, se l'elenco si può rivedere dopo.
+
+**Decisione del coordinatore:** il solo punteggio 3/5 non basta (Luca ha chiesto di non ripetere l'errore del ciclo 010). Prima dello Step 10 si fa un giro di correzioni del Builder su difetti dello Scientist (D1–D13) e rilievi del lettore, poi una seconda lettura simulata con un lettore nuovo; soglia di uscita: leggibilità ≥ 4 su 5 e D1–D4 rispondibili e motivabili dopo il solo «In breve».
