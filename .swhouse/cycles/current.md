@@ -1369,3 +1369,89 @@ Rapporto completo: `/home/luca/Workspace/swarmtrader-r2-work/reviews/lettore-ind
 - **Mancano:** che cosa significa `buy` ripetuto per otto giorni, una scheda per la riserva gap, l'avvertenza sull'acquisto del giorno 2 dovuto all'avvio, se l'elenco si può rivedere dopo.
 
 **Decisione del coordinatore:** il solo punteggio 3/5 non basta (Luca ha chiesto di non ripetere l'errore del ciclo 010). Prima dello Step 10 si fa un giro di correzioni del Builder su difetti dello Scientist (D1–D13) e rilievi del lettore, poi una seconda lettura simulata con un lettore nuovo; soglia di uscita: leggibilità ≥ 4 su 5 e D1–D4 rispondibili e motivabili dopo il solo «In breve».
+
+## Correzioni dopo lo Step 9
+
+**Agent:** claude-opus-5-5 (subagent, Optimizer). Nessun commit. Toccati solo `docs/architecture/genome-indicators-catalog.md`, gli script in `/home/luca/Workspace/swarmtrader-r2-work/` e questo file. Decisioni di Luca Q1-Q4 invariate; proposta (8 ingressi), esclusi, regola di conteggio e domande D1-D4 invariati nella sostanza.
+
+**Fonti dei rilievi:** Step 9 (difetti D1-D13) e lettura simulata indipendente (`reviews/lettore-indipendente.md`, leggibilità 3/5).
+
+**Corretto**
+1. **«In breve» autosufficiente**, spostato subito dopo l'introduzione:
+   - l'introduzione definisce in parole SwarmTrader, genoma, algoritmo genetico, Consilium, indicatore, ingresso, epica, ciclo e R2-R6/E2;
+   - «In breve» definisce barra, snapshot ENI (società, anni, 2517 giorni), replay, macchina a stati, EMA, ATR, OBV, MACD, SMA, ROC, Bollinger, stocastico, volatilità EWMA, avvio e R² con la regola;
+   - i «Tre fatti» sono tolti da «In breve» (restano in 2.4, 3.2, 3.3);
+   - le sigle N nella tabella della proposta sono sostituite dai nomi;
+   - aggiunti: avvertenza sul `buy` del giorno 2 dovuto all'avvio, che cosa vuol dire `buy` ripetuto, esclusi con una riga di motivo, riserve spiegate (gap di apertura; **CMF a 20 giorni**, non la variante esponenziale), tabella dei quattro casi sopra la soglia R² (distanza lenta, RSI, SMA, Bollinger) con il motivo;
+   - D1-D4 con opzioni, criterio «scegli (a) se…, (b) se…» e proposta; D1 con reversibilità [ipotesi sul costo] e stato della verifica; D2 spiega perché si toglierebbe la distanza lenta e non l'RSI o la distanza dal massimo; D3 senza l'argomento «si libera un posto»; D4 spiegato senza gergo, con un confronto numerico (giorni 14 e 18: -10,76 % contro -7,73 %, -2,90 % contro -0,36 %);
+   - tempo di lettura dichiarato: circa 20 minuti (2479 parole);
+   - la tabella delle sigle è spostata in un'appendice «Sigle», con C1-C9 e N21.
+2. **Due insiemi di parametri:** «parametri dell'esempio» e «parametri di misura», con una tabella di 18 righe in «Prima di cominciare» e il nome usato in 1.5, 4.0, 7.2, nella colonna del giorno 12 e nelle schede.
+3. **Incoerenze:**
+   - MACD: 0,97 sugli otto ingressi contro 0,9968 sulle tre distanze, con i regressori detti, in scheda e in 7.3;
+   - il corpo della barra è rinominato N21 (N15 resta il gap);
+   - glossario: «Gene» (ogni numero che evolve, coerente con «Prima di cominciare» e capitolo 6) e «Accumulatore» (non si azzera mai);
+   - scheda N9: il valore 0 vale solo se la chiusura coincide con il massimo, il picco del giorno 8 vale -0,70 %, il massimo resta dal giorno 8 al 17 e scende a 11,38 il giorno 18;
+   - `iir_volume_1` stampato 0,1176, con la nota che i valori usano tutte le cifre;
+   - riga di Wilder e colonna «periodo equivalente» rinominate; formula 2/28 = 1/14.
+4. **Regola R² ≥ 0,90:**
+   - definita in «In breve» e in «Prima di cominciare», prima del primo uso, come [ipotesi];
+   - le eccezioni sono spiegate in tabella;
+   - N6 è escluso per costruzione (una sola misura di agitazione, l'ATR vede anche i salti), e il dato ENI è dichiarato solo controllo di contorno (Q3);
+   - Bollinger è detto «al limite (circa 0,89-0,90)» in scheda, riquadro, 7.3 e 7.4.
+5. **Dipendenza dalla guida e gergo:**
+   - x1, x2, x3, vr e mom_5 sono sostituiti da formule esplicite, anche nelle intestazioni delle tabelle (`ref/examples.mjs` aggiornato);
+   - tolti i rimandi «guida, sezione …» usati come spiegazione (la guida resta solo come lettura facoltativa);
+   - tolti Step, Builder e verificatore dal testo e dai riferimenti;
+   - i numeri di riga del codice sono spostati nell'appendice «Riferimenti al codice» (C1-C9, con C2 nuovo su `buy` ripetuto, `trader.js` 372-401 e 433-436 riletti, e C9 su `dataTrainer.js` 30-36 e 65-72 riletti).
+6. **Difetti dello Scientist:**
+   - D1: generatore dichiarato (mulberry32, Box-Muller, costruzione di apertura, passi, massimo, minimo, volume, prezzo iniziale) e valori sintetici da leggere come «circa»;
+   - D2: «deviazione standard 0,4»;
+   - D3: Bollinger;
+   - D4: convenzione ENI (prime 100 barre escluse, 40/60 delle 2417 restanti, taglio all'indice 1066);
+   - D5: Kaufman, forma senza segno in [6] e variante TC2000;
+   - D6: [19] citato per linea, segnale e istogramma, `[ipotesi]` tolta;
+   - D7: regressori della MACD;
+   - D8: [15] riformulato sull'abstract;
+   - D9: [14] per N = 20 del CMF;
+   - D10: nota anti-robot su [15];
+   - D11: Parkinson contro l'ATR normalizzato (`c` = 1/14);
+   - D12: parametri di N2, N3, N8, N21, Kaufman, delle velocità di `x2` e della serie degli scarti dell'RSI;
+   - D13: voce «Ridondanza» aggiunta a EMA e MACD.
+7. **Aggiunti:**
+   - in 7.5 e in «In breve», che cosa significa `buy` ripetuto (il punteggio non conosce la posizione; nel motore un secondo `buy` investe la quota del denaro rimasto, C2; la scelta è di R4/E2);
+   - una **scheda breve N15 «gap di apertura»** con esempio generato (`examples.mjs`, chiave `gap`) e riquadro;
+   - nella scheda N9, una tabella N9 contro N10 (chiave `n9n10`, `c` = 0,1).
+8. **Codice dentro gli elenchi:** le formule di RSI, Bollinger e N17 sono ora blocchi di codice a colonna 0 fuori dagli elenchi. È stata aggiunta una riga vuota prima di ogni elenco che segue un paragrafo.
+9. **Rilievi minori del lettore:**
+   - definiti fotogramma, persistenza costruita, regime, contorno, PoC, seduta;
+   - 3.2 senza «[ipotesi verificata]» e con la frase sullo stocastico riscritta;
+   - soglia 70 dell'RSI marcata `[ipotesi, fonte da verificare]`;
+   - peso positivo nel CMF;
+   - glossario da 69 a 84 voci.
+
+**Non corretto (con motivo)**
+- **Lunghezza:** il documento cresce (1460 righe, 27061 parole), perché ogni correzione aggiunge spiegazioni; il vincolo è rilassato da Luca. «In breve» resta il percorso per decidere.
+- **Le schede N1-N20 conservano le sigle nel titolo**, accanto al nome, per ritrovarle nel file di ciclo.
+- **I valori della serie sintetica non sono stati ricalcolati con un altro generatore:** il documento ora dice qual è il generatore e che i valori vanno letti come «circa».
+- **Gli scarti dall'avvio TA-Lib** dipendono dalla serie: è detta la serie (sintetica), non sono stati resi «riproducibili» in altro modo.
+- **La deroga ad AC-08** («Prima di cominciare» riassume la guida) resta e cresce: ora è di 1242 parole, con la tabella dei parametri.
+- **Rendering Jekyll** non provato (Ruby assente).
+
+**Script:**
+- `ref/examples.mjs`: intestazioni senza le sigle della guida; nuove tabelle `gap` e `n9n10`;
+- `ref/check-doc.mjs`:
+  - `0,7` dichiarato (parametro della serie sintetica);
+  - nuovo controllo 8: nessun blocco di codice indentato, riferimenti [n] tutti definiti e citati.
+
+**Verifica eseguita:**
+- `make-toy-ohlcv`: «20 righe coincidono»;
+- `identities`, `corr`, `examples`, `decision`: rieseguiti;
+- `check-incremental`: «tutti PASS»;
+- `check-doc.mjs`: 10 PASS su 10 (Liquid, codice ≤ 80 colonne, 38 tabelle coerenti, rimandi, 21 tabelle di dati uguali a `out/`, numeri rintracciati, 17 schede con riquadro e 7 ammesse con applicazione, frasi di lettura, codice fuori dagli elenchi, 24 riferimenti definiti e citati);
+- recinti di codice 14 (pari), nessuna occorrenza Liquid;
+- `npm test`: 28/28;
+- `npm run archimate:check`: valido (33 elementi, 55 relazioni);
+- `git status`: solo il catalogo (più questo file).
+
+**Prossimo passo:** seconda lettura simulata con un lettore nuovo (soglia: leggibilità ≥ 4/5, D1-D4 rispondibili e motivabili dopo il solo «In breve»), poi Step 10 — LIBRARIAN.
