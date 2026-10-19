@@ -1455,3 +1455,65 @@ Rapporto completo: `/home/luca/Workspace/swarmtrader-r2-work/reviews/lettore-ind
 - `git status`: solo il catalogo (più questo file).
 
 **Prossimo passo:** seconda lettura simulata con un lettore nuovo (soglia: leggibilità ≥ 4/5, D1-D4 rispondibili e motivabili dopo il solo «In breve»), poi Step 10 — LIBRARIAN.
+
+### Correzioni mirate dopo la seconda lettura indipendente (2026-10-19)
+
+**Fonte dei rilievi:** `reviews/lettore-indipendente-2.md`, che dà 4/5 e circa il 91 % di comprensione; circa 200 valori ricalcolati, nessuno sbagliato. Nessun commit; Q1-Q4 e la proposta di 8 ingressi invariati.
+
+**Correzioni:**
+1. **D4.**
+   - In «In breve», nel capitolo 9 e nella scheda N9: [13] descrive solo l'algoritmo che calcola in fretta il massimo su una finestra, non la distanza dal massimo come indicatore.
+   - È ora scritto che nessuna delle due opzioni ha una fonte come indicatore.
+   - Il criterio diventa «formula elementare e prevedibile» contro «parametro continuo, ricordo che sfuma».
+2. **D1: perché il gap di apertura è una riserva.**
+   - Il motivo è dichiarato `[ipotesi dell'autore]`.
+   - L'R² 0,55 dipende dal 30 % di movimento «notturno» messo apposta nella serie casuale: è una proprietà della costruzione, non del mercato. Il gap inoltre non ha fonte; aggiungerlo costa due numeri nel genoma.
+   - Aggiunto il conteggio dei numeri del genoma per combinazione di risposte: 18; 16 con D2 (b) o D3 (b); 14 con entrambe; +2 con il gap.
+3. **OBV normalizzato: convenzione d'avvio dichiarata** (scheda N17, 3.2, «In breve»).
+   - Il volume del giorno 1 non entra nel denominatore; il CMF esponenziale usa la convenzione opposta.
+   - Con l'altra convenzione l'OBV normalizzato varrebbe 0,58 il giorno 2 e -0,3494 il giorno 12; il punteggio del giorno 2 sarebbe 1,90 e la decisione `hold` invece di `buy`; nessun altro giorno cambierebbe.
+   - Non ho uniformato le due convenzioni: le tabelle verificate dallo Scientist resterebbero invariate solo in parte, e l'esempio dell'avvio è più utile così.
+   - Numeri generati da `ref/decision.mjs` (aggiunto il calcolo alternativo).
+4. **Altri punti:**
+   - «elenco minimo» definito in 4.0 (i dieci indicatori chiesti dall'issue) e nell'appendice Sigle;
+   - corretti i tre rimandi alla «tabella in apertura»;
+   - lettere disambiguate: «gruppo A» diventa «gruppo base», L1-L4 diventano «lacuna 1-4», C1-C9 diventano RC1-RC9 (le sigle N restano, perché sono usate nel file del ciclo);
+   - collegate in «In breve» le due descrizioni dell'RSI (identità I5 in parole);
+   - tolto da «In breve» il dato ENI usato come argomento;
+   - 7.5, paragrafo D2: «distanza dal massimo» al posto di «OBV normalizzato»;
+   - capitolo 9, D3 (b): tolto «liberando un posto», ora dice che se R4 non usa l'agitazione l'informazione sparisce;
+   - marcati `[ipotesi]` «ne basta una», «pesi più facili da leggere» (con la spiegazione della compensazione), il confine delle interazioni in 4.0 e il «motivo strategico» di 7.4;
+   - attenuata la frase «vale per qualunque titolo» in 5.5;
+   - tempo di lettura di «In breve» dichiarato in 35-45 minuti (circa 2800 parole).
+5. **Correzioni piccole dalla lista del lettore:**
+   - «Le decisioni già prese» spostate prima della proposta;
+   - risolto il «vedi sotto» del CMF esponenziale;
+   - ATR «l'unica che vede i salti» precisato come «tra gli otto»;
+   - la larghezza delle Bande di Bollinger non è più chiamata riserva;
+   - scheda gap: la media parte dal primo gap;
+   - detto l'ordine dei gruppi del capitolo 4.
+
+**Non fatte (motivo):**
+- Grafico del dataset: il documento non ha immagini.
+- Rinomina delle sigle N in P: sono già usate in tutto il file del ciclo.
+- R² di N10 sui parametri di misura: richiede una misura nuova non verificata.
+- Precisazione dell'avvio «t contato dalla barra 1»: lo scarto è di un giorno e non cambia nessuna decisione.
+
+**Verifica:**
+- script `make-toy-ohlcv`, `identities`, `corr`, `examples`, `decision` rieseguiti;
+- `check-incremental`: tutti PASS;
+- `check-doc.mjs`: 10 PASS su 10 (38 tabelle, 21 tabelle di dati uguali a `out/`, 24 riferimenti definiti e citati, codice fuori dagli elenchi);
+- Liquid 0, recinti di codice 14;
+- `npm test`: 28/28;
+- `archimate:check`: valido;
+- `git status`: solo il catalogo e questo file.
+
+### Seconda lettura simulata indipendente (AC-11) — 2026-10-19
+
+Rapporto: `/home/luca/Workspace/swarmtrader-r2-work/reviews/lettore-indipendente-2.md` (lettore nuovo, senza accesso a versioni e rapporti precedenti).
+- **Leggibilità 4 su 5: soglia raggiunta.** Indice di comprensione circa 91 % (45 domande: 39 giuste, 4 incerte, 2 sbagliate; gli errori riguardano numeri da consultare). D1–D4 rispondibili con motivazione dopo il solo «In breve» (tempo realistico 35–45 minuti).
+- Circa 200 valori ricalcolati dal lettore, nessun numero sbagliato; nessuna promessa di guadagno.
+- Difetti trovati e corretti in un giro mirato (commit successivo): fonte [13] presentata come fonte della distanza dal massimo (D4), motivo della riserva gap (D1, dipendente dalla costruzione della serie casuale), convenzione d'avvio dell'OBV normalizzato (con l'altra convenzione il `buy` del giorno 2 diventa `hold`, dichiarato nel documento), «elenco minimo» non definito, rimandi alla tabella delle sigle, lettere con più significati, dati ENI usati come argomento in «In breve» (Q3), nome dell'ingresso nel paragrafo D2, argomento «si libera un posto» in D3 (b), giudizi senza [ipotesi].
+- Non fatto (motivato): grafico del dataset; sigle N → P (usate in tutto il file di ciclo); R² del «massimo che dimentica» sui parametri di misura; scarto di un giorno nel conteggio dell'avvio (nessuna decisione cambia).
+- Dopo la correzione i controlli passano (check-doc 10/10, `npm test` 28/28, `archimate:check` valido). La correzione mirata non ha avuto una terza lettura completa: i cambi sono ricontrollabili dai numeri e dagli script.
+- AC-11: soddisfatto. Resta AC-12 (scelta di Luca, blocco Human Verification) e la verifica di Pages dopo il merge.
