@@ -1006,3 +1006,154 @@ Mitigation: verify/ predisposta; check-doc.mjs rieseguibile dopo ogni correzione
 - **D4 — Distanza dal massimo:** finestra intera N (con fonte per il calcolo) o «massimo che dimentica» con `c` continuo (senza fonte)?
 
 **Prossimo step:** Step 8 — OPTIMIZER
+
+## Step 8 — OPTIMIZER: Improve the Solution
+
+**Agent:** claude-opus-5-5 (subagent)
+**Confidence:** Medium — fatti, fonti, proposta e numeri dello Step 7 sono invariati e ricontrollati (righe di codice rilette oggi, I5 rifatta a mano, `check-doc.mjs` esteso e verde, 68/68 controlli incrementale = diretto); resta Medium perché la lettura «da principiante» l'ha fatta lo stesso modello che ha scritto le correzioni (non è un lettore indipendente, AC-11), il nuovo esempio di punteggio (sezione 7.5) non è ancora ricalcolato dallo Scientist, e la resa Jekyll di tabelle dentro elenchi e riquadri non è provata.
+**Assunzioni**
+- **Indicazione di Luca per questo step (decisiva):** il vincolo sulla dimensione è rilassato purché il documento sia facilmente leggibile, ricco di esempi, affidabile, consistente e completo. L'ottimizzazione quindi **non accorcia**: rende comprensibile. È una deroga dichiarata al profilo «Simplifier» di `agents/06-optimizer.md`; nessuna funzione né criterio dello Step 2 è stato tolto.
+- Copia del documento dello Step 7 fuori dal repository: `scratchpad/catalog.step7.md` (966 righe, 15132 parole).
+- «Parole» = `wc -w` sul file intero come in `check-doc.mjs` (comprende i `|` delle tabelle).
+- Nessun fatto, fonte, numero, esito o domanda è stato cambiato nella sostanza; le correzioni di merito sono elencate in «Errori corretti».
+
+### Problemi di leggibilità trovati
+
+Lettura per intero del documento dello Step 7 come lettore con formazione tecnico-scientifica e **nessuna** competenza finanziaria. Ogni punto in cui ci si perde, con la correzione fatta.
+
+| # | Dove | Problema per il principiante | Correzione |
+|---|---|---|---|
+| P1 | Apertura | «Punteggio lineare con soglie» mai spiegato nel documento: rinvio alla guida, capitolo 4 | Nuova sezione **«Prima di cominciare: sei idee usate ovunque»**: punteggio (parole → formula → giorno 12 con contributo e decisione), EMA e `c` (esempio 10,00 → 10,02), ingresso/parametro/gene, adimensionale, correlazione e R², identità e combinazione lineare esatta |
+| P2 | «In breve», tabella | Sigle N1, N9, N14, N16, N17 e «Gene `c` continuo» senza spiegazione; che cosa sia `c` non detto | Nomi per esteso in ogni riga, frase su «Gene», `c` e `N`; colonna con il valore di ogni ingresso il giorno 12 del dataset |
+| P3 | «In breve» | R3, R4, R6, E2, Q1-Q4 usati prima di essere definiti | **Tabella delle sigle** in apertura (R2-R6, E2, D1-D4, Q1-Q4, N1-N20, A/L1-L4, I1-I5, (a)-(e), OHLCV) e tabella N1-N20 → nome |
+| P4 | «In breve», decisioni già prese | «combinazione lineare esatta», «identità algebriche», «serie sintetica» prima di ogni definizione | Ognuna spiegata nella frase stessa, in parole |
+| P5 | «In breve», tre fatti | «barra piatta», «autocorrelazione 0,242» senza definizione | Barra piatta descritta; autocorrelazione detta in parole («somiglianza tra il rendimento di oggi e quello di ieri») |
+| P6 | «In breve», domande | D1-D4 solo al capitolo 9, in una riga ciascuna: non si possono rispondere senza leggere i capitoli 5-7 | Sezione **«Che cosa si chiede a Luca»**: per ogni domanda il problema in parole, le opzioni (a)/(b) con le conseguenze, la proposta e l'effetto nell'esempio (giorni in cui la decisione cambia) |
+| P7 | In tutto il documento | Nessun esempio di **come gli ingressi diventano una decisione** `buy`/`hold`/`sell` sul nostro problema | Nuova **sezione 7.5**: gli 8 ingressi sul dataset di 20 giorni, pesi e soglie dichiarati a mano, tabella ingressi, tabella contributi/punteggio/decisione, tabella «togliendo un ingresso alla volta», cinque osservazioni; nessun rendimento calcolato |
+| P8 | Schede ammesse | Esempio numerico solo come tabella; nessun passaggio «dati del giorno → ingresso → contributo → decisione» | Voce **«Applicazione al nostro problema (giorno 12)»** in N1, N16, RSI, ATR, N9, N14, N17 (8 ingressi): calcolo passo per passo dalla barra, contributo con il peso d'esempio, punteggio con e senza l'ingresso, giorni in cui toglierlo cambia la decisione |
+| P9 | Tutte le schede | Nessuna frase su che cosa la scheda significhi per la scelta | Riquadro **«Per la decisione»** in tutte le 16 schede |
+| P10 | 26 tabelle | Quasi nessuna tabella aveva una frase su come leggerla (righe, colonne, unità) | Frase di lettura per tutte le 34 tabelle; controllo automatico aggiunto a `check-doc.mjs` |
+| P11 | Scheda N14 | Nessun esempio proprio: «colonna CLV in EMA della scheda CMF», che viene dopo | Tabella propria (generata da `examples.mjs`, chiave `clv`) e calcolo a mano del giorno 2 |
+| P12 | 1.5 dataset | Regola in un blocco di codice **prima** delle parole | Parole prima della formula, esempio del giorno 2 (10,03 / 10,18 / 9,95) |
+| P13 | 2.1, RSI, Bollinger, N6, N17 | Formule senza parole che le precedano | Frase «in parole» prima di ogni formula |
+| P14 | 2.2 | «Età media» senza spiegare che cosa si media; colonna `N = 2/c - 1` spiegata solo in 2.3 | Età media spiegata con i pesi (età 0, 1, 2…); frase di lettura con rimando a 2.3 |
+| P15 | 2.3 | «Wilder» e «TR» senza spiegazione | Autore di RSI e ATR; TR rimandato alla scheda ATR; detto perché la media di Wilder è una EMA |
+| P16 | 2.4 | «Passeggiata casuale» definita solo in 5.5 | Definita sul posto |
+| P17 | 1.3 | `initIndicators`, `decide()`, «replay» senza spiegazione; rinvio a «rilievo F-code-4 del ciclo 011, Step 5» (gergo del ciclo) | Le tre funzioni e il replay spiegati; esempio giorno 12 → esecuzione giorno 13; stop e take profit **verificati sul codice** (`portfolio.js` 63, 71, 291, 298) invece del rinvio |
+| P18 | 3.1, 3.2 | «Somma corrente» non spiegata; «il fattore dovuto all'avvio si semplifica» incomprensibile | Somma corrente con esempio SMA; avvio da zero spiegato (stesso errore sopra e sotto la frazione) con l'esempio RSI giorno 2; `EMA0` definita qui |
+| P19 | Schede | R² e correlazione usati in ogni scheda ma definiti solo in 5.5 | Definiti in «Prima di cominciare» con esempio; in 5.5 solo richiamati |
+| P20 | Titoli delle schede, fonti | «proposta dello Step 4», «costruzione dello Step 4», «algebra del ciclo 011, Step 5»: gergo interno | «proposta nuova, fuori dall'elenco minimo», «costruzione proposta in questa ricerca»; nei Riferimenti detto che cosa sono gli Step 4 e 5 |
+| P21 | 2.6, 3.1, 7.2, 7.3, 8 | Prime colonne con sole sigle (N6, N9, N14…) | Nome per esteso con la sigla tra parentesi |
+| P22 | Glossario | Mancavano indicatore, peso, soglia, punteggio, gene, genoma, EMA, RSI, MACD, CLV, CMF, saturazione, causale, replay, snapshot, TA-Lib, Consilium… | Da 32 a 69 voci, con la sezione dove il termine è spiegato |
+| P23 | Ordine | Il percorso di lettura era una riga; nessuna indicazione di tempo | Tabella «Come leggere questo documento» (10 minuti / 30 minuti / un'ora) |
+
+### Ridondanze e complessità individuate
+
+| Elemento | Problema | Azione |
+|---|---|---|
+| 5.5 «Due misure» | Definizioni di ρ e R² ripetute (ora in «Prima di cominciare») | **Ridotto** a un richiamo di due righe |
+| 4.0 «Voci di ogni scheda» | Elenco in una riga con rimando doppio alla sezione 5.5 | **Riscritto** come elenco, con le due voci nuove (Applicazione, Per la decisione) |
+| Riferimento [14] | Definito ma mai citato nel testo | **Citato** nella riga N20 (la libreria `ta` documenta force index e MFI, Step 4); non rimosso |
+| Formula del punteggio con bias | La guida ha `b`; il catalogo no | Detto perché il bias è omesso (spostarlo equivale a spostare le soglie; guida 4.2.4) |
+
+### Errori corretti
+- **I5 formulata in modo impreciso.** Lo Step 7 scriveva «l'RSI centrato è la distanza dalla media divisa per la variazione assoluta media». Rifacendo il calcolo: la distanza è **in euro** (`C - e`, non la distanza logaritmica N1) e c'è il fattore `c/(1-c)`: `rsi_c = c/(1-c) · (C - e) / B`. Dimostrazione rifatta a mano (con `D = C - e`, `D[t] = (1-c)(D[t-1] + dC[t])`, quindi `c/(1-c)·D` ha la ricorsione di `A = EMA0(dC; c)` con `D[1] = A[1] = 0`), aggiunta al documento in 5.5; esempio numerico sul dataset (giorno 2: 0,0200 = 0,25 × 0,08; giorno 12: -0,0764 = 0,25 × (10,50 - 10,8058); scarto massimo sui 20 giorni 1,0e-15). Il limite `abs(A) ≤ B` è ora motivato. La conclusione (RSI in L4, ammesso) non cambia.
+- **«Un solo ingresso senza direzione» (5.2) incoerente con N16.** Il volume relativo è senza direzione del prezzo (lo dice la sua scheda) ma ha segno; 5.2 e il riquadro ATR ora dicono «l'unico ingresso **sempre positivo**» e nominano il caso N16.
+- **Scheda N6:** «Con l'ATR normalizzato R² 0,64» attribuiva all'ATR un R² che è sull'insieme dei proposti (`out/corr.md`); riscritto.
+- **Stop loss e take profit** erano citati come «non riletti»: verificati oggi (`portfolio.js`, righe 63, 71, 291, 298) e citati.
+- **Righe di codice** tutte rilette oggi con `grep -n`: `algorithm.js` 20, 345, 348, 369, 372, 384; `stockStream.js` 32-33; `trader.js` 97, 153; `portfolio.js` 215; `life.js` 622-623, 646-650; `strategy.js` 42, 51, 58; `genome.js` 14-17, 86; `fitnessValidator.js` 29, 57; `simulationController.js` 43, 90-93. Tutte corrispondono. `last_verified` portato a 2026-10-19.
+- **Elenchi senza riga vuota prima** (6 punti, di cui 4 introdotti in questo step): kramdown può non riconoscere un elenco che segue subito un paragrafo; aggiunta la riga vuota [ipotesi sul comportamento di kramdown, non provato senza Jekyll].
+- Conteggi ricontrollati a mano: età media e barre di avvio dei sei coefficienti di 2.2; avvio 15/75/41/49 barre del capitolo 6; esempi giorno 2 del dataset (apertura 10,03, massimo 10,18, minimo 9,95).
+
+### Revised proposal (documento dopo lo Step 8)
+Stesso documento, `docs/architecture/genome-indicators-catalog.md`, con: tabella «Come leggere», sigle, «In breve» autosufficiente (proposta con valori del giorno 12, esempio in una frase, D1-D4 con opzioni e conseguenze, decisioni Q1-Q4 in parole, tre fatti), «Prima di cominciare» (sei idee), capitoli 1-9 con parole prima delle formule e frasi di lettura per ogni tabella, 16 schede con riquadro «Per la decisione», 7 schede ammesse con «Applicazione al nostro problema (giorno 12)», nuova sezione **7.5** (esempio completo, ex 7.5 diventa 7.6), capitolo 9 con le opzioni in una frase ciascuna, glossario di 69 voci. Proposta di 8 ingressi, riserve, esclusi, regola di conteggio, rischi e domande **invariati**.
+
+Script nel workspace (`/home/luca/Workspace/swarmtrader-r2-work/`):
+- **nuovo** `ref/decision.mjs` → `out/decision.md`: otto ingressi sul dataset con i parametri corti delle schede (`c` 0,5 / 0,2 / 1/5 / N 10 / 1/5 / 0,2 / 0,2 / 0,2), pesi 50, 20, 1, 10, -20, 2, 2, 1, soglie ±2; tabelle ingressi e contributi, decisioni, «togliendo un ingresso alla volta», giorno 12 passo per passo, verifica I5 sul dataset. **Pesi e soglie scelti a mano dall'Optimizer**, dichiarati nel documento come illustrativi; nessun rendimento calcolato.
+- `ref/examples.mjs`: aggiunta la tabella `clv` (scheda N14); le altre tabelle identiche (diff vuoto).
+- `ref/check-doc.mjs`: controllo 7 (riquadro in ogni scheda, applicazione in ogni scheda ammessa, frase di lettura per ogni tabella).
+
+### Cosa è stato tenuto deliberatamente
+- **Tutte le formule, gli scarti numerici e le fonti** dello Step 7, dopo le parole: il rigore serve allo Scientist e a E2.
+- **Le schede degli esclusi** (SMA, MACD, ROC, Bollinger, stocastico, OBV, N6, CMF) intere: AC-01/AC-02 e la motivazione dell'esclusione stanno lì; ora hanno anche il riquadro.
+- **Le righe «Con OHLC/4»** in ogni scheda: sono la traccia della decisione Q1.
+- **La tabella 3.3 della barra ENI** e il capitolo dei mattoni: fatti per E2 che nessun altro documento ha.
+- **Le sigle N1-N20**: servono a ritrovare le proposte nel file del ciclo; ora sono sempre accompagnate dal nome nelle parti di decisione.
+- **Il richiamo alla guida** in «Prima di cominciare» ripete in circa 700 parole idee dei capitoli 1 e 4 della guida: è una deroga ad AC-08 («non ripete, richiama»), scelta per l'indicazione di Luca (il documento si deve leggere senza consultare altro). La guida resta citata per la versione lunga.
+
+### Misure (prima → dopo)
+
+| | Step 7 | Step 8 |
+|---|---|---|
+| Righe | 966 | 1297 |
+| Parole (`wc -w`) | 15132 | 23389 |
+| Tabelle | 26 | 34 |
+| Tabelle con frase di lettura | 1 su 26 (euristica: frase con «legge», «riga», «colonna» o «diagonale» subito prima) | 34 su 34 (controllo 7 di `check-doc.mjs`) |
+| Tabelle di dati controllate contro `out/` | 16 | 19 |
+| Schede con riquadro «Per la decisione» | 0 / 16 | 16 / 16 |
+| Ingressi ammessi con applicazione al problema (giorno 12) | 0 / 8 | 8 / 8 (7 schede) |
+| Esempio completo ingressi → punteggio → decisione | no | sì (sezione 7.5, 4 tabelle) |
+| Calcoli a mano nuovi nel testo | - | 14 (7 applicazioni, punteggio, EMA, dataset giorno 2, somma corrente, avvio da zero, I5 due giorni, N14 giorno 2) |
+| Voci del glossario | 32 | 69 |
+| Sigle spiegate in tabella | 0 | 10 righe + 20 proposte N |
+
+Il documento cresce del 55 % in parole. Il percorso rapido («In breve», 1.350 parole con le domande; «Prima di cominciare», 678) resta leggibile da solo.
+
+### Verifica (eseguita davvero)
+
+```
+(a) node ref/check-doc.mjs (esteso):
+    PASS Liquid; PASS codice <= 80 colonne; PASS tabelle coerenti (34);
+    PASS rimandi (3 interni, 1 relativi); PASS tabelle di dati identiche a out/ (19);
+    PASS numeri del testo rintracciati; PASS schede con riquadro (16) e
+    applicazione (7 ammesse); PASS tabelle con una frase di lettura;
+    righe 1297, parole 23389, tabelle 34
+(b) grep -cE '\{\{|\{%' sul catalogo -> 0; recinti di codice: 14 (pari)
+(c) node dataset/make-toy-ohlcv.mjs -> "guida: 20 righe coincidono; controlli O/H/L/C: OK"
+(d) node ref/check-incremental.mjs -> "Tolleranza relativa 1e-9. Esito: tutti PASS." (75 s)
+(e) node ref/identities.mjs, ref/corr.mjs, ref/examples.mjs rieseguiti; examples.md
+    diverso dallo Step 7 solo per la tabella aggiunta «clv» (diff controllato)
+(f) node ref/decision.mjs -> decisioni buy 11, hold 5, sell 4; I5 sul dataset scarto 1.0e-15
+(g) riferimenti [1]-[24]: tutti definiti e tutti citati nel testo ([14] ora citato)
+(h) righe di codice citate: grep -n sui file, tutte corrispondenti (elenco in «Errori corretti»)
+(i) npm test -> # tests 28 / # pass 28 / # fail 0
+(j) npm run archimate:check -> modello "eni-replay" valido (33 elementi, 55 relazioni)
+(k) git status --short -> " M docs/architecture/genome-indicators-catalog.md" (più questo file)
+```
+
+Non eseguito: build Jekyll e resa a 390 px (Ruby/Jekyll assenti); lettura da parte di un lettore diverso dall'autore delle correzioni.
+
+### Copertura degli AC (Step 2)
+
+| AC | Stato dopo lo Step 8 |
+|---|---|
+| AC-01 | Coperto: 16 schede (10 obbligatorie + N1, N6, N9, N14, N16, N17), righe «variante / perché no» in 4.6 |
+| AC-02 | Coperto: voci (a)-(g) in ogni scheda; N14 ora con esempio proprio |
+| AC-03 | Coperto: capitolo 2, righe rilette il 2026-10-19; una sola costante di tempo (età media) |
+| AC-04 | Coperto: «Ingresso nel punteggio» e «Ridondanza» in ogni scheda, 5.5 con identità, serie sintetica e controllo ENI |
+| AC-05 | Coperto: regola unica in 1.3, con esempio giorno 12 → giorno 13 |
+| AC-06 | Coperto: 7.1-7.4, 7.6, capitolo 6; proposta invariata |
+| AC-07 | Coperto: fonti con stato, [ipotesi] invariate, [14] citato; nessun rendimento nemmeno nel nuovo esempio, che è dichiarato con pesi scelti a mano |
+| AC-08 | Coperto e rafforzato (sigle, «Prima di cominciare», glossario 69 voci); **deroga dichiarata**: «Prima di cominciare» riassume la guida invece di soli rimandi |
+| AC-09 | Coperto: dataset dichiarato; nuovo `ref/decision.mjs` |
+| AC-10 | **Aperto** (Step 9): lo Scientist deve ricalcolare anche la sezione 7.5 e la dimostrazione di I5 |
+| AC-11 | **Parziale**: lettura simulata fatta dall'Optimizer su tutto il documento (23 problemi, tutti corretti, tabella sopra); non è un lettore indipendente. Da confermare allo Step 9 o con la lettura di Luca |
+| AC-12 | Aperto: scelta di Luca (D1) |
+| AC-13 | Liquid e voce di menu invariati e verdi; build Pages PENDING_HUMAN (NRC-H03) |
+| AC-14 | Coperto: modificato solo il catalogo (più questo file e il workspace fuori dal repository) |
+| AC-15 | Coperto: D1-D4 con una frase per opzione in «In breve» e nel capitolo 9, e la domanda scritta nella sezione d'origine (7.4, 5.5, 5.2, scheda N9) |
+
+Le quattro domande D1-D4, i rischi per R3-R6 ed E2 (capitolo 8, con l'avvio dell'esempio 7.5 aggiunto a R4) e la nota sul prezzo di vendita del simulatore (2.5, 1.3; Consilium non toccato) sono presenti.
+
+### Rischi residui
+1. **Pesi d'esempio scambiati per una proposta.** I pesi della sezione 7.5 sono dell'Optimizer, scelti per avere contributi di circa ±1; le osservazioni «togliendo un ingresso» dipendono da quella scelta. Mitigazione: avvertenza in apertura, nella sezione e nello script; nessun rendimento calcolato. Lo Scientist verifichi che il testo non suggerisca pesi né efficacia.
+2. **Lunghezza** (23.389 parole): il percorso rapido regge da solo, ma le schede sono più lunghe. Accettato per l'indicazione di Luca.
+3. **Resa kramdown** di tabelle dentro elenchi e dei riquadri `>` dopo gli elenchi: non provata (rischio già dello Step 7, ora con 16 riquadri in più).
+4. **Indipendenza:** lettura simulata e ricontrollo di I5 fatti dallo stesso modello che ha corretto; AC-10 e AC-11 vanno chiusi allo Step 9.
+5. **Due serie di domande** (Q1-Q4 decise, D1-D4 aperte) possono confondere: spiegate nella tabella delle sigle e in «In breve».
+
+### Domande per Luca (nuove da questo step)
+- Va bene che «Prima di cominciare» riassuma in circa 700 parole le idee della guida (deroga ad AC-08), invece dei soli rimandi?
+- I pesi d'esempio della sezione 7.5, scelti a mano e dichiarati come illustrativi, sono accettabili, o preferisci un esempio con un solo ingresso alla volta, senza pesi combinati?
+
+**Prossimo step:** Step 9 — SCIENTIST
