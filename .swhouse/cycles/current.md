@@ -1517,3 +1517,82 @@ Rapporto: `/home/luca/Workspace/swarmtrader-r2-work/reviews/lettore-indipendente
 - Non fatto (motivato): grafico del dataset; sigle N → P (usate in tutto il file di ciclo); R² del «massimo che dimentica» sui parametri di misura; scarto di un giorno nel conteggio dell'avvio (nessuna decisione cambia).
 - Dopo la correzione i controlli passano (check-doc 10/10, `npm test` 28/28, `archimate:check` valido). La correzione mirata non ha avuto una terza lettura completa: i cambi sono ricontrollabili dai numeri e dagli script.
 - AC-11: soddisfatto. Resta AC-12 (scelta di Luca, blocco Human Verification) e la verifica di Pages dopo il merge.
+
+## Step 10 — LIBRARIAN: Update Memory
+
+**Agent:** claude-opus-5-5 (subagent)
+
+**Stato del ciclo:** la scelta degli ingressi (D1–D4) è di Luca e **non è fatta**; nessuna voce di memoria la registra. Gli 8 ingressi proposti restano una proposta del catalogo. Il ciclo resta DEFERRED fino al blocco `## Human Verification` (AC-12) e alla verifica di Pages dopo il merge.
+
+**Fatti di Consilium riletti sul codice in questo step** (non copiati dagli step precedenti): `stockStream.js` 19 e 32-34; `algorithm.js` 343-348 e 366-384; `trader.js` 97, 153, 372-376, 430-443; `portfolio.js` 63, 71, 215, 278-320, 359-382; `dataTrainer.js` 30-36 e 65-72; `genome.js` 14-17 e 84-87. Ricalcolati: barra 1738 unica con H = L e con V = 0 (`2023-08-15`, 14,014; precedente `2023-08-11`); autocorrelazione dei rendimenti ENI 0,0313 (chiusura) e 0,2322 (OHLC/4); tabella età media / `1/c` / `2/c - 1` / barre di avvio per i sei coefficienti della sezione 2.2 (tutti coincidenti); `NaN` in una EMA resta `NaN`.
+
+### Voci aggiunte (10)
+
+| Voce | Tipo | Perché ha valore durevole |
+|---|---|---|
+| `knowledge/consilium-ohlc4-input-price.md` | knowledge | Il «prezzo» dei filtri IIR è `getActualValue() = (O+H+L+C)/4`, con il percorso reale dei campi (`dataTrainer.js`, non `fromJSON`); la media crea persistenza nei rendimenti (ENI 0,232 contro 0,031; serie casuale 0,242 contro 0,009; Cowles/Working); decisione Q1 (chiusura) e suo costo. Serve a R3–R6, E2 e a ogni confronto con l'FSM |
+| `knowledge/ema-period-conversions.md` | knowledge | `c = 2/(N+1)`, Wilder `c = 1/N` ≡ EMA `2N−1`, età media `(1−c)/c` come unica misura della memoria (`1/c` solo regola pratica), barre per pesare < 5 %, avvio TA-Lib contro avvio al primo valore, scala di `ln(C/EMA)` che dipende da `c`; tabella verificata. Evita di rifare le conversioni e di sbagliare la costante di tempo |
+| `knowledge/eni-flat-bar-and-non-finite-indicators.md` | knowledge | Barra 1738 (`2023-08-15`), unica con H = L e V = 0, accettata da `validateSnapshot`; `0/0` e `ln 0`; `NaN` che resta nella EMA per 779 barre; validatore e `validateTrace` che fanno fallire il replay; `describe()` finito dalla barra 1; regola del salto. Requisito diretto per E2 |
+| `knowledge/indicator-algebraic-identities.md` | knowledge | I1–I5 con le forme corrette (pendenza = funzione di `d` della stessa barra; %B affine al proprio z; I5 `rsi_c = c/(1−c)·(C−e)/B` con dimostrazione); metodo identità → serie sintetica → ENI di contorno; instabilità delle correlazioni ENI tra tratti |
+| `decisions/2026-10-18-indicator-catalog-constraints.md` | decisions | Risposte di Luca: famiglie evolvibili ammesse, limite 10 (12 se strategico, parametri esclusi dal conteggio), Q1 chiusura, Q2 regola C2, Q3 identità e serie sintetica come prova principale, Q4 prezzo di vendita come rischio senza toccare Consilium né aprire issue. **Dichiara che D1–D4 non sono decise** |
+| `patterns/two-round-independent-simulated-reading.md` | patterns | Lettore indipendente con il profilo di Luca, risposte alle domande dopo il solo riassunto, domande di comprensione, voto 1–5, soglia fissata prima (≥ 4/5 e D1–D4 motivabili), lettore nuovo dopo le correzioni; 3/5 → 4/5. Registra che l'autolettura dell'Optimizer (23 punti corretti) non ha evitato il 3/5 |
+| `patterns/clean-room-recomputation-other-language.md` | patterns | Verificatore in `verify/` che non legge né esegue `ref/`/`out/`, ricalcola in Python da formule scritte e dati grezzi, confronta tabella per tabella; trova le convenzioni non dichiarate (D1 generatore, D4 taglio ENI, D12 parametri) |
+| `patterns/persistent-research-work-folder.md` | patterns | Cartella fuori da `/tmp` e dal repository con ruoli fissi (`dataset/`, `ref/`, `out/`, `verify/`, `reviews/`), dataset che fallisce se diverge dalla guida, incrementale = diretto, `check-doc.mjs` rieseguito dopo ogni correzione; limite: non versionata |
+| `errors/2026-10-18-identity-claims-imprecise.md` | errors | N3 «con un giorno di ritardo» e «N2 assorbe %B» (Step 4, corretti dal Critic con il calcolo); I5 formulata male dal Builder (Step 7) e corretta dall'Optimizer rifacendo la derivazione. Lezione: un'identità si scrive con le grandezze esatte e si controlla con script e derivazione prima di usarla per ammettere o escludere |
+| `errors/2026-10-19-document-unreadable-first-independent-reading.md` | errors | Primo lettore indipendente 3/5 nonostante la passata di leggibilità dello Step 8 (riassunto non autosufficiente, termini non definiti, due insiemi di parametri con lo stesso nome, incoerenze, gergo di processo); stesso fallimento del ciclo 010; risolto con un secondo giro (4/5) |
+
+### Voci aggiornate (7)
+
+- `knowledge/consilium-trader-order-timing.md` — **correzione richiesta dal Critic (F-code-4).** Diceva che l'ordine si esegue «at that bar's open» per tutti: vero solo per l'acquisto. Ora ha la tabella dei prezzi di esecuzione (acquisto all'apertura di `t+1`; vendita su segnale a `(O+H+L+C)/4` di `t+1`; stop e take profit al prezzo di soglia, lo stop vince se scattano entrambi; valore del portafoglio alla media OHLC/4), con file e righe rilette, la conseguenza «vendere alla media della giornata», il validatore che controlla solo `[low, high]`, la decisione Q4, il fatto `describe()` finito dalla barra 1. Campo `updated:` con il motivo.
+- `knowledge/consilium-iir-filter-orientation.md` — «time constant about `1/c`» sostituito dal rimando all'età media `(1−c)/c` (il `1/c` sopravvaluta la memoria dei filtri di prezzo) e nota sul prezzo d'ingresso OHLC/4. Aggiunto `updated:`.
+- `knowledge/genome-forms-state-memory.md` — l'ultima riga diceva ancora «Status of the choice of form: **not made**»: **decaduta** (la forma è scelta dal 2026-10-18). Corretta con il rimando alla decisione. Aggiunto `updated:`.
+- `errors/2026-10-11-iir-formula-inverted-coefficient.md` — sezione «Recurrence (cycle 011)»: lo Step 2 indicava `StockData.fromJSON` invece di `dataTrainer.js` 65-72 (corretto dall'Architect); AC-05 si appoggiava alla nota di memoria incompleta sui tempi di esecuzione (corretta dal Critic). Stessa lezione, quindi aggiornamento e non voce nuova.
+- `patterns/independent-verification-chain-research.md` — sezione «Cycle 011» con ciò che ogni livello ha intercettato e i rimandi ai tre pattern nuovi.
+- `decisions/2026-10-18-genome-form-linear-score.md` — conseguenza R2 con il rimando ai vincoli e al catalogo; dice che la lista è scelta da Luca.
+- `decisions/2026-10-11-research-document-conventions.md` — profilo del lettore allo Step 2 e lettura simulata con soglia come criterio; vincolo di dimensione rilassato da Luca nel ciclo 011 (assunzione dello Step 8).
+
+### Collegamenti
+Ciclo 011 ↔ ciclo 010 (forma scelta `genome-form-linear-score`, convenzioni, catena di verifica, `iir-formula-inverted-coefficient`, orientamento di `c`) e ciclo 009 (`strategy-contract`, `consilium-trader-order-timing`). Le voci nuove si richiamano con `[[nome]]`: `indicator-catalog-constraints` ↔ `consilium-ohlc4-input-price` ↔ `consilium-trader-order-timing` ↔ `eni-flat-bar-and-non-finite-indicators`; `ema-period-conversions` ↔ `consilium-iir-filter-orientation`; `indicator-algebraic-identities` ↔ `identity-claims-imprecise` ↔ `clean-room-recomputation-other-language`; `two-round-independent-simulated-reading` ↔ `document-unreadable-first-independent-reading` ↔ `research-document-conventions`; `persistent-research-work-folder` ↔ `approximate-jekyll-render-without-ruby`. Tutti i `[[nome]]` delle voci risolvono a un file, tranne `[[archimate-model-scope]]` in `errors/2026-10-05-archimate-model-semantic-defects.md`, che è **precedente a questo ciclo** e non è stato toccato (da correggere quando si tocca quella voce).
+
+### Voci scartate (e perché)
+- **Scelta degli ingressi (D1–D4), elenco degli 8 proposti, riserve gap e CMF:** non decisi; registrarli violerebbe il vincolo. Sono nel catalogo (capitoli 7 e 9) e andranno nel blocco `## Human Verification`.
+- **Voce knowledge per ogni indicatore (formule, stato, avvio):** è il contenuto del catalogo; copiarla duplicherebbe il documento. La memoria tiene solo i fatti trasversali (prezzo, conversioni, barra piatta, identità).
+- **Voce sul prezzo di vendita come knowledge separata:** accorpata nella correzione di `consilium-trader-order-timing`, che è la voce di riferimento sui tempi di esecuzione.
+- **Errore sulla «costante di tempo» `1/c` contro centro di massa (Step 3/4):** incoerenza di definizione risolta nel ciclo, coperta da `ema-period-conversions` e dall'aggiornamento di `consilium-iir-filter-orientation`.
+- **Errori minori** («MACD nello spazio dei pesi» senza velocità coincidenti, genoma da 19 numeri, difetti D1–D13 dello Scientist): corretti nel ciclo; i primi due rientrano in `indicator-algebraic-identities`, i D in `clean-room-recomputation-other-language` come esempi.
+- **Pattern «identità + serie sintetica + ENI di contorno» separato:** è la decisione Q3 più il metodo descritto in `indicator-algebraic-identities`; una voce a parte sarebbe un duplicato.
+- **Script del Critic e dell'Explorer nello scratchpad:** numeri di controllo, non citabili; la regola sta in `persistent-research-work-folder`.
+
+### Cosa è ora riutilizzabile
+Per R3–R6 ed E2: quale prezzo vede il motore e quale vedono gli indicatori nuovi; i prezzi di esecuzione e il rischio della vendita alla media; le conversioni N↔`c` e la definizione unica di memoria; il caso della barra 1738 con la regola del salto e il vincolo `describe()` finito dalla barra 1; le identità I1–I5 per applicare la regola C2; i vincoli di Luca sul catalogo. Per i cicli di ricerca successivi: la lettura simulata a due giri con soglia, il ricalcolo indipendente in un altro linguaggio, la cartella di lavoro persistente.
+
+### Controllo di decadimento della validation matrix
+`validation_matrix.md`: `last_updated: 2026-10-03` (chiusura del ciclo 008). Cicli aperti da allora: 007, 009, 010 e questo 011 → **4 cicli**, entro il limite di 10. Nessun controllo di correttezza obbligatorio. Osservazione: la riga `github-pages` dice ancora «first deploy PENDING_HUMAN», mentre i cicli 008, 009 e 010 hanno chiuso la verifica di Pages (build verdi, NRC-H03 VERIFIED il 2026-10-18; `metrics/summary.yaml`, righe dei cicli 008-010). È testo di stato decaduto, non un target sbagliato.
+
+### Esito dell'aggiornamento della validation matrix
+**Nessuna modifica in questo step** (vincolo: `validation/` si tocca allo Step 12): il ciclo non aggiunge né cambia target, credenziali o procedure; i cinque comandi di verifica della pagina del catalogo (Step 9, sezione 7) restano nel file del ciclo. Proposta facoltativa per lo Step 12: riformulare lo stato di `github-pages` in «Configured (Pages build verified after merge, cycles 008-010; new pages PENDING_HUMAN until NRC-H03)» e portare `last_updated` alla data di applicazione.
+
+### NRC H-item
+- **H-item eseguiti in questo ciclo:** nessuno (NRC-H01, H02 non attivati; NRC-H03 non eseguito: la pagina del catalogo non è ancora pubblicata). Nessuno stato da aggiornare.
+- **Bug segnalati da un umano e corretti in questo ciclo:** nessuno (ricerca senza codice; i difetti li hanno trovati Critic, Optimizer, Scientist e lettori simulati). L'articolo 25 non richiede nuove voci.
+- **Proposta per lo Step 12 (Scientist, Step 9 sezione 6):** estendere NRC-H03 al catalogo, che usa lo stesso blocco `<style>` locale. Riga proposta:
+  `| NRC-H03 | H | `docs/architecture/genome-forms-review.md`, `docs/architecture/genome-forms-guide.md`, `docs/architecture/genome-indicators-catalog.md` (page-local style) | After merge to `main`, open the published pages at 1280 and 390 px | Tables scroll inside their box, no horizontal page scroll, style block not shown as text, menu entries present; for the catalog also the formulas of RSI, Bollinger and N17 shown as code blocks; executor confirms each point; outcome in the cycle file | cycle 010 — ✅ VERIFIED 2026-10-18 for review and guide (cycle 010); catalog added cycle 011, PENDING_HUMAN |`
+  **La checklist non è stata modificata.**
+
+### Da applicare allo Step 12
+1. `.swhouse/metrics/summary.yaml`:
+   - `last_updated` alla data dello Step 12; `total_cycles: 11`; `cycles_by_status` secondo l'esito dell'Arbiter (stato atteso del 011: `deferred: 1` finché mancano D1–D4 e la verifica di Pages; `decided` invariato a 10);
+   - `memory_entries` **contati sulle cartelle dopo questo step**: `decisions: 9`, `patterns: 9`, `errors: 7`, `knowledge: 8` (oggi il file dice 8/6/5/4; aggiunte del ciclo: +1 decisione, +3 patterns, +2 errori, +4 knowledge);
+   - riga di commento: `# Cycle 011: Track M, research R2 indicators catalog for the linear-score genome (issue #6), DEFERRED <data>: PENDING_HUMAN = choice of inputs by Luca (D1-D4, AC-12) and Pages check of the catalog after merge (NRC-H03).`
+2. `.swhouse/reputation/scores.yaml`: dopo lo Step 11 aggiungere `- cycle: "011"` con lo `score` dell'Evolution Master e `source: cycles/archive/cycle-011.md#<ancora dello Step 11>` (lo stesso formato dell'ancora del ciclo 010); `last_updated` alla data dello Step 12.
+3. `.swhouse/memory/validation/non_regression_checklist.md`: sostituire la riga NRC-H03 con quella proposta sopra; `last_updated: <data> (cycle 011)`.
+4. `docs/MAP.md`: nella tabella principale, dopo `architecture/genome-forms-guide.md`, la riga
+   `| architecture/genome-indicators-catalog.md | architecture | Italian catalog of streaming indicators for the linear-score genome: formulas, state, warm-up, scale and redundancy; proposal of 8 inputs and open questions D1-D4 for Luca (cycle 011, issue #6) | <data> |`
+   e `last_verified` (intestazione e riga nel corpo) alla data di applicazione.
+5. `_data/docs.yml`: **già fatto** allo Step 7 (voce `genome-indicators-catalog` sotto `architecture`, YAML valido, controllato in questo step).
+6. `.swhouse/memory/validation/validation_matrix.md`: nessuna modifica obbligatoria; facoltativa la riformulazione dello stato di `github-pages` sopra.
+7. Dopo il merge su `main`: i cinque comandi dello Step 9 (sezione 7) e NRC-H03 sul catalogo; esito nel blocco `## Human Verification` insieme alla scelta di Luca su D1–D4. Se la scelta modifica i vincoli (ad es. 11–12 ingressi), aggiornare `decisions/2026-10-18-indicator-catalog-constraints.md`.
+
+**File toccati dal Librarian:** 10 nuovi file in `.swhouse/memory/{decisions,patterns,errors,knowledge}/`, 7 voci aggiornate e questo file. Nessuna modifica a `metrics/`, `reputation/`, `memory/validation/`, `docs/`, `_data/`, `src/`. Nessun commit.
+
+**Prossimo step:** Step 11 — EVOLUTION MASTER (dopo la scelta di Luca su D1–D4, blocco Human Verification)

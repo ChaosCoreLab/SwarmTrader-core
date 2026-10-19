@@ -4,6 +4,7 @@ cycle: 010
 title: Conventions for research documents of the epic
 status: active
 superseded_by: null
+updated: 2026-10-19 (cycle 011 — reading test and relaxed length)
 ---
 
 ## Context
@@ -26,6 +27,7 @@ The operator stated the first, second and third points in cycle 010; the no-prom
 - R2-R6 documents start from these conventions unless the operator changes them for a cycle.
 - Documents in Italian live in the English-language docs tree; the menu entry and the front matter are the only link to the other docs.
 - Reviews of such documents use [[independent-verification-chain-research]].
+- Since cycle 011 the reader profile is stated at Step 2 and an independent simulated reading with an exit threshold is an acceptance criterion ([[two-round-independent-simulated-reading]]). For cycle 011 the operator relaxed the size constraint provided the document stays readable, rich in examples, reliable, consistent and complete (Step 8 assumption).
 
 ## Confidence
 Medium — language, mathematics, glossary and length are explicit operator answers; the other points come from cycle 010's acceptance criteria and coordinator choices, and are extended here to the epic's research cycles without a new explicit confirmation by the operator.
