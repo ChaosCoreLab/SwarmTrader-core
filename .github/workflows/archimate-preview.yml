@@ -1,0 +1,44 @@
+name: ArchiMate branch preview
+
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Work on the branch commit, never on the synthetic PR merge commit.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          submodules: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Check source and render branch preview
+        run: node scripts/archimate-pr-preview.mjs --base origin/main
+
+      - name: Capture checked commit
+        id: revision
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload preview for reviewers
+        uses: actions/upload-artifact@v4
+        with:
+          name: archimate-preview-${{ steps.revision.outputs.sha }}
+          path: .cache/archimate-pr-preview/
+          if-no-files-found: error
+          retention-days: 14

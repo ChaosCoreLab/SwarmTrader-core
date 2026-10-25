@@ -3,6 +3,11 @@
 framework_version: "0.1.0"
 framework_repo: "https://github.com/simpego81/software-house-ai"
 
+# Project-specific rule, read by agents; the pinned framework does not enforce this field.
+project_rules:
+  archimate_pr_preview: ".swhouse/policies/archimate-pr-preview.md"
+  board_status: ".swhouse/policies/board-status.md"
+
 instance:
   machine: "windows-workstation"
   operator: "U422756"
