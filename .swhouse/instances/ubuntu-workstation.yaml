@@ -3,6 +3,10 @@
 framework_version: "0.1.0"
 framework_repo: "https://github.com/simpego81/software-house-ai"
 
+# Same project rule as the default instance; enforcement is via agent instructions and the PR workflow.
+project_rules:
+  archimate_pr_preview: ".swhouse/policies/archimate-pr-preview.md"
+
 instance:
   machine: "ubuntu-workstation"
   operator: "Luca"

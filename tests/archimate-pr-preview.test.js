@@ -130,3 +130,14 @@ test('a case without generated blocks in its use-case page is not silently accep
   git(root, 'commit', '-m', 'Remove generated block marker');
   assert.throws(() => createPreview({ root, baseRef: 'HEAD~1' }), /marcatori del diagramma/);
 });
+
+test('both instance profiles and agent adapters point to the same project PR rule', () => {
+  const rule = '.swhouse/policies/archimate-pr-preview.md';
+  for (const path of ['.swhouse/instance.yaml', '.swhouse/instances/ubuntu-workstation.yaml', 'CLAUDE.md', '.github/copilot-instructions.md']) {
+    assert.ok(readFileSync(join(ROOT, path), 'utf8').includes(rule), `${path} must reference the project rule`);
+  }
+  const policy = readFileSync(join(ROOT, rule), 'utf8');
+  assert.match(policy, /ogni PR/);
+  assert.match(policy, /origin\/main/);
+  assert.match(policy, /NRC-H02/);
+});
