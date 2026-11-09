@@ -4,6 +4,7 @@ cycle: 010
 title: First non-FSM genome form is the linear score with thresholds, memory only in indicators
 status: active
 superseded_by: null
+updated: 2026-10-19 (cycle 011 — R2 constraints linked)
 ---
 
 ## Context
@@ -23,6 +24,7 @@ Fixed-length vector of weights fits the existing crossover/mutation, reads at a 
 ## Consequences
 - R2 (indicators), R3 (encoding), R4 (buy/stay/sell equations), R5 (fitness) and R6 (selection, null experiment) work on the linear score; E2 implements it through the strategy contract ([[2026-10-11-strategy-contract]]).
 - The indicator pool must include several speeds of EMA and volume ratios, since interactions cannot be expressed by the form itself.
+- R2 (cycle 011, issue #6): input constraints (close, counting rule C2, at most 10 inputs or 12 if strategic, evolvable families) in [[2026-10-18-indicator-catalog-constraints]]; the list of inputs is chosen by Luca on `docs/architecture/genome-indicators-catalog.md`.
 - Supersedes the "question 2 pending" note of [[2026-10-11-non-fsm-requirement-reading]].
 
 ## Confidence

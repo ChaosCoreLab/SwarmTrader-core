@@ -33,4 +33,7 @@ cycle_quality_scores:
   - cycle: "010"
     score: 4
     source: cycles/archive/cycle-010.md#step-11--evolution-master-evaluate-the-process
+  - cycle: "011"
+    score: 4
+    source: cycles/archive/cycle-011.md#step-11--evolution-master-evaluate-the-process
 operators: []

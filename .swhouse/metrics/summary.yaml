@@ -1,9 +1,9 @@
 version: 1
-last_updated: 2026-10-18
-total_cycles: 10
+last_updated: 2026-11-09
+total_cycles: 11
 cycles_by_status:
   decided: 10
-  deferred: 0
+  deferred: 1
   escalated: 0
 # Cycle 001: DEFERRED 2026-09-28, reopened ACCEPTED WITH CONDITIONS 2026-09-29 (C1, resolved cycle 002).
 # Cycle 002: Track S, resolved C1, ACCEPTED 2026-09-29; O1/O2 accepted as known limits.
@@ -15,11 +15,12 @@ cycles_by_status:
 # Cycle 008: Track M, stale snapshot references + multi-platform docs + Ubuntu/Claude instance profile and Claude Code adapter, DEFERRED 2026-10-03, ACCEPTED 2026-10-12 (PENDING_HUMAN resolved: Claude Code skills VERIFIED 2026-10-03, Pages build green after merge 2026-10-12).
 # Cycle 009: Track M, strategy contract between the replay engine and the genome (epic #4, E1), DEFERRED 2026-10-12, ACCEPTED 2026-10-18 (PENDING_HUMAN resolved: Pages deploy green after merge of PR #18; published app verified with Playwright — snapshot, replay, ledger).
 # Cycle 010: Track M, research R1 genome forms review and extended guide (issue #5), DEFERRED 2026-10-18, ACCEPTED 2026-10-18 (form chosen: linear score; PENDING_HUMAN resolved: Pages build of review and guide verified, NRC-H03 passed at 1280 and 390 px).
+# Cycle 011: Track M, research R2 indicators catalog for the linear-score genome (issue #6), DEFERRED 2026-11-09 (7 inputs chosen by Luca; PENDING_HUMAN = Pages build of the catalog after merge to main, NRC-H03).
 average_cycle_duration_days: 1.8
 memory_entries:
-  decisions: 8
-  patterns: 6
-  errors: 5
-  knowledge: 4
+  decisions: 9
+  patterns: 9
+  errors: 7
+  knowledge: 8
 knowledge_reuse_rate: null
 evidence_rate: null
