@@ -17,7 +17,7 @@ Cycle 011 (R2, issue #6, epic #4) builds the catalog of streaming indicators tha
 - **Q3 — evidence of redundancy:** algebraic identities and a synthetic series are the main proof; the ENI snapshot is only a declared boundary check and does not drive the choice of inputs (it is the data R6 will evaluate on).
 - **Q4 — simulator sell price:** the sell on signal at the bar average and stops at the threshold ([[consilium-trader-order-timing]]) are **declared as a risk to R6 and E2**; Consilium's code is not touched and no separate issue is opened.
 
-**Not decided here:** the final list of inputs and questions D1-D4 of the catalog (list, level/trend block, ATR as a direct input, distance from the maximum). They are Luca's, open at the time of writing, and go into the cycle file's `## Human Verification`.
+**Final list chosen by Luca (2026-11-09, D1-D4 confirmed on the catalog artifact):** 7 inputs, no reserves added: distance from the fast EMA, distance from the slow EMA, centred RSI, distance from the maximum computed as the *forgetting maximum* (continuous `c`; no source describes it as an indicator, behaviour proven only on the catalog examples), position of the close in the day (smoothed), log of relative volume, normalised OBV. Answers: D1 a (the 8 of the table), D2 a (keep all four level/trend inputs), D3 b (normalised ATR leaves the sum; agitation stays available to R4 as divisor or factor of a product), D4 b. D3 b made the list 7, confirmed explicitly by Luca. Genome size: 16 numbers according to the catalog (with D3 b); R3 recounts it with the continuous `c` of the forgetting maximum.
 
 ## Rationale
 The close keeps formulas checkable against TA-Lib and avoids persistence built by averaging; C2 makes the limit measure information instead of names; identities and synthetic data avoid choosing inputs on the evaluation data; leaving the vendor untouched keeps the golden comparison valid ([[2026-09-29-consilium-v1-golden-reference]]).
@@ -28,4 +28,4 @@ The close keeps formulas checkable against TA-Lib and avoids persistence built b
 - Document: `docs/architecture/genome-indicators-catalog.md`.
 
 ## Confidence
-High for the six operator answers (explicit). The final input list is pending.
+High for the operator answers and the final list (explicit, confirmed). The merit of the inputs against the FSM filters is untested.
