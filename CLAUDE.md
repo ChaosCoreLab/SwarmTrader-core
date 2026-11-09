@@ -22,6 +22,14 @@ The active instance is resolved before step 1 of the session startup:
 
 `.swhouse/instance.local.yaml` is untracked and set by hand by the operator of each machine (see `docs/operations/development.md`). When opening a cycle, record the active profile and operator in Step 1 as `**Instance:** <machine> (operator: <operator>)`.
 
+### Project rule — ArchiMate preview before a PR
+
+Before **every** PR to SwarmTrader-core, follow `.swhouse/policies/archimate-pr-preview.md`: prepare an ArchiMate preview from a clean committed branch, push and wait for the matching workflow artifact, then link it in the PR. A PR without an architectural change still needs the preview and an explicit no-impact rationale. Do not model unimplemented work. Model changes still require the independent content review and Owner walkthrough (NRC-H02).
+
+### Project rule — board status
+
+For every issue being worked on, follow `.swhouse/policies/board-status.md`: check its card in the SwarmTrader board, move it to **In progress** when work starts, **In review** when the PR is ready, and **Done** only after acceptance and required verification. Record blockers on the issue; do not update the board for every commit.
+
 ### Session startup — mandatory
 
 At the start of every session, follow `software-house-ai/protocols/session.md`:
