@@ -1601,3 +1601,4 @@ Per R3–R6 ed E2: quale prezzo vede il motore e quale vedono gli indicatori nuo
 
 - **D1 (elenco finale): «a»**, letta come l'opzione (a): gli 8 ingressi della tabella così come sono (proposta), senza riserve aggiunte. Interpretazione da confermare dall'operatore se intendeva altro.
 - D2, D3 e D4 ancora senza risposta; il criterio di D1 dice di scegliere (a) se le risposte a D2–D4 sono quelle proposte.
+- **D2 (quattro ingressi che si somigliano): «a»** (2026-11-09), letta come opzione (a): tenerli tutti e quattro (proposta). D3 e D4 ancora senza risposta.
