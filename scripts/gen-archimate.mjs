@@ -90,17 +90,23 @@ export function parseLayerFile(text, file) {
   return { layer: fm.layer, useCase: fm.use_case, file, elements, relations };
 }
 
-/** Loads all layer files of a use case. Element layer = file layer unless the element sets `layer:`. */
-export function loadModel(useCase, archDir = ARCH) {
-  const dir = join(archDir, useCase);
-  if (!existsSync(dir)) throw new Error(`cartella del caso d'uso non trovata: ${dir}`);
-  const files = readdirSync(dir).filter((f) => f.endsWith('.md')).sort();
+/** Loads all layer files of a use case. Element layer = file layer unless the element sets `layer:`.
+ *  `source` ({ listFiles, readFile }) reads the same files from an alternative source (e.g. a git revision),
+ *  so callers never re-implement the file selection rules. */
+export function loadModel(useCase, archDir = ARCH, source = {}) {
+  const listFiles = source.listFiles || (() => {
+    const dir = join(archDir, useCase);
+    if (!existsSync(dir)) throw new Error(`cartella del caso d'uso non trovata: ${dir}`);
+    return readdirSync(dir).filter((f) => f.endsWith('.md')).sort();
+  });
+  const readFile = source.readFile || ((file) => readFileSync(join(archDir, useCase, file), 'utf8'));
+  const files = listFiles();
   const layerFiles = [];
   const ignored = [];
   for (const f of files) {
     if (!/layer\.md$/.test(f)) { ignored.push(f); continue; }
-    const rel = `archimate/${useCase}/${f}`;
-    layerFiles.push(parseLayerFile(readFileSync(join(dir, f), 'utf8'), rel));
+    const rel = f.includes('/') ? f : `archimate/${useCase}/${f}`;
+    layerFiles.push(parseLayerFile(readFile(f), rel));
   }
   const elements = [];
   const relations = [];

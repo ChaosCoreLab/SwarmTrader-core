@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildUseCase, parseLayerFile, ROOT } from './gen-archimate.mjs';
+import { buildUseCase, loadModel, ROOT } from './gen-archimate.mjs';
 
 const REPO = 'https://github.com/ChaosCoreLab/SwarmTrader-core';
 const EDIT_BASE = `${REPO}/edit/main/`;
@@ -23,20 +23,19 @@ function gitFile(root, revision, path) {
   return git(root, 'show', `${revision}:${path}`);
 }
 
-function modelNames(paths) {
-  return [...new Set(paths.map((p) => /^archimate\/([a-z0-9-]+)\/[^/]+layer\.md$/.exec(p)?.[1]).filter(Boolean))].sort();
+/** Use-case folders with at least one first-level layer.md. Mirrors loadModel: any folder name
+ *  (except "_"-prefixed, reserved like _vocabulary.md), files at the first level only. */
+export function modelNames(paths) {
+  return [...new Set(paths.map((p) => /^archimate\/(?!_)([^/]+)\/[^/]+layer\.md$/.exec(p)?.[1]).filter(Boolean))].sort();
 }
 
+/** The base model reads the same files loadModel would read at HEAD (first level only), from the base revision. */
 function baseModel(root, revision, useCase, paths) {
-  const layerFiles = paths.filter((p) => p.startsWith(`archimate/${useCase}/`) && p.endsWith('layer.md'));
-  const elements = [];
-  const relations = [];
-  for (const path of layerFiles) {
-    const file = parseLayerFile(gitFile(root, revision, path), path);
-    elements.push(...file.elements.map((el) => ({ ...el, layer: el.layer || file.layer })));
-    relations.push(...file.relations);
-  }
-  return { elements, relations };
+  const prefix = `archimate/${useCase}/`;
+  return loadModel(useCase, null, {
+    listFiles: () => paths.filter((p) => p.startsWith(prefix) && !p.slice(prefix.length).includes('/') && p.endsWith('.md')),
+    readFile: (file) => gitFile(root, revision, file),
+  });
 }
 
 /** Compare architectural content, not source line numbers or formatting. */
@@ -44,9 +43,19 @@ export function compareModels(before, after) {
   const elements = (model) => new Map(model.elements.map((el) => [el.id, {
     name: el.name, layer: el.layer, aspect: el.aspect, type: el.type, role: el.role || '', tech: el.tech || '',
   }]));
-  const relations = (model) => new Map(model.relations.map((r) => [
-    JSON.stringify([r.from, r.type, r.to]), { from: r.from, type: r.type, to: r.to, label: r.label || '' },
-  ]));
+  // Key: [from, type, to]. Value: the sorted labels, so duplicate relations with the same
+  // triple but different labels are not collapsed into a single entry.
+  const relations = (model) => {
+    const map = new Map();
+    for (const r of model.relations) {
+      const key = JSON.stringify([r.from, r.type, r.to]);
+      const entry = map.get(key) || { from: r.from, type: r.type, to: r.to, labels: [] };
+      entry.labels.push(r.label || '');
+      map.set(key, entry);
+    }
+    for (const entry of map.values()) entry.labels.sort();
+    return map;
+  };
   const diff = (left, right) => {
     const added = [], removed = [], changed = [];
     for (const [key, value] of right) {
@@ -102,10 +111,6 @@ export function createPreview({ root = ROOT, baseRef, output }) {
     throw new Error('Indicare un riferimento Git valido con --base (es. origin/main).');
   }
   const cache = resolve(root, '.cache');
-  if (output) {
-    const destination = resolve(root, output);
-    if (destination === cache || !destination.startsWith(cache + sep)) throw new Error('La preview deve essere in una sottocartella di .cache/.');
-  }
   if (git(root, 'status', '--porcelain', '--untracked-files=all')) throw new Error('Working tree non pulita: creare un commit prima della preview.');
   const head = git(root, 'rev-parse', 'HEAD');
   const base = git(root, 'merge-base', baseRef, 'HEAD');
@@ -113,6 +118,7 @@ export function createPreview({ root = ROOT, baseRef, output }) {
   if (out === cache || !out.startsWith(cache + sep)) throw new Error('La preview deve essere in una sottocartella di .cache/.');
   const headPaths = git(root, 'ls-tree', '-r', '--name-only', 'HEAD', '--', 'archimate').split('\n').filter(Boolean);
   const basePaths = git(root, 'ls-tree', '-r', '--name-only', base, '--', 'archimate').split('\n').filter(Boolean);
+  const baseFragments = new Set(git(root, 'ls-tree', '-r', '--name-only', base, '--', '_includes/use-cases').split('\n').filter(Boolean));
   const names = [...new Set([...modelNames(headPaths), ...modelNames(basePaths)])].sort();
   if (!names.length) throw new Error('Nessun caso d’uso ArchiMate nei due commit.');
 
@@ -142,8 +148,12 @@ export function createPreview({ root = ROOT, baseRef, output }) {
       files.push([`head-${name}.html`, page(`${name} — branch`, fragment.replaceAll(EDIT_BASE, `${REPO}/blob/${head}/`), head)]);
     }
     if (before) {
-      const fragment = gitFile(root, base, `_includes/use-cases/${name}.html`);
-      files.push([`base-${name}.html`, page(`${name} — base`, fragment.replaceAll(EDIT_BASE, `${REPO}/blob/${base}/`), base)]);
+      // The generated fragment may not exist yet at the base revision: the diff still works on the layer files.
+      const fragmentRel = `_includes/use-cases/${name}.html`;
+      const fragment = baseFragments.has(fragmentRel)
+        ? gitFile(root, base, fragmentRel).replaceAll(EDIT_BASE, `${REPO}/blob/${base}/`)
+        : '<p>Il frammento del browser non esisteva nella revisione base: confronto basato solo sui file del modello.</p>';
+      files.push([`base-${name}.html`, page(`${name} — base`, fragment, base)]);
     }
     cases.push({ name, before, after, diff: compareModels(oldModel, newModel) });
   }

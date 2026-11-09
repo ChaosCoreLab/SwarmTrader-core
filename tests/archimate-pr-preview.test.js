@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import test from 'node:test';
 import { buildUseCase, ROOT } from '../scripts/gen-archimate.mjs';
-import { compareModels, createPreview } from '../scripts/archimate-pr-preview.mjs';
+import { compareModels, createPreview, modelNames } from '../scripts/archimate-pr-preview.mjs';
+import { assertRuleReferenced } from './lib/instance-paths.mjs';
 
-const tempRoot = join(tmpdir(), 'opencode');
 const name = 'example';
 function git(root, ...args) {
   const result = spawnSync('git', args, { cwd: root, encoding: 'utf8' });
@@ -32,8 +32,7 @@ function regenerate(root) {
 }
 
 function fixture(t) {
-  mkdirSync(tempRoot, { recursive: true });
-  const root = mkdtempSync(join(tempRoot, 'archimate-preview-'));
+  const root = mkdtempSync(join(tmpdir(), 'archimate-preview-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   write(root, '.gitignore', '.cache/\n');
   mkdirSync(join(root, 'archimate'), { recursive: true });
@@ -46,9 +45,14 @@ function fixture(t) {
   write(root, 'assets/css/archimate-browser.css', readFileSync(join(ROOT, 'assets/css/archimate-browser.css')));
   write(root, 'assets/js/archimate-browser.js', readFileSync(join(ROOT, 'assets/js/archimate-browser.js')));
   regenerate(root);
-  git(root, 'init', '-b', 'main');
+  git(root, 'init');
+  git(root, 'symbolic-ref', 'HEAD', 'refs/heads/main');
   git(root, 'config', 'user.name', 'Preview Test');
   git(root, 'config', 'user.email', 'preview@example.invalid');
+  // Isolate the fixture from the host's global git config (commit signing, global hooks).
+  git(root, 'config', 'commit.gpgsign', 'false');
+  mkdirSync(join(root, '.githooks-disabled'));
+  git(root, 'config', 'core.hooksPath', '.githooks-disabled');
   git(root, 'add', '.');
   git(root, 'commit', '-m', 'Base model');
   return root;
@@ -131,11 +135,61 @@ test('a case without generated blocks in its use-case page is not silently accep
   assert.throws(() => createPreview({ root, baseRef: 'HEAD~1' }), /marcatori del diagramma/);
 });
 
+test('relation duplicates with the same triple but different labels are not collapsed', () => {
+  const rel = (label) => ({ from: 'a', type: 'serves', to: 'b', label });
+  const before = { elements: [], relations: [rel('uno'), rel('due')] };
+  const after = { elements: [], relations: [rel('uno')] };
+  const diff = compareModels(before, after);
+  assert.equal(diff.relations.changed.length, 1);
+  assert.deepEqual(diff.relations.changed[0].before.labels, ['due', 'uno']);
+  assert.deepEqual(diff.relations.changed[0].after.labels, ['uno']);
+  assert.equal(diff.relations.added.length, 0);
+  assert.equal(diff.relations.removed.length, 0);
+});
+
+test('nested layer files at the base revision do not create false model changes', (t) => {
+  const root = fixture(t);
+  write(root, `archimate/${name}/drafts/oldlayer.md`, layer('business', '### Old draft\n- id: old_draft\n- aspect: behaviour\n- type: business-process\n- role: Draft\n', ''));
+  git(root, 'add', '.');
+  git(root, 'commit', '-m', 'Add nested draft');
+  const base = git(root, 'rev-parse', 'HEAD');
+  write(root, 'README.md', 'Only prose changed.\n');
+  git(root, 'add', '.');
+  git(root, 'commit', '-m', 'Change only prose');
+  const result = createPreview({ root, baseRef: base });
+  assert.equal(result.manifest.cases[0].changed, false);
+});
+
+test('a base revision without the generated fragment still produces the preview', (t) => {
+  const root = fixture(t);
+  write(root, '.gitignore', '.cache/\n_includes/\n');
+  git(root, 'rm', '-r', '--cached', '_includes');
+  git(root, 'add', '.');
+  git(root, 'commit', '-m', 'Drop generated fragment');
+  const base = git(root, 'rev-parse', 'HEAD');
+  write(root, '.gitignore', '.cache/\n');
+  git(root, 'add', '.');
+  git(root, 'commit', '-m', 'Restore generated fragment');
+  const result = createPreview({ root, baseRef: base });
+  assert.equal(result.manifest.cases[0].changed, false);
+  assert.match(readFileSync(join(result.output, `base-${name}.html`), 'utf8'), /non esisteva nella revisione base/);
+  assert.match(readFileSync(join(result.output, `head-${name}.html`), 'utf8'), /archimate-browser-root/);
+});
+
+test('use-case discovery accepts every folder name, not only lowercase kebab-case', () => {
+  const paths = [
+    'archimate/ENI/businesslayer.md',
+    'archimate/eni_replay2/motivationlayer.md',
+    'archimate/example/applicationlayer.md',
+    'archimate/example/drafts/oldlayer.md',
+    'archimate/_vocabulary.md',
+  ];
+  assert.deepEqual(modelNames(paths), ['ENI', 'eni_replay2', 'example']);
+});
+
 test('both instance profiles and agent adapters point to the same project PR rule', () => {
   const rule = '.swhouse/policies/archimate-pr-preview.md';
-  for (const path of ['.swhouse/instance.yaml', '.swhouse/instances/ubuntu-workstation.yaml', 'CLAUDE.md', '.github/copilot-instructions.md']) {
-    assert.ok(readFileSync(join(ROOT, path), 'utf8').includes(rule), `${path} must reference the project rule`);
-  }
+  assertRuleReferenced(rule);
   const policy = readFileSync(join(ROOT, rule), 'utf8');
   assert.match(policy, /ogni PR/);
   assert.match(policy, /origin\/main/);

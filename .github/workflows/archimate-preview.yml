@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main]
 
+# One preview per commit: with an open PR, push and pull_request events fire for the same SHA.
+concurrency:
+  group: archimate-preview-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
