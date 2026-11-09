@@ -1,6 +1,8 @@
 ---
 cycle: 011
-status: open
+status: closed
+closed: 2026-11-09
+decision: DEFERRED
 opened: 2026-10-18
 problem: "Non è noto quali indicatori finanziari, calcolabili in streaming da prezzi e volumi giornalieri, il genoma a punteggio lineare può usare come ingressi e come unica fonte di memoria del passato: serve un catalogo ragionato di ammessi ed esclusi (issue #6, epica #4)"
 track: M
@@ -1612,3 +1614,52 @@ Per R3–R6 ed E2: quale prezzo vede il motore e quale vedono gli indicatori nuo
 **Target:** AC-12, scelta dell'elenco finale degli ingressi (D1–D4)
 **Result:** CHOSEN — 7 ingressi
 **Notes:** D1 «a», D2 «a», D3 «b», D4 «b»; elenco confermato esplicitamente il 2026-11-09 («confermo») dopo la nota di Claude sull'interazione D1/D3: distanza dalla EMA veloce, distanza dalla EMA lenta, RSI centrato, distanza dal massimo (massimo che dimentica, `c` continuo), posizione della chiusura nella giornata (in media), logaritmo del volume relativo, OBV normalizzato; nessuna riserva aggiunta (né gap di apertura né CMF), ATR normalizzato fuori dalla somma e lasciato a R4. Il genoma è di 16 numeri secondo il catalogo (R3 lo riconta). Decisione registrata in `memory/decisions/2026-10-18-indicator-catalog-constraints.md`. La build di Pages del catalogo resta PENDING_HUMAN dopo il merge su `main`.
+
+## Step 11 — EVOLUTION MASTER: Evaluate the Process
+
+**Agent:** claude-opus-5-5
+
+**Cycle quality score: 4.** Le lezioni del ciclo 010 hanno funzionato: il profilo del lettore e la lettura simulata indipendente sono entrati nello Step 2 (AC-11) e il secondo lettore ha dato 4 su 5, con circa 200 valori ricalcolati senza errori. La catena Explorer → Critic → Builder → Optimizer → Scientist ha intercettato errori veri (N3 e N2/%B, formula I5, nota di memoria sui tempi di vendita, convenzione d'avvio dell'OBV) e lo Scientist ha ricalcolato oltre 1.000 valori da zero in un altro linguaggio. Non 5: la prima lettura indipendente ha dato 3 su 5 anche dopo la passata di leggibilità dello Step 8 (l'autore delle correzioni non può giudicarsi); il documento è passato da 15.000 a 27.700 parole e «In breve» da solo richiede 35–45 minuti; la versione del modello dei sub-agent non era quella chiesta dall'operatore e non è stata segnalata prima del lancio; un errore di rete ha interrotto un sub-agent; tutti i ruoli girano nello stesso modello.
+
+**Osservazioni**
+- Una lettura simulata fatta dall'autore delle correzioni non conta come indipendente: il 3/5 del primo lettore è arrivato dopo un controllo dell'Optimizer che si dichiarava a posto. Il pattern `two-round-independent-simulated-reading` lo registra.
+- Le risposte alle domande sono arrivate in pochi minuti dai commenti sull'artefatto, ancorati alla domanda: formato migliore di una conversazione. Le risposte brevi («a», «b») richiedono però che il documento numeri le opzioni; è emersa un'interazione tra D1 e D3 che il documento non segnalava e che il coordinatore ha dovuto far confermare.
+- Gli script persistenti in `swarmtrader-r2-work/` (fuori da `/tmp`) hanno evitato la perdita avvenuta nel ciclo 010.
+- Il commento duplicato sull'issue #6 (Step 8) e le interruzioni di rete mostrano che i comandi `gh` in background vanno lanciati una volta sola, con verifica del risultato.
+
+**Proposte (Article 11, non adottate):** (1) in ogni documento a scelte multiple, dichiarare le interazioni tra le domande e un'opzione di risposta composta; (2) quando l'operatore chiede una versione di modello per un sub-agent, verificare prima se lo strumento la impone e dirlo; (3) lo Step 8 non dichiara «lettura simulata fatta»: la fa solo un lettore separato.
+
+## Step 12 — ARBITER: Decide
+
+**Agent:** claude-opus-5-5
+
+**Decision: DEFERRED**
+
+| AC | Esito | Note |
+|---|---|---|
+| AC-01…AC-10 | Soddisfatti | Catalogo con schede, relazione con i filtri IIR sul codice, adeguatezza al punteggio lineare, nessun look-ahead, elenco ammessi/esclusi, fonti o [ipotesi], leggibilità, esempi, verifica indipendente (Step 9: oltre 1.000 valori ricalcolati, 0 differenze) |
+| AC-11 | **Soddisfatto** | Due letture simulate indipendenti: 3/5, poi 4/5 dopo le correzioni (comprensione circa 91 %) |
+| AC-12 | **Soddisfatto** | Blocco Human Verification del 2026-11-09: 7 ingressi scelti da Luca (D1–D4 confermati) |
+| AC-13 | Parziale | Intestazione, voce di menu e assenza di Liquid verificate; la build di Pages non è verificabile in locale |
+| AC-14 | Soddisfatto | Nessuna modifica a `src/`, `tests/`, `scripts/`, `archimate/**` nel ciclo (i file di stato si aggiornano ora, nello Step 12) |
+| AC-15 | Soddisfatto | Domande a Luca con una frase per scelta, risposte registrate |
+
+**Evidence assessment.** Confidence in solution: High per contenuto e numeri (verifica indipendente da zero in Python, lettura simulata 4/5, codice citato riletto); Medium per la resa pubblicata, che non è provata (Jekyll non è installato; tre blocchi di codice in elenchi non si rendevano nel rendering approssimato, poi spostati).
+
+**Rationale.** La ricerca ha prodotto ciò che l'issue chiedeva: un catalogo ragionato degli indicatori ammessi ed esclusi, con evidenze tracciabili e una scelta di Luca registrata (7 ingressi), sbloccando R3, R4 ed E2. La verifica indipendente dello Step 9 e le due letture simulate non hanno lasciato difetti aperti, e gli errori trovati dal Critic e dall'Optimizer sono stati corretti e registrati in memoria. Come per i cicli 009 e 010, la build di GitHub Pages dopo il merge su `main` può essere vista solo da una persona e il ciclo resta DEFERRED, non ACCEPTED, finché non è verificata; i difetti noti sono cosmetici (resa kramdown non provata, serie sintetica riproducibile solo «circa», fonti originali di alcuni indicatori non lette e marcate come tali).
+
+**Condizione per la rivalutazione.** Dopo il merge del branch `epic-genoma-non-fsm` su `main`: il workflow di Pages termina verde e la pagina `/docs/architecture/genome-indicators-catalog/` si apre a 1280 e 390 px con tabelle che scorrono nel riquadro, nessuno scorrimento orizzontale, blocco di stile non visibile come testo, blocchi di codice resi come codice e voce di menu presente (NRC-H03).
+
+**Responsabile:** Owner (U422756); l'operatore Luca può registrare l'esito. **Riapertura:** appendere a `cycles/archive/cycle-011.md` il blocco `## Human Verification — [data]`; con esito VERIFIED lo stato diventa ACCEPTED, l'issue #6 passa a Done e si chiude.
+
+**Close checklist**
+- [x] `metrics/summary.yaml`: `total_cycles` 11, deferred 1, `memory_entries` decisioni 9, patterns 9, errori 7, knowledge 8, `last_updated` 2026-11-09
+- [x] Entry di memoria scritte (Step 10) e decisione sulla scelta finale aggiornata
+- [x] Fallimenti del ciclo registrati: `errors/2026-10-18-identity-claims-imprecise.md`, `errors/2026-10-19-document-unreadable-first-independent-reading.md`
+- [x] Target di deployment: nessuno aggiunto o rimosso
+- [x] `docs/MAP.md`: riga di `genome-indicators-catalog.md`
+- [x] NRC-H03 estesa al catalogo
+- [x] `reputation/scores.yaml`: ciclo 011 score 4
+
+---
+*Cycle 011 closed by ARBITER — 2026-11-09*
