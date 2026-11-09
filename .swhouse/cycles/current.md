@@ -1596,3 +1596,8 @@ Per R3–R6 ed E2: quale prezzo vede il motore e quale vedono gli indicatori nuo
 **File toccati dal Librarian:** 10 nuovi file in `.swhouse/memory/{decisions,patterns,errors,knowledge}/`, 7 voci aggiornate e questo file. Nessuna modifica a `metrics/`, `reputation/`, `memory/validation/`, `docs/`, `_data/`, `src/`. Nessun commit.
 
 **Prossimo step:** Step 11 — EVOLUTION MASTER (dopo la scelta di Luca su D1–D4, blocco Human Verification)
+
+### Risposta dell'operatore a D1 (2026-11-09, commento sull'artefatto)
+
+- **D1 (elenco finale): «a»**, letta come l'opzione (a): gli 8 ingressi della tabella così come sono (proposta), senza riserve aggiunte. Interpretazione da confermare dall'operatore se intendeva altro.
+- D2, D3 e D4 ancora senza risposta; il criterio di D1 dice di scegliere (a) se le risposte a D2–D4 sono quelle proposte.
