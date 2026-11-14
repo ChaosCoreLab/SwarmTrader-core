@@ -1084,7 +1084,7 @@ Quanto ogni ingresso proposto è spiegato dagli altri sette. Una riga per ingres
 
 **Intervallo di `c`: questione per R3.** Il catalogo non lo fissa. Elementi per la scelta: valori vicini a 1 annullano N1 (sezione 5.3); l'avvio cresce come `ln 0,05 / ln(1 - c)`; le due velocità di N1 devono restare ordinate (`c_veloce > c_lenta`). Un'opzione per R3 è far evolvere la velocità più rapida e il rapporto tra le velocità, invece di due `c` indipendenti: le velocità non possono coincidere per costruzione, ma la spaziatura diventa fissa [ipotesi, nessuna fonte per l'uso in un genoma].
 
-**Dimensione del genoma.** Con gli 8 ingressi proposti: 8 pesi, 2 soglie e 8 parametri degli indicatori (7 `c` continui e 1 N intero) = **18 numeri**, senza bias. Con due soglie il bias è ridondante (spostare bias e soglie della stessa costante non cambia le decisioni), e moltiplicare pesi e soglie per la stessa costante positiva neppure: almeno un grado di libertà dei 18 non cambia le decisioni (verificato con l'algebra durante la ricerca). Il conteggio è da passare a R3, che decide la codifica.
+**Dimensione del genoma.** Con gli 8 ingressi proposti: 8 pesi, 2 soglie e 8 parametri degli indicatori (7 `c` continui e 1 N intero) = **18 numeri**, senza bias. Con due soglie il bias è ridondante (spostare bias e soglie della stessa costante non cambia le decisioni), e moltiplicare pesi e soglie per la stessa costante positiva neppure: almeno un grado di libertà dei 18 non cambia le decisioni (verificato con l'algebra durante la ricerca). Il conteggio è da passare a R3, che decide la codifica ([Codifica del genoma a punteggio lineare](../genome-encoding/)).
 
 ## 7. Esito: ammessi ed esclusi
 

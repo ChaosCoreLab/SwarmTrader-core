@@ -620,3 +620,131 @@ Gli Step 3 e 4 hanno ragionato su simmetrie in aritmetica esatta e su operatori 
 **Step 6 (DESTROYER) omesso per track** (Step 1): i casi limite della codifica sono nella sezione «Casi limite» qui sopra.
 
 **Prossimo step:** Step 7 — BUILDER
+
+## Step 7 — BUILDER: Produce a Solution
+
+**Agent:** claude-opus-5-5 (subagent)
+**Confidence:** Medium — schema, operatori, forma canonica e hash sono specificati in pseudocodice e riprodotti da script (0 figli invalidi su 100000 per operatore; simmetrie controllate nei bit su dataset inventato, serie sintetica ed ENI; vettori V1-V3 ricalcolati anche con un breve script Python di autocontrollo dalla regola scritta); tutti i numeri del documento sono in `out/` (`check-doc.mjs` 11/11). La confidenza non sale perché (a) intervalli dei geni, passo del 5 %, margine ln 2 e W_i sono scelte dell'autore `[ipotesi]`, con il limite alto di `τ` che aspetta l'avvio massimo di R6; (b) l'indipendenza lineare dei 7 ingressi (quindi «15 gradi di libertà» come valore esatto) non è dimostrata; (c) la verifica indipendente (AC-09) e le letture simulate (AC-10) non sono ancora fatte; (d) la build di Pages non è provata.
+**Assunzioni**
+- Vincoli di Luca applicati: 7 ingressi sempre attivi, lunghezza fissa, nessun gene di presenza; duplicati riconosciuti per comportamento, solo segnalati, eliminazione a E3. Luca sceglie tutto alla fine: il documento presenta 11 domande (Q1-Q11) con la proposta dell'autore marcata come tale e non decide per lui.
+- Proposta (verdetto dello Step 5): approccio C con l'Alt. 1 (centro `b`, semi-ampiezza fissata a 1), `τ` = ln(età media) indipendenti, limitati e riflessi, V2 con margine δ = ln 2, scambio e rifiuto, incrocio per blocchi (le due distanze in un blocco), mutazione gaussiana con riflessione, hash esatto su forma canonica senza quantizzazione, numeri in esadecimale binary64.
+- Regola di decisione del catalogo, sommata da sinistra a destra con le due distanze per prime; confronti `s > b + 1` e `s < b - 1`.
+- `docs/MAP.md` non si tocca (Step 12, come da istruzione dell'operatore; lo Step 3 lo proponeva allo Step 7). Unico tocco a un documento esistente: un collegamento nel capitolo 6 del catalogo, proposto dallo Step 3.
+
+### Questioni non risolte (dichiarate prima del resto)
+- **AC-09 verifica indipendente:** non fatta (Step 9). `verify/` contiene solo `README.txt`; lo Scientist ricalcola in Python dal documento senza leggere `ref/` né `out/`. Lo script `notes/step7-selftest-hash.py` è un autocontrollo dell'autore sugli hash, non la verifica.
+- **AC-10 letture simulate:** non fatte (Step 8-9); `reviews/` vuota. Sezioni da far leggere: «In breve», 2.1, 5.1-5.2, 7.1-7.4, capitolo 11.
+- **Lunghezza:** 710 righe; 7108 parole di testo, 3140 nelle tabelle, 501 nel codice (10777 in tutto, conteggio `check-doc.mjs`). Il testo è sotto l'obiettivo di 8000; il totale lo supera per le tabelle di consultazione (geni, scale, vettori di prova, tabella esadecimale, glossario) e i blocchi di geni e testi canonici, necessari perché la verifica in Python riproduca gli hash (H1). Riduzione da valutare allo Step 8.
+- **Intervalli `[ipotesi]`:** età media 0,5-100 barre, W_i = 5/q_i dalla serie sintetica, `b` in [-5, 5], σ = 5 % dell'intervallo, δ = ln 2: portati a Luca come Q1, Q7, Q8.
+- **Scala delle distanze dipendente da `τ`** (C-5): circa 26 volte tra i bordi di `τ`; la codifica non la corregge, dichiarato in 3.2.
+- **Build Jekyll** non provata: PENDING_HUMAN dopo il merge (NRC-H03 estesa al nuovo documento); il documento usa lo stesso blocco `<style>` del catalogo.
+- **Anteprima ArchiMate prima della PR** (regola di progetto): non fatta qui; nessun cambiamento architetturale, motivazione «nessun impatto» da scrivere alla PR.
+- **Memoria:** il fatto F-code-4 (vincolo `unique` solo nello schema vecchio di Consilium) resta allo Step 10, come raccomandato dal Critic.
+
+### Prodotto
+- `docs/architecture/genome-encoding.md` (nuovo, 710 righe, 17 tabelle): front matter come il catalogo (`title`, `layout: doc`, `last_verified: 2026-11-14`), stesso `<style>` locale, nessun costrutto Liquid. Struttura: avvertenza, percorso di lettura, segni; **In breve** (problema, decisioni già prese, proposta a 15 geni in una tabella, operatori e hash in un paragrafo ciascuno, tabella delle 11 domande con proposta ed effetto); 1 notazione e rimandi (catalogo «Ingresso, parametro, gene», «Il punteggio lineare con soglie», 2.2, 3.3, 5.3; guida 2.4.3-2.4.4); 2 geni (tabella di 15 righe, conteggio 16/15/18/FSM, peso nullo); 3 vincoli V1-V5 con strategie e alternative, intervalli con origine (Q7, Q8, Q1); 4 opzioni di codifica con geni, vincoli, forma canonica e hash per ciascuna, scala comune e O1, `τ` contro `c` (Q5, Q6); 5 operatori in pseudocodice, prova di validità, confronto con Consilium e alternative (Q9, Q10); 6 simmetrie S1-S6 con condizioni esatte e controlli, non riconosciute; 7 forma canonica, testo canonico esadecimale, vettori di prova V1-V3, limiti dell'hash (Q11, Q3, Q4); 8 dipendenze da R4 con D-R4-1 in testa (Q2); 9 esempi E1-E6; 10 non accertato; 11 elenco finale delle domande; glossario; riferimenti al codice; 13 riferimenti con stato.
+- Script in `/home/luca/Workspace/swarmtrader-r3-work/`: `dataset/copy-toy20.mjs` (copia del dataset di R2, si ferma se lo SHA-256 differisce) → `dataset/toy20-ohlcv.json`; `ref/data.mjs` (dataset, serie sintetica e ENI di R2 in sola lettura), `ref/indicators.mjs` (i 7 ingressi; importa R2 in sola lettura e **implementa N10**, incrementale e diretto), `ref/check-n10.mjs`, `ref/scales.mjs`, `ref/genome.mjs` (schema, vincoli, decodificatore, forma canonica, testo esadecimale, SHA-256, chiave a 24 bit), `ref/operators.mjs` (inizializzazione, incrocio per blocchi e alternative, mutazione con riflessione, scambio, rifiuto), `ref/examples-genomes.mjs`, `ref/examples.mjs`, `ref/check-symmetry.mjs`, `ref/check-ops.mjs`, `ref/numfmt.mjs` (chiama `python3 -I`), `ref/fingerprint.mjs` (Q4), `ref/facts.mjs`, `ref/wrap.mjs`, `ref/check-doc.mjs`; uscite in `out/` (`check-n10.md`, `scales.md`, `facts.md`, `examples.md`, `check-symmetry.md`, `check-ops.md`, `numfmt.md`, `fingerprint.md`, `check-doc.md`); `verify/README.txt`. Sonde dello Step 7 non citate in `notes/step7-*`.
+- `_data/docs.yml`: voce `genome-encoding` sotto `architecture`, dopo il catalogo.
+- `docs/architecture/genome-indicators-catalog.md`: un collegamento nel capitolo 6 («Il conteggio è da passare a R3 …»), nessun'altra modifica.
+- **Fatti nuovi trovati scrivendo gli script:** (1) la riflessione, applicata anche a valori interni, ne cambia l'ultima cifra binaria (1,5298317366548038 → …035): la regola la applica solo fuori dall'intervallo. (2) La forma canonica deve ordinare le due distanze trattando un peso nullo come `τ` infinito, altrimenti due genomi con una sola distanza attiva in posizione 1 o 2 (equivalenti nei bit, 0 punteggi diversi su 125850) avrebbero hash diversi. (3) L'incrocio intermedio esce dagli intervalli e dal margine per arrotondamento in 3543 figli su 100000 da genitori ai bordi: serve il riporto finale (dopo, 0 invalidi). (4) Le decisioni di E1 coincidono giorno per giorno con quelle del catalogo 7.5 nonostante ATR tolto e N10 al posto di N9.
+
+### Risposte ai rilievi del Critic (Step 5)
+
+| Rilievo | Risoluzione |
+|---|---|
+| M1 S1 in virgola mobile | **Risolto.** Cap. 6: esatta per `k` potenza di 2 senza overflow né subnormali; controesempio `k` = 2^-1000 rifatto (`buy` → `hold`); caso costruito 44132/200000 con `k` = 3, 0 con `k` = 8; tabella su 1107400 barre per `k`. |
+| M2 S2 e ordine della somma | **Risolto.** Distanze come primi due addendi nel decodificatore; 0/503400 diversi nei bit, controllo 2-7: 279871/503400. |
+| M3 S3 | **Risolto.** Esclusa dal margine δ; quasi-identità dichiarata non riconosciuta. Autovalori non riportati (nessun numero citato). |
+| M4 S4 | **Risolto.** Condizioni (finito, solo nella somma) e controllo 0/880950. |
+| M5 S5 tre classi | **Risolto.** Tre classi su `b` con confini inclusi, segno di `b ± 1` esatto; controllo con ±1 e numeri adiacenti. |
+| M6 «16 numeri, 15 gradi» | **Risolto.** «Al più 15», con le due condizioni (2.2). |
+| M7 quantizzazione «necessaria» | **Risolto.** Nessuna quantizzazione nell'hash; S1 con `k` generico dichiarata non riconosciuta (194-199 hash diversi su 200); chiave di quasi-duplicato separata (Q3 b) con l'esempio a cavallo. |
+| M8 bordi di `τ` | **Risolto.** -36,7369 e 709,7827 rifatti in `check-ops.mjs`; Python `OverflowError` in `numfmt.mjs`; forma stabile nel documento; limiti [ln 0,5; ln 100]. |
+| M9 `τ2 = τ1 + e^η` | **Risolto.** Scartata (4.3). |
+| M10 convessità in virgola mobile | **Risolto.** Misurato: 3543/100000 fuori per arrotondamento; riporto e rifiuto, poi 0 (5.3). |
+| M11 C8 errata | **Risolto.** Non ripresa: ogni mutazione gene per gene è seguita da scambio e rifiuto (pseudocodice 5.1); la tabella 5.3 dice «V2 no» per gaussiana e polinomiale. |
+| M12 equivarianza solo per la mutazione | **Risolto.** O1 rifatto in `check-ops.mjs` con fattori potenze di 2: 0 differenze con entrambi i genitori scalati, 16247/16326, 20000/20000, 14607/14607 con il solo secondo (4.2). |
+| M13 Alt. 1 | **Risolto.** Una sola forma del confronto nel decodificatore (`s > b + 1`, `s < b - 1`); condizione di omogeneità in 4.2 e cap. 8. |
+| M14 scambio = forma canonica di S2 | **Risolto.** Lo scambio nel genoma è dichiarato non cambiare le decisioni; stesso intervallo di `τ` per le due distanze richiesto (Q8); scambio delle soglie dichiarato riparazione vera (3.1, V3 alternativa). |
+| M15 etichetta Sfida 2 | **Risolto.** Passeggiata rifatta con etichette esatte: clamp 3,92 % sul bordo (1,85 % a `c` = 1), riflessione 0,00 %; dichiarata «senza selezione». |
+| M16 età media | **Risolto.** Rifatto in `facts.mjs` (0,0101 → 0,0638; 9 → 19). |
+| Errore 1 (R4-3 e S1) | **Risolto.** Tabella cap. 8: l'ATR non rompe S1; un divisore su una sola distanza rompe S2; S4 esteso al `τ` dell'ATR. |
+| Errore 2 (ragione di V1) | **Risolto.** V1 motivato per le due distanze e il volume relativo (ingresso sempre 0) e per `genome.js` riga 86; per gli altri ingressi il motivo è l'avvio. Intervallo uguale per tutti proposto, per ingresso come opzione Q8 (b). |
+| Errore 3 (S5 incompleta) | **Risolto** (M5). |
+| Errore 4 (F-code-3) | **Risolto** in forma ridotta: «il genoma fisso è fuori dagli intervalli di Consilium» con un esempio (3.2); dettaglio nel ciclo. |
+| Errore 5 (C8, Sfida 1, Sfida 5, Sfida 2, costo Alt. 2) | **Risolto.** M11, M12, M7, M15; Q4 dice «una simulazione in più per genoma». |
+| Errore 6 (nessuna citazione sbagliata) | Preso atto; citazioni ricontrollate (Self-Test). |
+| A-1 clamp lineare su `c` | **Risolto.** A resta solo come confronto (Q6 b con riflessione, Q10 b); dati della passeggiata in 5.3. |
+| A-2 scala come passo nascosto | **Risolto.** 4.2 e Q5. |
+| A-3 scambio delle soglie | **Risolto.** Detto «cambia il comportamento» (3.1); con la proposta V3 è impossibile da violare; con Q5 b/c rifiuto se coincidono. |
+| B-1 «per costruzione» falso | **Risolto.** 4.3 (limiti necessari, valori dei bordi). |
+| B-2 sfera di norma 1 (Alta) | **Risolto.** Scartata con motivo (4.1). |
+| B-3 `θ_alta = 1` | **Risolto.** Detto equivalente alla proposta con Q1 (b) (4.1). |
+| C-1 rinormalizzazione facoltativa (Alta, O1) | **Risolto.** Non lasciata a E3: con la proposta non serve; con soglie grezze è un'opzione esplicita di Q5 (b, c) con la sua conseguenza misurata. |
+| C-2 V2 senza margine | **Risolto.** δ = ln 2 (Q7), scambio se `τ1 > τ2`, rifiuto se manca il margine, ricaduta sul genitore dopo 20 tentativi (156/100000 con `pm` = 1). |
+| C-3 opzione `e^η` | **Risolto.** Scartata. |
+| C-3b overflow della logistica | **Risolto.** Forma stabile e limiti ben dentro ±36. |
+| C-4 «solo per l'hash» contraddetto | **Risolto.** 7.1: «la forma canonica serve solo all'hash; lo scambio S2 nel genoma è già fatto dagli operatori». |
+| C-5 intervalli dei pesi senza scala | **Mitigato.** W_i = 5/q_i dalla serie sintetica, `[ipotesi]`, in semi-ampiezze; dipendenza da `τ` dichiarata come limite (3.2). |
+| 1a Alt. 1 | **Risolto.** Proposta (Q5 a), condizionata all'omogeneità di R4. |
+| 1b Alt. 1 con S1 rotta | **Risolto.** Cap. 8, R4-2: la semi-ampiezza torna gene (16). |
+| 2a impronta | **Risolto.** Q4 facoltativa, insieme di prova dataset inventato + serie sintetica versionato; controllo di coerenza solo con hash esatto (0 incoerenze su 600 coppie). |
+| 3a griglia di interi | **Risolto.** Opzione Q3 (c) con il problema `Math.round`/`round` scritto. |
+| 4a allineamento | **Risolto.** Implementato come scambio; il caso del pareggio sparisce con il margine; ordine deterministico nella forma canonica. |
+| 5a scala come passo | **Risolto.** 4.2. |
+| P2 Parte 2 | **Risolto.** Tabella 5.3 corretta (C8 non ripresa, BLX/SBX con gestione dei limiti, moltiplicativa scartata con motivo, auto-adattivo con l'esclusione dall'hash). |
+| O1 (Alta) | **Risolto.** Operatori costruiti attorno alla scala fissata (Alt. 1); alternativa con soglie grezze esplicita in Q5 con i numeri di M12. |
+| H1 (Alta) | **Risolto.** Testo canonico senza numeri decimali (esadecimale binary64, -0 → 0), coincidente con JCS per l'oggetto; vettori V1-V3 con -0, subnormale, 1e-7, pareggi 1,25 e 2,5, `τ` ai bordi; limiti di `τ` come letterali; tabelle Node/Python in 7.2; opzione decimale come Q11 (b). Autocontrollo Python: 4 hash uguali. |
+| Q3a (Alta) | **Risolto.** Hash esatto; quantizzazione solo come chiave separata e nominata (Q3 b, 24 bit con arrotondamento al pari sui bit), con l'esempio della coppia a cavallo; Q3 nella forma riformulata (a)/(b)/(c). |
+| Casi limite 1 | **Risolto.** Uguaglianze gestite con il rifiuto; controllo finale contato (0 invalidi). |
+| Casi limite 2 | **Risolto.** S2, S4 (con S2 insieme), S5, S1 per potenze di 2; S6 come dipendenza R4-1. |
+| Casi limite 3 | **Risolto.** V4 prima della forma canonica; `NaN` → `null` in Node e `NaN` in Python mostrati; 0 valori non finiti negli ingressi. |
+| Casi limite 4 (-0) | **Risolto.** -0 → 0 nella forma canonica; nei vettori. |
+| Casi limite 5 (quantizzazione ai confini) | **Risolto.** Esempio E5 e Q3 (b). |
+| Casi limite 6 (hash troncato, decodificatore) | **Risolto.** Versioni `schema` e `decoder`; testo canonico da conservare; 32 bit: 50 % con circa 77163 genomi. |
+| Casi limite 7 (pareggi nella decisione) | **Risolto.** Forma dei confronti nel decodificatore. |
+| D-R4-1 omogeneità | **Risolto.** In testa al cap. 8, con la regola «R4 dichiara quali di S1-S6 sopravvivono». |
+| D-R4-2 ingressi fuori dalla somma | **Risolto.** R4-3 e R4-5. |
+| D-R4-3 `Trader` | **Risolto.** R4-1 e Q2. |
+| AC-04 a rischio | **Risolto.** Prova per ogni coppia operatore-strategia, comprese le uguaglianze in virgola mobile (5.2-5.3). |
+| AC-08 a rischio (E4 con `k` = 3) | **Risolto.** E4 con `k` = 2 esatto, `k` = 3 esatto solo sui numeri interi dell'esempio (detto), e un genoma a numeri non tondi dove 3Q ha hash diverso ma stesse decisioni. |
+| AC-09 a rischio (H1) | **Mitigato**; la verifica è dello Step 9. |
+| F-code-4 in memoria | **Rinviato** allo Step 10. |
+
+### Self-Test Log (obbligatorio)
+
+| Componente | Metodo (comando, da `/home/luca/Workspace/swarmtrader-r3-work/`) | Uscita osservata | Esito |
+|---|---|---|---|
+| dataset | `node dataset/copy-toy20.mjs` | «toy20-ohlcv.json: copia identica, sha256 ab9cbc74…9f61» | PASS |
+| N10 | `node ref/check-n10.mjs` | «D4 del catalogo (13 giorni, c = 0,1): PASS»; incrementale = diretto, scarto massimo 8.2e-15 (giocattolo), 1.5e-13 (sintetica), 4.8e-14 (ENI 1700-1800) | PASS |
+| esempi E1-E6, vettori | `node ref/examples.mjs` | E1 11 buy, 5 hold, 4 sell, 0 giorni diversi dal catalogo 7.5; F, M validi; R1, 2R1, 3R1 hash di E1; 3Q hash diverso, decisioni uguali; V1 `29ae884b…0a0d`, V2 `dce8550b…33e8`, V3 `32e58bc1…860f` | PASS |
+| simmetrie | `node ref/check-symmetry.mjs` | S1: 0 decisioni diverse su 1107400 barre per ogni `k`, hash diversi 0 per potenze di 2 e 194-199/200 altrimenti; caso costruito 0 (k = 8) e 44132/200000 (k = 3); S2 0/503400; S4 0/880950; S2+S4 0/125850; S5 classi corrette ai confini; 0 non finiti | PASS |
+| operatori | `node ref/check-ops.mjs` | inizializzazione, incrocio per blocchi, mutazione (pm 1/15 e 1): 0 invalidi su 100000; uniforme 17658 → 0, intermedio 3543 → 0 dopo la gestione; O1 0 con scala congiunta, 16247/16326, 20000/20000, 14607/14607 con scala indipendente | PASS |
+| formati numerici | `node ref/numfmt.mjs` | `1e-7` contro `1e-07`, `-0.0`, `9007199254740992.0`, `1.3` contro `1.2e+00`, `Math.round(2.5)` 3 contro 2, NaN `null` contro `NaN`, `1/(1+e^710)` 0 contro `OverflowError` | PASS |
+| impronta (Q4) | `node ref/fingerprint.mjs` | 600 coppie equivalenti: 0 incoerenze; 0/300 impronte uguali tra casuali; E1/E5 hash diversi, impronta uguale | PASS |
+| fatti | `node ref/facts.mjs` | FSM 11 scalari, 9 stati, 36 transizioni, 135 ID, 1 azione; avvio 3/5/14/29/302 barre; σ_τ ×1,303; 77163 genomi per 32 bit | PASS |
+| hash in un altro linguaggio (autocontrollo) | `python3 -I notes/step7-selftest-hash.py` | V1, V2, V3, E5 identici agli hash di `out/examples.md` | PASS |
+| documento | `node ref/check-doc.mjs` | 11 PASS (Liquid, codice ≤ 80 colonne, 17 tabelle coerenti, 7 tabelle di dati = `out/`, 10 hash, 3 testi canonici, 6 blocchi di geni, 547 numeri rintracciati, 13 riferimenti, 4 ancore, Q1-Q11 in sezione e in elenco); righe 710, parole del testo 7108, tabelle 3140, codice 501 | PASS |
+| Liquid | `grep -nE '\{\{\|\{%' docs/architecture/genome-encoding.md docs/architecture/genome-indicators-catalog.md` (nel repository) | nessuna riga, exit 1 | PASS |
+| voce di menu | `python3 -c "import yaml…"` su `_data/docs.yml` | architecture = …, genome-indicators-catalog, genome-encoding | PASS |
+| URL | `curl -s -L -A 'Mozilla/5.0' -w '%{http_code}'` sui 12 URL del documento | 200 per tutti | PASS |
+| citazioni del codice | `sed`/`git show 2ec7237:…` su `genome.js` 13-47, 84-89; `strategy.js` 30-56; `dataTrainer.js` 34; `individual_v2.js` 1-4, 161-193, 199-240, 277-280; `individual.js` 193-238, 268-276, 348-383; `ga_v2.js` 15-18, 80-131, 190-194, 215-218, 328-337; `orm.js` 454-505 | contenuti come citati; HEAD di Consilium `2ec7237` su `experiment/lb77` | PASS |
+| nessun effetto su codice e modello | `npm test`; `npm run archimate:check` | «# tests 40 / # pass 40 / # fail 0»; «modello "eni-replay" valido (33 elementi, 55 relazioni)» | PASS |
+| file toccati | `git status --short`; `git diff --stat` | ` M _data/docs.yml` (3 inserzioni), ` M docs/architecture/genome-indicators-catalog.md` (1 riga), `?? docs/architecture/genome-encoding.md`, più questo file | PASS |
+| build Jekyll e resa a 390 px | — | SKIPPED: Ruby/Jekyll non installati; rischio: kramdown e il blocco `<style>`, tabelle larghe; mitigazione: stesso stile del catalogo già pubblicato, PENDING_HUMAN dopo il merge (NRC-H03) | SKIPPED |
+| verifica indipendente, letture simulate | — | SKIPPED: compiti degli Step 8-9 (AC-09, AC-10); `verify/README.txt` predisposto | SKIPPED |
+
+### Domande aperte per Luca (dal documento, capitolo 11)
+- **Q5** soglie e scala comune: centro `b` con semi-ampiezza 1 (15 geni, proposta), due soglie senza rinormalizzare, o rinormalizzate prima dell'incrocio (16).
+- **Q6** gene della memoria: `τ` = ln(età media) (proposta) o `c` con passo lineare.
+- **Q1** segno delle soglie: `b` in [-5, 5] (proposta) o in [-1, 1] (punteggio zero sempre `hold`).
+- **Q7** margine tra le velocità: ln 2 (proposta), nessuno, o altro rapporto.
+- **Q8** intervalli: età media 0,5-100 e W_i della tabella (proposta), o per ingresso / dall'avvio di R6.
+- **Q9** incrocio: per blocchi (proposta), uniforme per gene, intermedio.
+- **Q10** mutazione: gaussiana con riflessione (proposta), uniforme con saturazione, polinomiale.
+- **Q2** numeri del `Trader`: contati a parte secondo R4 (proposta), geni ora, costanti ora.
+- **Q3** quasi duplicati: solo hash esatto (proposta), più chiave a 24 bit, griglia di interi.
+- **Q4** impronta delle decisioni: no (proposta) o sì.
+- **Q11** numeri nell'hash: esadecimale (proposta) o decimale RFC 8785.
+
+**Prossimo step:** Step 8 — OPTIMIZER
