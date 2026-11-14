@@ -1,6 +1,7 @@
 ---
 discovered: 2026-10-11
 cycle: 010
+updated: 2026-10-19 (cycle 011, Step 10 — status of the choice was stale)
 topic: Where a genome form gets its memory of the past, and how close each form is to a state machine
 ---
 
@@ -12,4 +13,4 @@ The operator's requirement for the epic (issue #4) is that state memory should c
 - **Crossover on equivalent genotypes.** Permuting regimes (HMM) or hidden nodes (networks) gives the same model with a different genotype, so naive crossover is destructive ("competing conventions", NEAT paper). This is for R3.
 - **Continuous output versus `labels`.** The contract needs a finite non-empty `labels` list; forms with a continuous output derive labels from bands of the output (information kept in `describe().indicators`). Only the HMM has natural labels. Contract extension is for E2 (see [[2026-10-11-strategy-contract]]).
 
-Status of the choice of form: **not made** (Luca decides; candidates A and B are proposals in the review). Do not read this entry as a choice.
+Status of the choice of form: **made on 2026-10-18** — linear score with thresholds, memory only in the indicators ([[2026-10-18-genome-form-linear-score]]). The paragraphs above describe the comparison that preceded it.

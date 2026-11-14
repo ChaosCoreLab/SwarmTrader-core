@@ -11,6 +11,9 @@ architecture:
   - id: genome-forms-guide
     title: Guida alle forme di genoma
     path: /docs/architecture/genome-forms-guide/
+  - id: genome-indicators-catalog
+    title: Catalogo degli indicatori del genoma
+    path: /docs/architecture/genome-indicators-catalog/
 decisions:
   - id: ADR-001-static-snapshot
     title: ADR-001 Static Snapshot

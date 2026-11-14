@@ -1,6 +1,7 @@
 ---
 discovered: 2026-10-11
 cycle: 010
+updated: 2026-10-19 (cycle 011 — computation as the check, clean-room recomputation, simulated reading)
 applicability: "Research cycles whose product is a document with claims, sources and numbers (no product code), run with role subagents"
 ---
 
@@ -20,6 +21,14 @@ Keep the document's own statement of source status (read / card only) honest at 
 
 ## Example
 Cycle 010, `.swhouse/cycles/archive/cycle-010.md` Steps 5, 7, 9 and the corrections table after Step 9; product `docs/architecture/genome-forms-review.md`. The error caught by step 2: [[2026-10-11-iir-formula-inverted-coefficient]].
+
+## Cycle 011 (R2, indicators catalog)
+The chain held and was extended:
+- the Critic checked **identities by computing them** (residuals 1e-16), correcting two Explorer formulations, and followed the sell path in the code to a fact no step had (sell at the bar average);
+- the Optimizer rederived an identity by hand and corrected the Builder's wording ([[2026-10-18-identity-claims-imprecise]]);
+- the Scientist recomputed in another language without reading the author's scripts: [[clean-room-recomputation-other-language]] (1,041 table values, 0 differences; undeclared conventions found);
+- readability got its own independent check with an exit threshold: [[two-round-independent-simulated-reading]];
+- all scripts in a persistent folder: [[persistent-research-work-folder]].
 
 ## Known limitations
 - All roles ran on the same model; independence is of task and object, not of mind.
