@@ -2,7 +2,7 @@
 cycle: 011
 status: closed
 closed: 2026-11-09
-decision: DEFERRED
+decision: ACCEPTED
 opened: 2026-10-18
 problem: "Non è noto quali indicatori finanziari, calcolabili in streaming da prezzi e volumi giornalieri, il genoma a punteggio lineare può usare come ingressi e come unica fonte di memoria del passato: serve un catalogo ragionato di ammessi ed esclusi (issue #6, epica #4)"
 track: M
@@ -1663,3 +1663,12 @@ Per R3–R6 ed E2: quale prezzo vede il motore e quale vedono gli indicatori nuo
 
 ---
 *Cycle 011 closed by ARBITER — 2026-11-09*
+
+## Human Verification - 2026-11-14 (github-pages, NRC-H03)
+
+**Performed by:** Luca (operator); controlli automatici eseguiti da Claude (sessione OpenCode)
+**Target:** github-pages - pagina del catalogo (condizione per la rivalutazione dello Step 12; NRC-H03)
+**Result:** VERIFIED
+**Notes:** dopo il merge della PR #22 in `main` (merge `93153f0`, 2026-11-14 17:59 UTC) il workflow "Deploy GitHub Pages" e' terminato `success` (run 43624036137). `/docs/architecture/genome-indicators-catalog/` risponde 200. L'operatore ha comunicato l'esito positivo della verifica visiva della pagina pubblicata (NRC-H03); il dettaglio punto per punto (1280 e 390 px) non e' stato riportato nel file.
+
+Con la condizione VERIFIED, lo stato del ciclo passa a `ACCEPTED`. L'issue #6 passa a Done.
