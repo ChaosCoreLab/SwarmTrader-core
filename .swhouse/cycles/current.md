@@ -748,3 +748,176 @@ Gli Step 3 e 4 hanno ragionato su simmetrie in aritmetica esatta e su operatori 
 - **Q11** numeri nell'hash: esadecimale (proposta) o decimale RFC 8785.
 
 **Prossimo step:** Step 8 — OPTIMIZER
+
+## Step 8 — OPTIMIZER: Improve the Solution
+
+**Agent:** claude-opus-5-5 (subagent)
+**Confidence:** Medium — fatti, fonti, numeri, proposta e opzioni dello Step 7 sono invariati (gli hash di `out/examples.md` sono gli stessi 10 dello Step 7, le uscite di `check-ops`, `facts`, `scales`, `check-n10`, `numfmt` identiche byte per byte, quelle di `examples`, `check-symmetry` e `fingerprint` diverse solo per i nomi e per il genoma K aggiunto); `check-doc.mjs` esteso a 16 controlli, tutti PASS. Resta Medium perché la lettura «da Luca» l'ha fatta lo stesso modello che ha scritto le correzioni (AC-10 non è chiuso: servono le due letture indipendenti), le cinque correzioni di merito non sono ancora ricontrollate dallo Scientist e la resa Jekyll di 29 tabelle non è provata.
+**Assunzioni**
+- Indicazione dell'operatore per questo step: rendere il documento leggibile da Luca e far sì che «In breve» e l'elenco finale bastino per rispondere a Q1-Q11; nessun limite rigido di parole, ma la dimensione finale va giustificata (lezione del ciclo 011: capire conta più che accorciare). Come nel ciclo 011 è una deroga dichiarata al profilo «Simplifier» di `agents/06-optimizer.md`; nessun AC dello Step 2 è tolto.
+- Copia del documento dello Step 7 e delle sue uscite fuori dal repository: `/home/luca/Workspace/swarmtrader-r3-work/notes/step8-genome-encoding.step7.md` e `notes/step8-out-step7/`.
+- Lettore: Luca, sviluppatore con formazione tecnico-scientifica, senza finanza, senza esperienza di algoritmi genetici o di apprendimento automatico, che sceglie Q1-Q11 alla fine del ciclo. Nessuna domanda è stata decisa né tolta; la proposta resta marcata come tale.
+- Parole contate come in `check-doc.mjs` (testo, tabelle, codice separati).
+
+### Problemi di leggibilità trovati
+
+Lettura per intero del documento dello Step 7 come Luca. Ogni punto in cui ci si perde, con la correzione fatta.
+
+| # | Dove | Problema per il lettore | Correzione |
+|---|---|---|---|
+| P1 | Apertura | «algoritmo genetico» usato senza spiegazione | Una frase su che cosa fa |
+| P2 | «In breve», Il problema | La regola di decisione (punteggio = somma pesata, confronto con le soglie, `buy`/`hold`/`sell`) non era scritta nel documento, solo richiamata dal catalogo | Regola in parole e in formula, con «zona di attesa» definita |
+| P3 | «In breve» | «media esponenziale», «età media», «barra» usati prima della definizione (età media solo al cap. 1, barra solo nel glossario) | Definiti nella frase, con l'esempio `c` = 0,2 → 4 barre |
+| P4 | «In breve» | «le due distanze», «veloce/lenta» senza dire che sono la stessa formula con due memorie (serve per capire lo scambio) | Frase dedicata |
+| P5 | «In breve», tabella della proposta | Simbolo `W_i` mai definito; nessuna frase su come leggere la tabella | `W_i` spiegato nella cella; frase di lettura |
+| P6 | «In breve» | Nessun esempio che leghi geni → ingressi → punteggio → decisione → hash | Nuova sottosezione «Un esempio dall'inizio alla fine» (G1 giorno 12, -1,42 < -1 → `sell`, hash `29ae884b…`, G4 equivalente con lo stesso hash, G5 con hash diverso e stesse decisioni) |
+| P7 | «In breve», Operatori | «riflette» senza esempio; «scambia le due distanze (il comportamento non cambia)» senza il perché | Esempio 10,3 → 9,7; motivo (stessa formula) |
+| P8 | «In breve», Le scelte | Tabella di 11 righe con la domanda in 4-6 parole, senza il problema né un criterio: le domande non si potevano rispondere né motivare dal solo riassunto | Elenco autosufficiente: per ogni Q il problema in parole, le opzioni con l'effetto concreto (geni, vincoli, forma canonica, hash), la proposta, un criterio «Per scegliere» |
+| P9 | «In breve» | Ordine Q5, Q6, Q1, Q7… senza spiegazione: sembra un errore di numerazione | Detto da dove vengono i numeri, perché l'ordine (Q5 e Q6 cambiano la forma dei geni) e quali domande dipendono da quali |
+| P10 | Cap. 11 | Elenco di sole opzioni, senza problema, effetti né criterio: non autosufficiente | Per ogni Q: problema in una frase e tabella con una riga per opzione (geni; vincoli e operatori; forma canonica e hash; «scegli se») |
+| P11 | Tutto il documento | **E1-E6** (esempi) e **E2, E3** (implementazioni, issue #12 e #13) con le stesse sigle: «E2 — un incrocio» e «chi scriverà il codice (E2)» | Esempi 1-6; genomi G1, P2, F, G3, M, G4, H4, G5, K |
+| P12 | 7.3, 9 | Vettori di prova **V1-V3** con le stesse sigle dei vincoli **V1-V5** | Vettori T1-T3 |
+| P13 | 9, Esempio 4 | Genoma **Q** (e «2Q», «3Q») con la lettera delle domande Q1-Q11; genoma **R1** con la sigla della ricerca R1 | H4 («2 × H4», «3 × H4»), G4 |
+| P14 | 6 (tabella S1), 9 | «forma A1»: gergo degli script (Alternativa 1 dell'Explorer), mai definito | «forma proposta»; intestazioni di `ref/check-symmetry.mjs` rigenerate |
+| P15 | 4.1 | Approcci A, B, C usati senza definizione (vengono dallo Step 3) | Paragrafo che li descrive |
+| P16 | 4.1, 4.2 | «rinormalizzare», «proiezione» non definiti | Definiti sul posto e nel glossario |
+| P17 | 4.2 e altrove | `θ_alta`, `θ_bassa` comparivano per la prima volta in una formula di 4.2; `h`, `k`, `δ`, `σ` sparsi | Tabella 1.2 «Simboli» (13 righe) |
+| P18 | Tutto | Nessun elenco delle sigle (R2-R7, E2/E3, S1-S6, V…, R4-x, D3 b, D4 b, N…) | Tabella 1.5 «Sigle» |
+| P19 | 1.3, tabella degli ingressi | `dC`, `clv`, `sgn`, `L`, `abs` non definiti | Frase dopo la tabella |
+| P20 | 2.1 | Colonna «Vincoli» con V1, V2, V4 prima del capitolo 3, senza spiegazione | Frase di lettura che li nomina (e correzione, sotto) |
+| P21 | 2.2, 9 | «D3 b», «D4 b» senza dire che cosa sono | In parole (ATR normalizzato fuori dalla somma; massimo che dimentica) |
+| P22 | 2.2 | «agitazione», `Trader` non definiti | Definiti sul posto e nel glossario |
+| P23 | 3.2 | Età media 7,07 senza motivo; prime 300 barre escluse non dette | √50, centro in scala logaritmica di [0,5; 100]; 300 barre di avvio (dallo script `scales.mjs`) |
+| P24 | 4.3 | «log-normale», «strategie evolutive» non definiti | Definiti |
+| P25 | 5.1 | Pseudocodice senza parole prima; «mulberry32» non spiegato | Paragrafo «In parole» con le cinque funzioni |
+| P26 | 5.3 | DEAP, pymoo, BLX-α, SBX, mutazione polinomiale, «riporto nell'intervallo» non spiegati | Frase prima della tabella; voci di glossario |
+| P27 | 6, S1 | Tabella prima della spiegazione di `r`, `k r` e delle colonne | Frase di lettura prima della tabella |
+| P28 | 6, S2 | «neuroevoluzione» non definita | Definita |
+| P29 | 7.1 | Pseudocodice della forma canonica senza parole; il motivo della «chiave infinita» non detto; nessun esempio passo per passo | Passi in parole, motivo della chiave, **esempio K** passo per passo (nuovo, generato da `ref/examples.mjs`) |
+| P30 | 7.2, 7.3 | «big-endian» e «vettore di prova» non definiti | Definiti |
+| P31 | 7.4 | «mantissa» non definita | Definita |
+| P32 | 8 | «isteresi», «saturazione del punteggio», «cancello» non definiti (servono per Q5 e Q2) | Tre definizioni prima della tabella |
+| P33 | 9, Esempio 3 | Simbolo `z` delle estrazioni non definito | `z` = valore di `N()`, nuovo gene = gene + σ × `z` |
+| P34 | 9 | Formato dei blocchi di geni (`ta`, `tb`) non spiegato | Frase in testa al capitolo |
+| P35 | 5.3 | «basi dati lette dalla revisione»: gergo del processo | «lette in sola lettura durante questa ricerca» |
+| P36 | 3.1, 3.2, 4.1, 5.3, 6, 7.2 (due), 9, glossario, riferimenti al codice | 8 tabelle su 17 senza una frase su come leggerle (euristica del controllo 13) | Frase di lettura per tutte le 29 tabelle; controllo automatico |
+| P37 | Glossario | Mancavano agitazione, approcci A/B/C, big-endian, BLX-α/SBX, cancello, chiave di quasi-duplicato, DEAP/pymoo, fitness, gaussiana, genoma, ingresso, isteresi, log-normale, mantissa, mulberry32, neuroevoluzione, peso, punteggio, quota investita, rinormalizzare, riporto, saturazione del punteggio, schema, seme, soglia, strategie evolutive, `Trader`, vettore di prova, vincolo di validità, zona di attesa | Da 32 a 63 voci, con frase di lettura |
+| P38 | Percorso di lettura | Tempo di «In breve» (15 minuti) non più realistico; il capitolo 11 non era presentato come vista degli effetti | Tempi aggiornati (circa 30 minuti per «In breve», circa due ore in tutto, `[ipotesi]` come stima) e ruolo dei capitoli |
+
+### Optimization findings
+
+| Element | Issue | Action |
+|---|---|---|
+| «Effetto» delle domande nelle sezioni d'origine (Q1, Q2, Q5, Q6, Q7, Q9, Q10) | Terza copia degli stessi effetti, ora nelle tabelle del capitolo 11 | **Merged**: «*Effetti delle opzioni:* capitolo 11», tenendo nella sezione d'origine solo ciò che vi è proprio (Q5 divisione per `h`, Q6 schemi da non mescolare); Q3, Q4, Q8, Q11 tengono l'effetto perché contiene fatti che altrove sono solo riassunti (regola di arrotondamento, numeri della prova, stesso intervallo per le due distanze, errore silenzioso) |
+| Tabella delle 11 domande in «In breve» | Troppo corta per rispondere (P8), e il suo contenuto è un sottoinsieme del nuovo elenco | **Replaced** dall'elenco autosufficiente |
+| Elenco finale del cap. 11 | Sottoinsieme delle tabelle per domanda | **Replaced** dalle tabelle (ogni opzione resta in una frase, AC-16) |
+| Formula di passaggio in 4.2 (`w_i = w_i / h`) | Assegnazione scritta come equazione | **Simplified** in «ogni peso diviso per `h`» |
+| Nomi E1-E6, V1-V3, Q, R1, «forma A1» | Collisioni di sigle (P11-P14) | **Renamed** nel documento e nelle uscite degli script (`examples.mjs`, `fingerprint.mjs`, `check-symmetry.mjs`), con `verify/README.txt` aggiornato |
+| Capitolo 1 | Notazione, ingressi ed età media in un solo blocco, senza simboli né sigle | **Split** in 1.1-1.5 (rimandi, simboli, ingressi, età media, sigle) |
+| Ripetizioni del catalogo o della guida | Nessuna trovata da togliere: il documento rimanda già alle sezioni del catalogo («Ingresso, parametro, gene», 2.2, 3.3, 5.3) e della guida (2.4.3-2.4.4). Le tabelle nuove (simboli, sigle) sono del documento, non del catalogo | Nessuna azione |
+
+### Errori corretti
+- **Formula dell'OBV normalizzato (1.3).** Lo Step 7 scriveva `x7 = EMA0(sgn(dC) * V) / EMA0(V; c7)`: alla prima media mancava il coefficiente. Il catalogo (scheda N17: «rapporto di due EMA con lo stesso `c`») e `swarmtrader-r2-work/ref/indicators.mjs` (`obvn`, righe 363-377, due `Ema(c, 'zero')`) usano lo stesso `c`: ora `EMA0(sgn(dC) * V; c7) / EMA0(V; c7)`. Gli script dello Step 7 erano già corretti (nessun numero cambia).
+- **Conteggio massimo (2.2).** «totale tra 15 e circa 24 con le due soglie libere» mescolava due forme: con le due soglie libere il minimo è 16. Ora: da 15 (proposta, nessuna aggiunta) a circa 23 con la proposta e a circa 24 con le due soglie libere (15 o 16, più 3 del `Trader`, più circa 5 da R4: isteresi 0-2, agitazione 0-2, avvio 0-1, Step 3), sempre `[ipotesi]`.
+- **Criterio ed effetto di Q5 con regola non omogenea (4.2, «In breve», cap. 11, 7.1).** Lo Step 7 diceva «(b) o (c) se R4 introdurrà un termine non omogeneo» e che con (b) e (c) la forma canonica divide per `h` e dà lo stesso hash. Con un termine non omogeneo S1 non vale (cap. 8, R4-2; Critic D-R4-1): la rinormalizzazione di (c) cambierebbe le decisioni e la forma canonica non deve dividere per `h`. Corretto: (b) se R4 aggiunge termini fissi, con forma canonica senza divisione; (c) solo con regola omogenea; in 7.1 «con le due soglie libere e regola omogenea si divide prima per `h`». La proposta e le tre opzioni sono invariate.
+- **Colonna «Vincoli» della tabella dei geni (2.1).** Pesi e `b` riportavano solo V4, mentre il loro vincolo di intervallo è Vw e Vb (3.1); i `τ` riportavano V1/V2 ma non V4. Ora la colonna dà il vincolo specifico di ogni gene (Vw, Vb, V1, V2) e la frase di lettura dice che V4 vale per tutti.
+- **Q10 (b) in «In breve».** Il 3,92 % di valori sul bordo viene dalla mutazione di `individual_v2.js` (±0,05 sui `c`), non dal passo ±5 % di `individual.js` che è l'opzione (b): il testo nuovo lo attribuisce all'operatore giusto (nel testo dello Step 7 i due fatti stavano in punti diversi e non erano collegati; precisazione, non correzione di un numero).
+
+Nessun numero, fonte, proposta od opzione è cambiato nella sostanza. Ogni numero nuovo del testo è in `out/` (controllo 8: 723 numeri rintracciati).
+
+### Revised proposal (documento dopo lo Step 8)
+
+Stesso file, `docs/architecture/genome-encoding.md` (front matter invariato, `last_verified` 2026-11-14 lasciato: nessuna citazione di codice riverificata in questo step). Struttura: apertura con l'algoritmo genetico in una frase; **«In breve»** con il problema (regola di decisione, EMA, età media, barre), il già deciso, la proposta in una tabella con frase di lettura, **un esempio dall'inizio alla fine** (G1: geni → ingressi del giorno 12 → contributi → -1,42 → `sell` → hash; G4 stesso hash; G5 hash diverso), operatori e hash, **le undici scelte autosufficienti** nell'ordine consigliato con dipendenze; capitolo 1 in 1.1-1.5 con **simboli** e **sigle**; capitoli 2-8 con parole prima delle formule e del pseudocodice, frasi di lettura per ogni tabella, termini definiti alla prima occorrenza, la forma canonica con **l'esempio K passo per passo**; capitolo 9 con Esempi 1-6 e genomi rinominati; **capitolo 11** con una tabella degli effetti per domanda; glossario di 63 voci. Proposta (15 geni, centro `b`, `τ`, margine ln 2, incrocio per blocchi, gaussiana con riflessione, hash esadecimale esatto) e opzioni di Q1-Q11 invariate.
+
+Script nella cartella di lavoro (`/home/luca/Workspace/swarmtrader-r3-work/`):
+- `ref/examples.mjs`: nomi delle uscite (Esempio 1-6, G1, G4, H4, G5, T1-T3) e **nuovo genoma K** (G1 con le distanze scambiate e `w7` = -0, `τ7` = 3): forma canonica = G1 con `w7` = 0 e `τ7` = `null`, stesso hash `d5844680…f36`, punteggi uguali nei bit.
+- `ref/fingerprint.mjs`, `ref/check-symmetry.mjs`: solo etichette («G1 e G5», «forma proposta»).
+- `ref/check-doc.mjs`: controlli nuovi 13-16 (ogni tabella preceduta da una frase di lettura; Q1-Q11 in «In breve» con problema, proposta e criterio, ed esempio completo con l'hash di G1; nessun nome ambiguo dello Step 7; tabella delle sigle completa) e tre numeri di sezione nell'elenco dichiarato.
+- `verify/README.txt`: nomi nuovi e nota sul cambio.
+- `reviews/reader-brief.md`: istruzioni per le letture indipendenti (sotto).
+
+### Cosa è stato tenuto deliberatamente
+- **Le domande nelle sezioni d'origine** (AC-16), con opzioni e criterio: servono a chi legge un capitolo da solo; la terza copia degli effetti è stata tolta dove ripeteva il capitolo 11.
+- **Tre viste delle domande** («In breve» in prosa, sezione d'origine, tabella del capitolo 11): l'indicazione è che «In breve» e l'elenco finale bastino ciascuno da solo; il costo è circa 2400 parole tra le due viste.
+- **Le due tabelle Node/Python (7.2), la tabella esadecimale e i tre vettori (7.3)**: sono la prova per Q11 e ciò che lo Scientist e E2 devono riprodurre in un altro linguaggio (H1 del Critic).
+- **La tabella per fattore `k` di S1 e il blocco con l'uscita di `check-ops.mjs`**: sono le misure che sostengono le affermazioni di simmetria e di validità (AC-04, AC-05), con le condizioni esatte.
+- **«Riferimenti al codice»**: ripete citazioni del testo, ma è l'indice che lo Scientist usa per ricontrollare file e righe (AC-09, AC-11).
+- **5.3 e le alternative scartate** (B, `τ2 = τ1 + e^η`, mutazione moltiplicativa, passo auto-adattivo): richieste da AC-04 (almeno un'alternativa valutata) e AC-03.
+
+### Misure (prima → dopo)
+
+| | Step 7 | Step 8 |
+|---|---|---|
+| Righe | 710 | 875 |
+| Parole totali | 10777 | 15748 |
+| Parole del testo / tabelle / codice | 7108 / 3140 / 501 | 10232 / 4964 / 522 |
+| Parole di «In breve» | 1009 | 2705 |
+| Parole del capitolo 11 | 368 | 1463 |
+| Tabelle | 17 | 29 (11 nuove nel capitolo 11, simboli, sigle) |
+| Tabelle con frase di lettura (controllo 13) | 9 su 17 | 29 su 29 |
+| Domande rispondibili da «In breve» con problema, proposta e criterio (controllo 14) | 0 su 11 | 11 su 11 |
+| Esempio completo geni → decisione → hash in «In breve» | no | sì |
+| Esempi passo per passo della forma canonica | 0 | 1 (genoma K) |
+| Voci del glossario | 32 | 63 |
+| Sigle ambigue (E1-E6 con E2/E3, V1-V3 con V1-V5, Q, R1, A1) | 5 famiglie | 0 (controllo 15) |
+
+**Perché il documento cresce del 46 %.** Circa 1700 parole vanno in «In breve» (elenco autosufficiente delle undici domande ed esempio completo), circa 1100 nel capitolo 11 (tabelle degli effetti), circa 530 nel glossario, circa 450 tra simboli, sigle e frasi di lettura; il corpo (capitoli 2-10) cresce di poco e perde la terza copia degli effetti. Il percorso rapido resta «In breve» (circa 2700 parole, come il catalogo del ciclo 011 che il secondo lettore ha giudicato 4/5) più, se serve, il capitolo 11.
+
+### Verifica (eseguita davvero)
+
+```
+(a) node ref/check-doc.mjs (da /home/luca/Workspace/swarmtrader-r3-work, esteso):
+    PASS Liquid; PASS codice <= 80 colonne (105 righe); PASS tabelle coerenti (29);
+    PASS tabelle di dati identiche a out/ (7); PASS hash presenti in out/ (10);
+    PASS testi canonici (3); PASS blocchi di geni (7); PASS numeri rintracciati (723);
+    PASS riferimenti (13); PASS ancore (4); PASS Q1-Q11 in sezione e in elenco;
+    PASS tabelle con frase di lettura (29); PASS Q1-Q11 in «In breve» ed esempio completo;
+    PASS nessun nome ambiguo; PASS tabella delle sigle completa
+    INFO righe 875; parole 15748 (testo 10232, tabelle 4964, codice 522); tabelle 29
+(b) stesso script sul documento dello Step 7: FAIL 13-16 (8 tabelle senza frase di lettura,
+    nessuna Q autosufficiente in «In breve», nomi ambigui, nessuna tabella delle sigle)
+(c) node dataset/copy-toy20.mjs, ref/check-n10.mjs, ref/scales.mjs, ref/facts.mjs,
+    ref/numfmt.mjs, ref/check-ops.mjs -> uscite identiche byte per byte a quelle dello Step 7
+(d) node ref/examples.mjs, ref/fingerprint.mjs, ref/check-symmetry.mjs -> stesso insieme di
+    10 hash in examples.md; differenze solo nei nomi e nel blocco del genoma K
+(e) python3 -I notes/step7-selftest-hash.py -> 4 hash uguali a out/examples.md
+(f) grep -nE '\{\{|\{%' docs/architecture/genome-encoding.md -> nessuna riga (exit 1)
+(g) npm test -> # tests 40 / # pass 40 / # fail 0
+(h) npm run archimate:check -> modello "eni-replay" valido (33 elementi, 55 relazioni)
+(i) git status --short -> " M docs/architecture/genome-encoding.md" (più questo file)
+```
+
+Non eseguito: build Jekyll e resa a 390 px (Ruby/Jekyll assenti; 29 tabelle con lo stesso `<style>` locale, PENDING_HUMAN dopo il merge, NRC-H03); letture simulate indipendenti (sotto).
+
+### Copertura degli AC (Step 2)
+
+| AC | Stato dopo lo Step 8 |
+|---|---|
+| AC-01 | Coperto: tabella dei geni (colonna «Vincoli» corretta), conteggio 16/15/18/FSM (massimo corretto) |
+| AC-02 | Coperto: 2.3, S4, forma canonica passo 4 ed esempio K |
+| AC-03 | Coperto: 3.1, invariato |
+| AC-04 | Coperto: 5.1-5.3, pseudocodice con le parole prima, invariato nella sostanza |
+| AC-05 | Coperto: capitolo 6, invariato; tabella S1 con «forma proposta» |
+| AC-06 | Coperto e rafforzato: 7.1 in parole e con l'esempio K |
+| AC-07 | Coperto: capitolo 8, termini definiti; criterio di Q5 coerente con R4-2 |
+| AC-08 | Coperto: Esempi 1-6 più K, tutti generati da `ref/examples.mjs` |
+| AC-09 | **Aperto** (Step 9): lo Scientist ricalcola anche il genoma K; i nomi nuovi sono in `verify/README.txt` |
+| AC-10 | **Aperto**: lettura dell'autore delle correzioni fatta (38 problemi, sopra); le due letture indipendenti sono del coordinatore |
+| AC-11 | Coperto: nessuna fonte nuova, nessuna affermazione di efficacia; stime di tempo di lettura dichiarate come stime |
+| AC-12 | Coperto e rafforzato: simboli, sigle, glossario di 63 voci, frasi di lettura, nessun gergo del processo nel testo |
+| AC-13 | Aperto: scelta di Luca |
+| AC-14 | Liquid assente; voce di menu invariata; build PENDING_HUMAN (NRC-H03) |
+| AC-15 | Coperto: in questo step toccati solo il documento, questo file e la cartella di lavoro |
+| AC-16 | Coperto: ogni Q nella sezione d'origine, in «In breve» e nel capitolo 11, una frase (o una riga) per opzione |
+
+### Questioni non risolte
+- **AC-10 letture simulate indipendenti: da fare** (coordinatore, lettori nuovi che non abbiano visto il documento né questo file). Istruzioni in `/home/luca/Workspace/swarmtrader-r3-work/reviews/reader-brief.md` (senza risposte): profilo, materiale ammesso (solo il documento), procedura in sei fasi (prima «In breve» e Q1-Q11 con motivo, poi tutto, punti in cui ci si perde con posizione, 45 domande di comprensione, ricalcoli facoltativi, voto 1-5), soglia fissata prima (leggibilità ≥ 4/5, ogni Q rispondibile e motivabile dal solo «In breve», circa 85 % di risposte corrette), rapporti in `reviews/reading-1.md` e `reading-2.md`. **Sezioni da coprire per intero:** «In breve»; 1.2-1.5; 2.1-2.3; 3.1-3.2; 4.1-4.3; 5.1-5.2; capitolo 6; 7.1-7.4; capitolo 8; capitolo 11. **Da scorrere:** 5.3, capitolo 9 (almeno Esempi 1, 3, 4), capitolo 10, glossario.
+- **AC-09 verifica indipendente** (Step 9): da fare, con il genoma K in più e le correzioni di merito sopra da ricontrollare (formula di `x7`, conteggio 15-24, criterio di Q5).
+- **Lunghezza:** 15748 parole; il percorso rapido è «In breve» (2705). Se i lettori la trovano eccessiva, la prima riduzione possibile è togliere le domande dalle sezioni d'origine lasciando un rimando (ma AC-16 le chiede lì).
+- **Build Jekyll** di 29 tabelle (11 nuove, piccole, nel capitolo 11): non provata, PENDING_HUMAN (NRC-H03).
+- **Anteprima ArchiMate prima della PR** (regola di progetto) e **memoria** F-code-4: come allo Step 7, invariati.
+
+### Domande per Luca (nuove da questo step)
+Nessuna. Le undici domande Q1-Q11 sono invariate nelle opzioni; è cambiato solo l'ordine di presentazione (Q5, Q6, Q1, Q7, Q8, Q9, Q10, Q2, Q3, Q4, Q11, con il motivo scritto) e il criterio di Q5 per il caso di regola non omogenea (Errori corretti).
+
+**Prossimo step:** Step 9 — SCIENTIST
