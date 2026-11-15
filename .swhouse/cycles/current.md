@@ -921,3 +921,170 @@ Non eseguito: build Jekyll e resa a 390 px (Ruby/Jekyll assenti; 29 tabelle con 
 Nessuna. Le undici domande Q1-Q11 sono invariate nelle opzioni; è cambiato solo l'ordine di presentazione (Q5, Q6, Q1, Q7, Q8, Q9, Q10, Q2, Q3, Q4, Q11, con il motivo scritto) e il criterio di Q5 per il caso di regola non omogenea (Errori corretti).
 
 **Prossimo step:** Step 9 — SCIENTIST
+
+## Step 9 — SCIENTIST: Verify
+
+**Agent:** claude-opus-5-5 (subagent)
+**Esito in apertura: nessun difetto Critico né Alto; tutti i numeri e tutti gli hash del documento sono riprodotti.** Ricalcolati da zero in Python, senza leggere `ref/` né `out/`: dataset, tabella D4 del massimo che dimentica, G1 giorno per giorno e il suo esempio del giorno 12, Esempi 1-6, il genoma K passo per passo, la mutazione dell'Esempio 3 bit per bit, i tre testi canonici T1-T3 **byte per byte** e i 10 hash SHA-256 del documento (10/10 uguali), la tabella esadecimale (12/12). In tutto circa 330 valori confrontati, 0 differenze. Simmetrie S1, S2, S4, S5 dimostrate e controllate con genomi miei; operatori validi con il generatore di Python (0 figli invalidi su 100000 per operatore). Trovati 3 difetti **Medi**, tutti affermazioni di identità o specifiche formulate in modo più largo di quanto valga: «stesso hash, stesse decisioni» vale esattamente solo con la proposta a 15 geni (con Q5 b, c esiste un controesempio, D1); il decodificatore non fissa `c = f(τ)` al bit, e Node e Python danno `c` diversi nel 7,6 % dei `τ` (D2); la chiave a «24 bit di mantissa» di Q3 b dà il risultato dell'Esempio 5 solo leggendo 24 bit **di frazione** (D3). Più 8 Bassi.
+**Confidence:** Medium-High — alta su numeri, hash, testi canonici, simmetrie (dimostrazione e prova), citazioni del codice e fonti; media sui numeri statistici dell'autore che dipendono da costruzioni non scritte nel testo (genitori «sui bordi», caso costruito di S1, scale q su una sola serie): riprodotti solo nell'ordine di grandezza con costruzioni mie (D5, D9). Resa Jekyll non provata (PENDING_HUMAN).
+**Assumptions**
+- Documento verificato: `docs/architecture/genome-encoding.md` al commit `6154101` (875 righe); `git status --short` vuoto prima e dopo questo step (unica modifica: questo blocco). Il documento **non** è stato modificato.
+- **Indipendenza:** non ho letto né eseguito `ref/` né `out/` di `/home/luca/Workspace/swarmtrader-r3-work/` prima di aver finito tutti i calcoli; non ho letto `notes/` (compreso l'autocontrollo `notes/step7-selftest-hash.py`) né il rapporto del lettore simulato che lavora in parallelo. Fonti dei calcoli: solo il documento, il catalogo (formule degli ingressi, avvio, regola di salto 3.3, regola del dataset 1.5, tabella D4, serie sintetica 5.5) e, come dati, `swarmtrader-r2-work/dataset/toy20-ohlcv.json` e `src/data/eni-ohlcv.json` (sola lettura). Il confronto con `out/` è alla fine (sezione 8).
+- Script miei in `/home/luca/Workspace/swarmtrader-r3-work/verify/`, eseguiti con `python3 -I` (Python 3.12.3): `lib.py` (ingressi incrementali con regola di salto, `τ → c` nella forma stabile di 1.4, decodificatore, forma canonica, testo esadecimale, SHA-256, chiave di quasi-duplicato, riflessione, scambio, inizializzazione, incrocio, mutazione), `examples.py` → `examples.txt`, `symmetry.py` → `symmetry.txt`, `subnormal.py`, `ops.py` → `ops.txt`, `facts.py` → `facts.txt`, `expcmp.py` → `expcmp.txt` (confronto con `node -e`, codice mio), `synth.py` (serie sintetica propria con i parametri del catalogo 5.5 e il generatore di Python), `src-dl/` (fonti scaricate, dati non eseguiti), `urls.txt`, `dois.txt`.
+- Convenzioni ricavate dal catalogo dove il documento rimanda: EMA avviate al primo valore; RSI e OBV normalizzato con `EMA0` (barra 1: 0; volume del giorno 1 fuori dal denominatore); `clv` della barra 1 come primo valore della sua EMA; massimo che dimentica con `m[1] = H[1]`; con `B = 0` l'RSI tiene il valore precedente. Con queste convenzioni tutto coincide.
+- «Fonte letta» = pagina o PDF scaricato con `curl`, convertito in testo e cercate le frasi citate; per [6] e [7] metadati da doi.org e Crossref, abstract di [6] dalla pagina del repository WRAP (Warwick) con `WebFetch`.
+
+### 1. Fonti
+
+**HTTP:** i 12 URL distinti dei Riferimenti rispondono 200 con User-Agent `Mozilla/5.0` (`verify/urls.txt`); l'ancora `#sec-numeric-types-number-tostring` di [13] esiste nella pagina. I 5 DOI ([2], [6], [7], [8], [12]) risolvono su doi.org (302 verso l'editore).
+
+| Rif. | Affermazione nel documento | Esito | Stato dichiarato onesto? |
+|---|---|---|---|
+| [1] Deb e Agrawal | SBX, Complex Systems 9, 115-148, 1995; legge che imita l'incrocio dei bit; variante limitata in sezione 6, non letta | **Sostenuta**: intestazione «Complex Systems 9 (1995) 115-148»; la sezione 6 «Extensions» propone di rinormalizzare la distribuzione dentro i limiti; BLX-0,5 citato come confronto (originale non letto, come dichiarato) | sì |
+| [2] Beyer e Schwefel | Natural Computing 1, 3-52, 2002; mutazione log-normale, ricombinazione intermedia | **Sostenuta** («log-normal rule», «intermediate recombination», intestazione «Natural Computing 1: 3–52, 2002») | sì |
+| [3] DEAP | `cxUniform`, `mutGaussian`, `mutPolynomialBounded`, BLX e SBX | **Sostenuta** (tutti presenti; anche `cxBlend`, `cxSimulatedBinaryBounded`) | sì |
+| [4] pymoo | SBX e mutazione polinomiale | **Sostenuta** (SBX nella pagina crossover, PM nella pagina mutation) | sì |
+| [5] Stanley e Miikkulainen | EC 10(2) 99-127, 2002; convenzioni in competizione, sezione 2.2 | **Sostenuta** («2.2 Competing Conventions»: «more than one way to express a solution») | sì |
+| [6] Helwig, Branke, Mostaghim | IEEE TEVC 17(2), 259-271, 2013; distorsione della ricerca dovuta alla gestione dei bordi (PSO) | **Sostenuta**: metadati confermati da Crossref; l'abstract (WRAP) dice che molte tecniche di gestione dei bordi «introduce significant search bias». Il segno `[fonte da verificare]` non serve più (D6) | sì, prudente |
+| [7] Coello Coello | CMAME 191(11-12), 1245-1287, 2002 | **Metadati confermati** (Crossref); abstract non reperito qui; usato solo come «solo abstract» | sì |
+| [8] Galván-López e altri | Evolving Systems 2(3), 145-163, 2011; neutralità | **Sostenuta** (scheda con abstract: mutazione neutrale = non cambia il fenotipo) | sì |
+| [9] RFC 8785 | autori, 2020; numeri con l'algoritmo di ECMAScript (3.2.2.3) | **Sostenuta** (Rundgren, Jordan, Erdtman, June 2020; 3.2.2.3 rimanda a ECMA-262 7.1.12.1) | sì |
+| [10] Python 3.1 | stringa più corta che ridà il numero | **Sostenuta per Python** («David Gay's algorithm for finding the shortest floating-point representation»). Il documento la usa anche per Node («entrambi», 7.2): per Node la fonte è [13], letto solo l'indice (D10) | parziale |
+| [11] cyberphone | implementazioni di JCS in più linguaggi, non provate | **Sostenuta** (Java, JavaScript, Python, Go, C#/.NET) | sì |
+| [12] FIPS 180-4 | Secure Hash Standard, 2015, DOI | **Sostenuta** (pagina: «Secure Hash Standard», August 2015, DOI) | sì |
+| [13] ECMA-262 | `Number::toString`, letto solo l'indice | ancora presente; contenuto non verificato, come dichiarato | sì |
+
+Nessun riferimento inventato; nessuno stato «letto» dichiarato falsamente. Ricerca di affermazioni di efficacia («funziona meglio», «evolve meglio», «migliore»): solo nella negazione dell'avvertenza (riga 16); nessuna cifra di risultato evolutivo.
+
+### 2. Ricalcolo dei numeri (script propri)
+
+| Oggetto | Valori confrontati | Differenze |
+|---|---|---|
+| Dataset rigenerato dalla regola del catalogo 1.5 contro il JSON | 100 | 0 |
+| N10, tabella D4 del catalogo (`c` = 0,1, 13 giorni × riferimento e distanza) | 26 | 0 |
+| G1: `c` ricavati (0,5; 0,2; 0,09999999999999998), ingressi e contributi del giorno 12, `s` = -1,4178 → `sell` | 18 | 0 |
+| G1: punteggio e decisione per 20 giorni (Esempio 1 e «In breve»), conteggi 11/5/4, 0 giorni diversi dal catalogo 7.5 | 43 | 0 |
+| Esempio 2: F gene per gene, validità, 11/4/5 con il solo giorno 11 diverso, P2 valido, scarto 0,1863 < ln 2 | 22 | 0 |
+| Esempio 3: σ (25; 0,2649), tentativo 1 (1,5298; 1,4026; 0,1272 rifiutato), tentativo 2 (50; 1,7947; 1,0053; -1,0298 → -0,3565), **M uguale nei bit** ai 15 geni scritti | 25 | 0 |
+| Esempio 4: G4/h = G1, 2 × G4 e 3 × G4 stesso hash; H4, 2 × H4 stesso hash, 3 × H4 hash diverso con 6 numeri su 8 diversi, stesse decisioni (1 `buy`, 19 `sell`); S2 punteggi uguali nei bit; S4 (10/7/3, punteggi uguali nei bit); K: forma canonica = G1 con `w7` = 0 e `τ7` = `null`, stesso hash | 22 | 0 |
+| Esempio 5: 25.000000000000004 successivo di 25, G5 stesse decisioni, coppia di chiavi (vedi D3) | 5 | 0 (con la lettura di D3) |
+| Esempio 6: `b` = 0,3, -0,7, 1 sempre `hold`, stesso hash; `b` = -1,5 sempre `buy` | 5 | 0 |
+| **Hash** (T1 = G1, T2, T3, F, P2, M, H4, S4 = K, G5, `b` = -1,5) | 10 | 0 |
+| **Testi canonici T1, T2, T3 byte per byte** | 3 | 0 |
+| Tabella esadecimale (7.3), letterali dei limiti di `τ` = `math.log(0.5)`, `math.log(100)` in Python | 12 + 2 | 0 |
+| Fatti del testo: età medie (0,0101; 0,0638; 9; 19), `c` dei limiti (0,6667; 0,0099), avvio 3/29/302 barre, σ_τ e fattore 1,303, scala 26 volte, bordi di `τ` (-36,7369 dà 1, -36,7368 no; `exp` in overflow sopra 709,7827, `OverflowError` in Python), riflessione di un valore interno (1,5298317366548038 → …035), formati Python e Node delle due tabelle di 7.2 (14 + 10 celle, `node -e` mio), FSM (11 scalari, 9 stati, 36 transizioni, 135 ID, 1 azione) | circa 45 | 0; compleanno: il minimo esatto con probabilità ≥ 50 % è 77164 (il documento dice «circa 77163»: corretto come approssimazione) |
+
+**Totale:** circa 330 valori, 0 differenze.
+
+**Statistici (costruzioni non scritte nel testo, confronto di ordine di grandezza):**
+
+| Affermazione del documento | Mio ricalcolo | Esito |
+|---|---|---|
+| 0 figli invalidi su 100000 (inizializzazione, blocchi, mutazione `pm` 1/15 e 1) | 0 / 0 / 0 / 0 su 100000 | coincide |
+| `pm` 1/15: scambi 46, rifiutati 5697, ricadute 0; `pm` 1: 12474, 153699, 156 | 39, 5147, 0; 9874, 124602, 104 (genitori «sui bordi» costruiti a modo mio: ogni gene al bordo con probabilità 2/3, velocità al margine) | stesso ordine; dipende dalla costruzione dei genitori (D9) |
+| uniforme 17658 violano V2, 7953 rifiutati, poi 0 | 18134, 11828, 0 | coincide nell'ordine |
+| intermedio 3543 fuori per arrotondamento, 2805 rifiutati, poi 0 | 4373, 4971, 0 | coincide nell'ordine |
+| passeggiata: saturazione 3,92 % su un bordo, 1,85 % a `c` = 1; riflessione 0,00 % | 4,19 %, 2,11 %, 0,00 % (partenza uniforme in [0,01; 1]) | coincide |
+| O1: scala congiunta 0 differenze; scala del solo secondo 16247/16326, 20000/20000, 14607/14607 | 0; 3914/4217, 5000/5000, 3498/4021 | stessa conclusione |
+| S1 tabella: 0 decisioni diverse su 1107400 barre per ogni `k`; hash diversi 0 per potenze di 2, 194/196/197-199 altrimenti | stesse 1107400 barre (20 + 3000 + 2517, 200 genomi miei): 0 decisioni diverse r/kr e r/forma divisa; hash diversi 0 (2, 8, 0,5, 2^-20), 196 (3), 198 (0,7), 197 (casuale) | coincide |
+| caso costruito: 44132/200000 con `k` = 3, 0 con `k` = 8 | 66764/200000 e 0 (soglia esattamente sul punteggio) | stessa conclusione; numero dipende dalla costruzione (D9) |
+| scale q e W_i (tabella 3.2) | 8 serie mie: W1 230-260, W3 22-24, W4 220-250, W5 41-47, W6 21-23, W7 26-29 | W4 e W7 del documento (260, 25) fuori dal mio intervallo: valori di una sola serie (D5) |
+
+### 3. Simmetrie: dimostrazione e prova
+
+- **S1** (due soglie libere). In aritmetica esatta `s > θ ⇔ k s > k θ` per `k > 0`, pareggi compresi. In virgola mobile, se `k = 2^m` e nessun valore va in overflow o nei subnormali, `fl(k a) = k a` esatto e `fl(k a + k b) = k fl(a + b)` (l'arrotondamento commuta con la scala binaria), quindi ogni addendo, ogni somma parziale e le soglie scalano esattamente: **dimostrata con le condizioni scritte**. Controesempio fuori dalle condizioni: `w1 = 2^-40`, `x1 = 1 + 2^-52`, soglia alta `2^-40`, `k = 2^-1000` → `buy` diventa `hold` (`subnormal.py`). Per `k` non potenza di 2: 0 decisioni diverse sulle serie, ma il caso costruito cambia (sopra). Anche la divisione per `h` di genomi `k`-scalati con `k = 2^m` dà numeri identici (`(k w)/(k h)` = `w/h` esatto): stesso hash, come detto.
+- **S2.** Con le distanze come primi due addendi, `s = ((0 + a) + b) + …` e `0 + a = a` esatto, `a + b = b + a` in IEEE 754: punteggio uguale nei bit, **dimostrata**; `x1` e `x2` sono la stessa funzione di `c`, e `c` dipende solo da `τ`. Prova su ENI: 0/503400 diversi; scambiando invece il 2° e il 7° addendo 276837/503400 (documento 279871): la condizione sull'ordine è necessaria.
+- **S4.** `0 · x = ±0` per `x` finito; la somma parte da `+0` e in arrotondamento al più vicino una somma vale `-0` solo se entrambi gli addendi sono `-0`, quindi `s` non è mai `-0` e `s + (±0) = s` esatto: **dimostrata**. Prova su ENI: 0/880950; S2 + S4: 0/125850 e hash uguali (50 genomi miei).
+- **S5.** Con pesi tutti nulli `s = +0`; `0 > b + 1 ⇔ b < -1` perché il segno di `fl(b ± 1)` è esatto (Sterbenz per `b` in [-2; -0,5] e [0,5; 2], altrove `|b ± 1|` è lontano da 0): **dimostrata**; classi corrette a `b` = ±1 e ai due numeri adiacenti, 0 errori di segno su 10⁶ valori di `b` (metà vicino a ±1).
+- **S6.** Logica: se non c'è mai `buy`, il `Trader` non apre posizioni e quota, stop loss e take profit non entrano in nessun calcolo; vale solo se R4 non usa quei numeri altrove (come il documento dice).
+- **Finitezza** (premessa di S4, S5): con `L > 0`, `H ≥ max(O, C)`, `V ≥ 0` (`dataTrainer.js` 34) e la regola di salto, ogni ingresso ha denominatori positivi o salta la barra; 0 valori non finiti su 200 genomi × 3 serie.
+- **Forma canonica.** Con i passi 1-6 di 7.1, due genomi a 15 geni con lo stesso testo hanno gli stessi `c` dei pesi non nulli, gli stessi pesi a meno di ±0 e dello scambio S2, lo stesso `b` a meno di ±0: per S2, S4, S5 decidono uguale **con la proposta**. Con le due soglie libere no in generale (D1).
+
+### 4. Citazioni del codice
+
+Rilette con `awk` (SwarmTrader al commit `6154101`) e `git show 2ec7237:<file>` (Consilium, `experiment/lb77`, HEAD `2ec7237`):
+- `src/engine/genome.js` 13-35 `FIXED_GENOME` (l'oggetto chiude alla riga 36, D7), 40-42 `assertFinite`, 86 `value <= 0 || value >= 1` → errore; conteggi 11/9/36/135/1 rifatti da me. **Coincide.**
+- `src/engine/strategy.js` 36-37: costruttore con `buyPercent`, `stopLossPercent`, `takeProfitPercent` e `new Trader(...)`. **Coincide.**
+- `src/engine/dataTrainer.js` 34: `low <= 0`, `high < max(open, close)`, `low > min(open, close)`, `volume < 0` → errore. **Coincide** (il documento cita solo `low > 0` e volume ≥ 0, sufficienti per la finitezza).
+- `individual_v2.js` 1-3 (matrice 7×7), 161-193 incrocio uniforme per gene, 199-279 mutazione, 203-214 `(Math.random() - 0.5) * 0.1` con `max(0.01, min(1.0, …))` (±0,05, ammette 1,0). **Coincide.**
+- `individual.js` 195-237 intervalli (IIR [0,001; 0,5]), 271-275 `mutateFloat` = `(rand - 0,5) · range · 0,1` = ±5 % dell'intervallo con clamp, 350-382 incrocio uniforme. **Coincide.**
+- `ga/ga_v2.js` 17 `MUTATION_PROBABILITY = 0.1`, 93-126 incrocio, 128-193 mutazione `(rand - 0,5)/4` con clamp [0,01; 1], 330-336 `Genoma.create`. **Coincide.**
+- `db/orm.js` 454-504 `SaveGenoma` con `SequelizeUniqueConstraintError`; modello 49-52 senza `unique`. Basi dati lette in sola lettura (`mode=ro&immutable=1`): `UNIQUE` sul campo `genoma` solo in `db/database.sqlite` (schema senza `version`, più vecchio); nessuno nei 7 file di `db/backups/`; `SaveGenoma` usata solo in `tests/manual/`. **Coincide** con 5.3.
+
+### 5. Coerenza interna
+
+- **Conteggi:** 15 (proposta) / 16 (due soglie) / 18 (+ `Trader`) / da 15 a circa 23-24 coerenti tra «In breve», 2.2, 4.1, capitolo 8 e capitolo 11. Unica imprecisione: «il catalogo stimava 16» (D4).
+- **Q1-Q11:** stesse undici domande, stesse opzioni (a/b/c) e stessa proposta in «In breve», nelle sezioni d'origine (3.1, 3.2, 4.2, 4.3, 5.3, 7.2, 7.4, 8) e nel capitolo 11; stesso ordine (Q5, Q6, Q1, Q7, Q8, Q9, Q10, Q2, Q3, Q4, Q11) nelle due viste; numeri citati nelle opzioni (17658, 3543, 3,92 %, 24 bit) uguali ovunque. Nessuna opzione è data per scelta: la proposta è sempre marcata come tale.
+- **Scelte dell'autore senza domanda:** il limite di 20 tentativi e la ricaduta sulla copia del genitore (5.1) non sono né una Q né `[ipotesi]` (D8); l'ordine della somma, la forma dei confronti e le versioni `lin7-…-v1` sono conseguenze dichiarate di S2 e del catalogo, non scelte nascoste.
+- **Sigle e nomi:** G1, P2, F, G3, M, G4, H4, G5, K, T1-T3 usati in modo coerente con `verify/README.txt`; nessuna collisione residua.
+
+### 6. Rendering, prove automatiche e non regressione
+
+- **Liquid:** `grep -nE '\{\{|\{%' docs/architecture/genome-encoding.md` → nessuna riga (exit 1). Recinti di codice: 30 (pari); nessuna riga di codice oltre 80 colonne. Voce `genome-encoding` in `_data/docs.yml` (righe 17-19); collegamento dal catalogo (riga 1087).
+- `npm test` → «# tests 40 / # pass 40 / # fail 0»; `npm run archimate:check` → «modello "eni-replay" valido (33 elementi, 55 relazioni); file generati aggiornati».
+- **NRC:** nessun modulo dell'elenco NRC (`src/engine/*`, `src/vendor/consilium/*`, `src/main.js`, `src/style.css`, `index.html`, `archimate/**`, …) è toccato dal ciclo: NRC Type-A non applicabile (eseguiti comunque i test sopra, 40/40). **NRC-H03** si estende al nuovo documento dopo il merge (stesso blocco `<style>` locale; proposta per lo Step 10: aggiungere `genome-encoding.md` ai moduli di NRC-H03).
+- Resa Jekyll: non provata qui (Ruby/Jekyll assenti); 29 tabelle, tre grandi blocchi di testo canonico.
+
+### 7. Target di deployment (validation matrix, voce `github-pages`)
+
+```
+Target: github-pages
+Reachable by automation: NO (la build parte dal merge su main; il ramo è
+  epic-genoma-non-fsm)
+Verification method: workflow .github/workflows/pages.yml e controllo dell'Owner
+  sulla pagina pubblicata (NRC-H03)
+Status: PENDING_HUMAN
+```
+
+Dopo il merge su `main` (esecutore: Owner o chi fa il merge):
+1. `gh run list --workflow pages.yml --branch main --limit 1` → `completed success` per il commit di merge.
+2. `curl -s -o /dev/null -w '%{http_code}\n' https://chaoscorelab.github.io/SwarmTrader-core/docs/architecture/genome-encoding/` → `200`.
+3. `curl -s <stessa URL> | grep -c -E '\{\{|\{%'` → `0`; `| grep -c 'Codifica del genoma a punteggio lineare'` → almeno 2; `| grep -c '29ae884bca99df08a94d0a4b018d12f1577f65415d169ef216c4404c63440a0d'` → almeno 2 (hash di G1 integro in «In breve» e in 7.3).
+4. Visivo a 1280 e 390 px: tabelle scorrevoli nel riquadro, nessuno scorrimento della pagina, `<style>` non visibile come testo, blocchi di codice (pseudocodice, testi canonici) interi; esito in `## Human Verification`.
+
+Gli altri target (`local-static-ui`, `simulation-engine`, `data-snapshot`): `SKIPPED_JUSTIFIED`, il ciclo non tocca codice né dati. Nessuna prova locale è presentata come VERIFIED del target `github-pages`.
+
+| Validation target | Stato |
+|---|---|
+| Numeri, hash, testi canonici, simmetrie, operatori, citazioni, fonti (AC-09) | VERIFIED (questo step) |
+| `npm test`, `archimate:check` | VERIFIED (40/40; modello valido) |
+| `github-pages` / NRC-H03 sul nuovo documento | PENDING_HUMAN |
+| `local-static-ui`, `simulation-engine`, `data-snapshot` | SKIPPED_JUSTIFIED (non toccati) |
+
+### 8. Confronto con `out/` (fatto dopo aver finito)
+
+Letti solo ora `out/examples.md`, `check-ops.md`, `check-symmetry.md`, `scales.md`, `fingerprint.md`. I 10 hash del documento sono tutti in `out/` e uguali ai miei; l'unico hash di `out/` che non ho è l'impronta di G1 (`fingerprint.md`, non nel documento). La tabella 3.2 è identica a `out/scales.md`. Le differenze sono solo quelle statistiche della sezione 2 (costruzioni dei genitori e del caso di S1; serie sintetica con un altro generatore); `check-symmetry.md` conferma che il controesempio con `k` = 2^-1000 dell'autore è, come il mio, con prodotti subnormali. Nessuna differenza nei valori deterministici.
+
+### Difetti trovati
+
+| # | Gravità | Posizione | Difetto | Correzione proposta |
+|---|---|---|---|---|
+| D1 | Media | «In breve», Operatori e hash (riga 62); 7.4 «Segnala, non elimina» (riga 517); glossario, «duplicato» (riga 795) | «Due genomi con lo stesso hash decidono sempre allo stesso modo» è vero esattamente solo con la proposta a 15 geni (Q5 a). Con le due soglie libere (Q5 b, c) la forma canonica divide per `h` arrotondando: controesempio costruito (`symmetry.txt`): genoma A a 16 numeri con la soglia alta esattamente sul punteggio decide `hold`, il genoma B uguale alla forma divisa di A (soglie `b ± 1`) decide `buy`, stesso hash. Il fatto è detto in 7.1 (riga 416) per la coppia genoma/forma divisa, ma la garanzia resta scritta senza condizione (lezione `errors/2026-10-18-identity-claims-imprecise`) | Riga 62 e 517: «… decidono sempre allo stesso modo con la forma proposta; con le due soglie libere (Q5 b, c) quasi sempre: la divisione per `h` arrotonda, e due genomi con lo stesso hash possono decidere diversamente se il punteggio cade entro un arrotondamento da una soglia (0 casi su 1107400 barre, ma un caso costruito esiste)». Glossario: stessa condizione. Nel capitolo 11, Q5 (b) e (c), colonna «Forma canonica e hash»: «stesso hash quasi sempre stesse decisioni» |
+| D2 | Media | 1.4 (righe 138-142); 7.2 descrizione di `decoder` (riga 427); Q4 (riga 522, cap. 11) | Il decodificatore non fissa al bit come si calcola `c` da `τ`: 1.4 dà due formule («forma stabile per τ ≥ 0») che differiscono nell'ultima cifra nel 39 % dei `τ` dell'intervallo; inoltre `Math.exp` di Node e `math.exp` di Python differiscono nell'ultima cifra nel 10 % dei `τ` e `c` nel 7,6 % (`expcmp.txt`, 200000 `τ`). L'hash (calcolato sui `τ`) non cambia, ma «punteggi uguali nei bit» vale dentro uno stesso ambiente, e un decodificatore Python e uno Node possono decidere diversamente vicino a una soglia; lo stesso vale per un'impronta di comportamento (Q4) calcolata in due linguaggi. Il documento lo dice già per `ln` dei limiti di `τ` (7.3), non per il decodificatore | In 1.4 rendere obbligatoria la forma (stabile per `τ ≥ 0`, `1/(1 + e^τ)` per `τ < 0`) come parte di `lin7-dec-v1`; in 7.2 una frase: «`exp` e `ln` possono differire nell'ultima cifra tra Node e Python (misurato: `c` diverso nel 7,6 % dei `τ`): l'hash non ne dipende, punteggi e impronta sono uguali nei bit solo nello stesso ambiente»; in Q4 (b) aggiungere che l'impronta va calcolata sempre con la stessa implementazione (E2 in Node) |
+| D3 | Media | 7.4, Q3 (b) (riga 520); Esempio 5 (riga 671); glossario «chiave di quasi-duplicato» (riga 790); «In breve» Q3 (b) («circa 7 cifre», riga 84) | «24 bit di mantissa (le cifre binarie significative; circa 7 cifre decimali)» è ambiguo e, letto come scritto (24 cifre significative, come un `float32`), **non** dà il risultato dell'Esempio 5: con 24 cifre significative 25.00000143051147 e 25.000001430511475 hanno la **stessa** chiave; hanno chiavi diverse solo con 24 bit di **frazione** (25 cifre significative), perché 25.000001430511475 = 25 + 1,5·2^-20 è esattamente un punto di mezzo a quella precisione (`examples.txt`). Un implementatore in un altro linguaggio otterrebbe chiavi diverse | Scrivere: «24 bit di frazione dopo il bit implicito (25 cifre binarie significative, circa 7,5 cifre decimali), arrotondamento al pari»; nell'Esempio 5 dire che 25.000001430511475 è il punto di mezzo `25 + 1,5 · 2^-20`. Facoltativo: un vettore di prova con la chiave |
+| D4 | Bassa | «In breve» (riga 46); 2.2 (riga 192) | «Il catalogo stimava 16 numeri»: il capitolo 6 del catalogo (riga 1087) scrive **18** numeri per i suoi 8 ingressi (con l'ATR e la finestra intera N); i 16 sono il riconteggio dopo le risposte D3 b e D4 b | «Il catalogo contava 18 numeri per 8 ingressi; con le risposte D3 b e D4 b diventano 16» (2.2 lo dice quasi, va reso esplicito) |
+| D5 | Bassa | 3.2, tabella delle scale (righe 225-235) | W_i = 5/q_i vengono da una sola serie e sono dati a 2 cifre; su 8 serie con gli stessi parametri (generatore diverso) W4 va da 220 a 250 (documento 260), W7 da 26 a 29 (documento 25), W3 da 22 a 24; a età media 100 i q variano di circa il 30 %. Inoltre «3000 barre» non coincide con la serie del catalogo 5.5 (10000 giorni, prime 100 escluse) e il testo non dice che è un tratto della stessa | Dire che sono le prime 3000 barre della serie del catalogo (se è così) e che i W_i sono «circa», con la variabilità tra semi (resta `[ipotesi]`, nessun effetto sulla proposta) |
+| D6 | Bassa | Riferimento [6] (riga 867) | `[fonte da verificare]`: i dati bibliografici sono confermati (Crossref) e l'abstract (repository WRAP, Warwick) contiene la frase sulla distorsione della ricerca («significant search bias») | Togliere `[fonte da verificare]`, dare il DOI come URL e scrivere «letto l'abstract (WRAP)» |
+| D7 | Bassa | 2.2 (riga 196); Riferimenti al codice (riga 850) | `FIXED_GENOME` è alle righe 13-**36** (la 36 chiude l'oggetto) | «righe 13-36» |
+| D8 | Bassa | 5.1, pseudocodice della mutazione (righe 305-314) e «In parole» (riga 281) | Il limite di 20 tentativi e la ricaduta sulla copia del genitore sono scelte dell'autore non marcate `[ipotesi]` e non lasciate a E3 come `pm` (con `pm` = 1 decidono 156 mutazioni su 100000) | Marcarle `[ipotesi]` e dire che il numero di tentativi è un parametro di E3, come `pm` |
+| D9 | Bassa | 5.2 (righe 325-336), 5.3 (17658, 3543, 3,92 %), 4.2 (O1), 6 (caso costruito 44132/200000) | I numeri dipendono da costruzioni non scritte (che cosa vuol dire «genitori sui bordi»; come si mette «la soglia sul punteggio»; da dove parte la passeggiata): non si rifanno dal testo. Con costruzioni mie le conclusioni reggono e gli ordini di grandezza coincidono (sezione 2) | Una frase per ciascuna costruzione (come per D12 del ciclo 011), oppure scrivere i conteggi come «circa» |
+| D10 | Bassa | 7.2, riga 441 | «entrambi scelgono la stringa più corta che ridà il numero [10]»: [10] sostiene solo Python; per Node la fonte sarebbe [13], letto solo l'indice | «Python sceglie la stringa più corta [10]; Node lo fa per l'algoritmo di ECMAScript [13, non letto], osservato qui solo sugli esempi della tabella» |
+| D11 | Bassa | 7.4, riga 518 | «circa 77163 genomi»: il minimo esatto per cui la probabilità di almeno una collisione a 32 bit raggiunge il 50 % è 77164 (77163 è l'arrotondamento di `√(2 · 2^32 · ln 2)` = 77162,3) | Facoltativa: «circa 77000» o «77164» |
+
+### Claims not verified
+
+| Affermazione | Motivo | Piano |
+|---|---|---|
+| N10 incrementale = formula diretta, scarto 1,5e-13 (1.3) | la formula diretta non è scritta nel documento né nel catalogo; verificata solo la tabella D4 (26/26) | se serve, scrivere la forma diretta in una riga (sviluppo della ricorsione con il massimo) |
+| H4 «dall'inizializzazione con seme 12» e i semi di `check-ops`/`check-symmetry` (4711, 31337) | mulberry32 non è specificato con la costruzione delle estrazioni (ordine, Box-Muller); i geni di H4 sono scritti, quindi gli esempi non ne dipendono (come dice 5.1) | nessuno necessario |
+| Valori esatti della serie sintetica e dei q (3.2) | generatore diverso: solo confronto su 8 semi (D5) | rifare con mulberry32 se R6 userà la serie |
+| Fingerprint Q4 (600 coppie, 300 casuali) sul dataset più la serie sintetica | serie sintetica non riproducibile alla cifra; G1 e G5 hanno le stesse decisioni sui 20 giorni (verificato) | E2 con un insieme di prova versionato |
+| Effetto di [7] e [8] oltre l'abstract | solo metadati / abstract, come dichiarato | nessuno |
+| Resa Jekyll e a 390 px | Ruby/Jekyll assenti | PENDING_HUMAN (NRC-H03) |
+| Lettura simulata (AC-10) | affidata a un altro lettore; non l'ho letta | coordinatore |
+
+### Verdetto
+**Solution is:** verified (contenuti) / partially verified (pubblicazione) — tutti i valori deterministici, i 10 hash e i 3 testi canonici coincidono byte per byte; simmetrie dimostrate con le loro condizioni; operatori validi; citazioni e fonti corrette. Restano D1-D3 (Medi: tre affermazioni da restringere o precisare, nessuna cambia la proposta né un hash), D4-D11 (Bassi), la build di Pages PENDING_HUMAN, AC-10 in corso e AC-13 (scelta di Luca) aperto.
+**Recommended action:** proceed with conditions — correzioni del coordinatore per D1-D3 (obbligatorie: toccano ciò che E2 implementerà e il criterio di Q3, Q4, Q5) e, a scelta, D4-D11; integrazione delle letture simulate; estensione di NRC-H03 a `genome-encoding.md` allo Step 10 e verifica di Pages dopo il merge; Arbiter: DEFERRED finché mancano la scelta di Luca (AC-13) e la voce `github-pages`.
+
+**Prossimo step:** correzioni dopo lo Step 9 e letture simulate, poi Step 10 — LIBRARIAN
