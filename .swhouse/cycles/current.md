@@ -1088,3 +1088,58 @@ Letti solo ora `out/examples.md`, `check-ops.md`, `check-symmetry.md`, `scales.m
 **Recommended action:** proceed with conditions — correzioni del coordinatore per D1-D3 (obbligatorie: toccano ciò che E2 implementerà e il criterio di Q3, Q4, Q5) e, a scelta, D4-D11; integrazione delle letture simulate; estensione di NRC-H03 a `genome-encoding.md` allo Step 10 e verifica di Pages dopo il merge; Arbiter: DEFERRED finché mancano la scelta di Luca (AC-13) e la voce `github-pages`.
 
 **Prossimo step:** correzioni dopo lo Step 9 e letture simulate, poi Step 10 — LIBRARIAN
+
+## Correzioni dopo lo Step 9 e la prima lettura simulata
+
+**Agent:** claude-opus-5-5 (subagent, Builder). Nessun commit. Toccati solo `docs/architecture/genome-encoding.md`, gli script e le uscite in `/home/luca/Workspace/swarmtrader-r3-work/ref/` e `out/` e questo file (in coda). Proposta, opzioni di Q1-Q11 e tutti gli hash invariati; nessun numero già pubblicato è cambiato, salvo «circa 77163» → 77164 (D11) e il conteggio del catalogo (16 → 18 poi 16, D4).
+
+**Fonti dei rilievi:** Step 9 (difetti D1-D11) e prima lettura simulata indipendente (`reviews/lettore-indipendente-1.md`). **Esito della lettura: 4/5**, al limite inferiore: 11/11 domande rispondibili dalla sola «In breve», 8 motivabili pienamente e 3 solo in parte (Q1, Q4, Q8: avvio, R6, serie casuale e valore tipico non definiti; nessun ordine di grandezza per il costo dell'impronta; regola del pareggio e ingressi neutri non detti); 45/45 domande di comprensione, 43 sicure; nessun errore numerico nei ricalcoli. Rilievi numerati qui L1-L18 come nel rapporto, più L19 per le incertezze delle fasi 1 e 4.
+
+**Nuovo script:** `ref/check-corrections.mjs` → `out/check-corrections.md` (D1, D2, D3, D5, D11, L3, L18; chiama `python3 -I` con dati su stdin, nessun file temporaneo). `ref/check-doc.mjs`: `5.5` dichiarato (sezione del catalogo) e nuovo controllo 17 (formulazioni corrette presenti, formulazioni imprecise assenti).
+
+| ID | Correzione | Verifica |
+|---|---|---|
+| D1 | «Stesso hash ⇒ stesse decisioni» ristretto ovunque (In breve «Hash», Q5, 4.2 Q5, 7.4, glossario «duplicato», cap. 11 Q5 a/b): **con la proposta (Q5 a)** vale sempre, se valuta lo stesso programma (D2); **con Q5 b, c** quasi sempre. Nuovo paragrafo in 7.1 «Che cosa garantisce lo stesso hash» e controesempio su dati veri: genoma A a 16 numeri (τ di G1, pesi e soglie scritti) con soglia alta uguale al suo punteggio del giorno 12 del dataset inventato decide `hold`; B, la sua forma divisa con soglie `b ± 1`, ha lo stesso hash e decide `buy` (punteggio due ultime cifre sopra la soglia); negli altri 19 giorni uguali | `check-corrections`: 25103 su 73043 genomi costruiti (soglia sul punteggio, stesso hash) cambiano decisione; il primo caso ricalcolato in Python con `verify/lib.py` (`run16`, `h16`, `ghash16`, solo lettura): A `hold`, B `buy` al giorno 12, stesso hash `True` |
+| D2 | Scelta: **dichiarare il limite**, non specificare un `exp` proprio (resta una possibilità per E2, `[ipotesi]`). In 1.4 la forma di `c` è ora obbligatoria con l'ordine delle operazioni (`τ ≥ 0`: `e = exp(-τ)`, `c = e/(1+e)`; altrimenti `1/(1+exp(τ))`) e fa parte di `lin7-dec-v1` (anche in 7.2); paragrafo «Limite» con le misure e le conseguenze: hash indipendente, punteggi nei bit uguali solo nello stesso programma, programma di riferimento E2 in Node; Q4 (In breve e 7.4) e cap. 10 dicono che l'impronta va calcolata sempre dallo stesso programma | `check-corrections` (200000 τ, seme 2202): `exp(-|τ|)` diverso Node/Python 10,1 %, `c` 7,6 % (al più 2 ultime cifre), forma stabile contro ingenua in Node 39,4 %; 200 genomi × 3 serie (1107400 barre) con i soli `c` di Python: punteggi diversi nei bit 18,0 %, decisioni diverse 0, impronte diverse 0/200. Coerente con `verify/expcmp.txt` (rieseguito: identico) |
+| D3 | «24 bit di mantissa» → **24 bit di frazione** dopo il bit implicito (25 cifre binarie significative, circa 7,5 cifre decimali), schema `lin7-a1-v1-near24`, operazione intera sui 64 bit (ultimi 28 dei 52 bit di frazione, al pari; riporto nell'esponente ammesso; subnormali a multipli di 2^-1046), in 7.4, In breve Q3, cap. 11, glossario («chiave», «mantissa»); Esempio 5: 25.000001430511475 = `25 + 1,5 · 2^-20` è il punto di mezzo, va su `25 + 2^-19`, il precedente su `25 + 2^-20`; detto che con 23 bit di frazione l'Esempio 5 cambierebbe | `check-corrections`: punto di mezzo esatto `true`; chiavi diverse con 24 bit, uguali con 23; stessa operazione intera in Python e in Node su 20022 valori (Esempio 5, T3 con -0 e 5e-324, casuali): 0 diversi. `verify/examples.txt` (rieseguito, identico): con 24 bit di frazione G5 = G1 e coppia separata |
+| D4 | «Il catalogo stimava 16» → il capitolo 6 del catalogo conta 18 numeri per 8 ingressi; con D3 b e D4 b 16 (In breve e 2.2, con il conto: -1 peso e -1 `c` per l'ATR, un `c` al posto di N) | catalogo riga 1087 riletta |
+| D5 | 3.2: le 3000 barre sono le prime della serie del catalogo (sezione 5.5, 10000 giorni); i W_i vanno letti «circa», con la variabilità su 8 semi; cap. 10 aggiornato | `check-corrections`: prime 3000 barre uguali `true`; semi 20261018-20261025: W1-W2 222-265, W3 21-24, W4 217-260, W5 40-44, W6 21-23, W7 25-29 (con mulberry32; lo Step 9 aveva 230-260 e 26-29 con il generatore di Python) |
+| D6 | [6]: tolto `[fonte da verificare]`; «abstract letto nel repository WRAP; dati confermati da Crossref» e URL del DOI | Step 9, sezione 1 |
+| D7 | `FIXED_GENOME` righe 13-36 (2.2 e Riferimenti al codice) | `sed -n 13,36p src/engine/genome.js` |
+| D8 | 20 tentativi e ricaduta sul genitore marcati `[ipotesi]` (5.1, prosa e paragrafo dopo lo pseudocodice), con il peso (156 ricadute con `pm` = 1) e «numero di tentativi parametro di E3»; elencati nel cap. 10 | `out/check-ops.md` |
+| D9 | Costruzioni scritte: genitori «sui bordi» (5.2), stessi genitori per gli incroci alternativi (5.3), partenza della passeggiata (5.3), genitori e fattori di O1 (4.2), genomi `r` a 16 numeri e `k` casuale (cap. 6), caso costruito di S1 (pesi in [-2; 2], ingressi in [-0,1; 0,1], soglia sul punteggio o appena sopra) | letti in `ref/check-ops.mjs` e `ref/check-symmetry.mjs` |
+| D10 | 7.2: Python sceglie la stringa più corta [10]; Node segue ECMAScript [13, non letto]; cifre uguali solo sugli esempi della tabella | - |
+| D11 | 7.4: «circa 77163» → 77164 | `check-corrections`: primo n con probabilità ≥ 50 % = 77164 (come lo Step 9) |
+| L1 | Q8 in «In breve»: definiti avvio (con il 5 % `[ipotesi]` e 302 barre), R6, serie sintetica (al posto di «serie casuale»), valore tipico (valore assoluto mediano) e il senso del fattore 5 `[ipotesi]` | controllo 17 di `check-doc` |
+| L2 | Perché Node e Python: in «In breve» Q11 e in 7.2 (il genoma gira in Node, E2 ed E3; le verifiche indipendenti ricalcolano numeri e hash in Python; script di analisi `[ipotesi]`) | controllo 17; pattern `clean-room-recomputation-other-language` |
+| L3 | Q4 in «In breve» e 7.4: insieme di prova 3020 barre contro 2517 di ENI, «circa raddoppia» `[ipotesi: dipende da R6]`; perché fuori dai dati di valutazione `[ipotesi]`; che cosa vuol dire «versionata»; stesso programma (D2); cap. 11 | `check-corrections`: 20 + 3000 = 3020, ENI 2517 |
+| L4 | «Il problema»: confronti stretti, «con `s` uguale a una soglia si resta»; sei ingressi su sette valgono 0 quando non dicono nulla, la distanza dal massimo vale 0 sul massimo ed è negativa sotto; ripreso in Q1 (In breve e 3.2) | formule di 1.3 e catalogo (scheda N9, 3.2) |
+| L5 | «Il problema»: definita la semi-ampiezza; nominati i 7 ingressi, con il massimo che dimentica spiegato in una frase | controllo 17 |
+| L6 | Q5 (In breve, 4.2, cap. 11 a): che cosa succede se si sceglie (a) e R4 aggiunge un termine fisso (16 geni, nuovo schema, conversione senza perdita con soglie `b ± 1`, hash nuovi) | - |
+| L7 | RSI, OBV, ATR espansi in «Il problema» e in 1.3; voci nuove nel glossario: ATR, `EMA0`, epica, Koncorde, massimo che dimentica, OBV, RSI (glossario da 63 a 70 voci) | - |
+| L8 | «regola C2 del catalogo» era un **rimando sbagliato** (nel catalogo C2 è un riferimento al codice): ora «regola di conteggio del catalogo, sezione 7.1, punto 2», spiegata nel punto d'uso; regola di salto riassunta nel punto d'uso del cap. 6; `EMA0` spiegata in 1.3 | catalogo righe 1091-1094 rilette |
+| L9 | Q10 (b) uniformata: `individual.js` ±5 % dell'intervallo, `individual_v2.js` ±0,05 sui `c`, stessa regola su intervalli diversi, prova del 3,92 % con `individual_v2.js` (In breve, 5.1, 5.3) | citazioni dello Step 9, sezione 4 |
+| L10 | 4.2: «implicito, voluto» → «nascosto», come altrove | controllo 17 |
+| L11 | «16 in memoria, 15 utili» → «16 numeri salvati, semi-ampiezza riportata a 1 prima di ogni incrocio» (In breve, 4.1, 4.2, cap. 11); B: «16 salvati, legati dalla lunghezza 1 (15 liberi)» | controllo 17 |
+| L12 | Tabella 4.1, riga A: «15 con centro `b`, 16 con due soglie»; «come la riga della proposta o di Q5 b, con `c` al posto di `τ`» | - |
+| L13 | Cap. 6: come si estrae `k` «casuale» (`e^U`, `U` in [-3; 3]) e una frase su come leggere la tabella S1 (decisioni uguali, hash diversi con `k` non potenza di 2) | `ref/check-symmetry.mjs` |
+| L14 | 7.1, prosa: aggiunto lo spareggio «a pari chiave prima il peso minore» con i casi in cui serve | coerente con il passo 5 dello pseudocodice e con `canonical` di `ref/genome.mjs` |
+| L15 | 20 tentativi, 5 % dell'avvio e 24 bit marcati `[ipotesi]` e aggiunti al cap. 10; anche il rapporto 2 di Q7 e il limite ±5 di Q1 dichiarati scelte dell'autore | controllo 17 |
+| L16 | Koncorde ed epica nel glossario; «file del ciclo» spiegato come registro di lavoro della ricerca. **Non corretto:** i numeri di issue (#4, #12, #13, #23) restano, sono rimandi utili a Luca | - |
+| L17 | **Non corretto:** l'anticipazione di V1-Vw in 2.1 rimanda già al capitolo 3; il lettore la giudica accettabile | - |
+| L18 | 3.1: l'inciso «lo script l'ha mostrato» sostituito dall'esempio 1,5298317366548038 → 1,5298317366548035 | `check-corrections` (lo stesso valore dello Step 9) |
+| L19 | Fasi 1 e 4: motivazione del limite ±5 di Q1 (stesso fattore dei W_i, `[ipotesi]`), del rapporto 2 di Q7 (`[ipotesi]`), del fattore 5 di Q8; elenco completo delle scelte dell'autore nel cap. 10 (domanda 44) | - |
+
+**Altre modifiche:** forma diretta di N10 scritta in 1.3 (chiude un «claim not verified» dello Step 9); tempo di lettura dichiarato di «In breve» da 30 a circa 40 minuti (da 2705 a 3381 parole), documento «poco più di due ore».
+
+**Verifica eseguita:**
+- `node ref/check-corrections.mjs`: valori sopra, in `out/check-corrections.md`;
+- `node ref/check-doc.mjs`: 17 PASS su 17 (Liquid, codice ≤ 80 colonne, 29 tabelle coerenti, 7 tabelle di dati uguali a `out/`, 10 hash in `out/`, 3 testi canonici, 7 blocchi di geni, numeri rintracciati, 13 riferimenti, 4 ancore, Q1-Q11 nelle due viste e in «In breve», sigle, nuovo controllo 17);
+- Python dello Scientist rieseguito senza modifiche (`python3 -I verify/examples.py`, `facts.py`, `expcmp.py`): uscite identiche a quelle dello Step 9 (stesse dimensioni, 4729 e 3090 byte; `examples.py` e `facts.py` riscrivono per costruzione i loro `.txt` in `verify/`, con lo stesso contenuto); hash e valori invariati; controesempio D1 rifatto con le funzioni di `verify/lib.py`;
+- `grep -nE '\{\{|\{%'` → nessuna riga; recinti di codice 32 (pari);
+- `npm test`: 40/40; `npm run archimate:check`: modello valido (33 elementi, 55 relazioni);
+- `git status --short`: solo il documento (più questo file).
+
+**Dimensione:** 895 righe, 18251 parole (prima 874 righe e 15748 parole), 107597 byte; «In breve» 3381 parole.
+
+**Prossimo passo:** seconda lettura simulata indipendente (nuovo lettore), poi Step 10 — LIBRARIAN
