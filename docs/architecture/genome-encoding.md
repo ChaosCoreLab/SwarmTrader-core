@@ -15,7 +15,7 @@ Questo documento fa parte di **SwarmTrader**, il programma che rigioca giorno pe
 
 > **Avvertenza.** Gli esempi usano il dataset di 20 giorni **inventato** del catalogo, due piccoli dataset **inventati** apposta (capitolo 12) e geni scelti a mano. Nessun numero dice che una codifica o un operatore «funziona meglio»: i confronti riguardano validità, scala e leggibilità, non i risultati dell'evoluzione.
 
-**Percorso di lettura.** «In breve» (circa 20 minuti di lettura attenta) basta per capire che cosa si sceglie e per rispondere alle undici domande Q1-Q11 con un motivo: contiene la proposta, un esempio completo dai geni all'hash e, per ogni domanda, il problema, le opzioni con il loro effetto, la proposta e un criterio. Il [capitolo 11](#11-domande-per-luca) ha per ogni domanda una tabella degli effetti di ogni opzione. I capitoli 1-8 spiegano le opzioni e danno le prove: sono consultazione, e dove nasce una domanda rimandano a «In breve» e al capitolo 11 invece di ripeterla. Il capitolo 9 contiene gli esempi completi, che servono anche come casi di prova per chi scriverà il codice (E2) e l'evoluzione (E3). Il [capitolo 12](#12-esempi-per-le-scelte) mostra ogni scelta su dati inventati piccoli, un esempio per domanda con tutte le opzioni sugli stessi numeri (circa 25 minuti); ogni domanda di «In breve» rimanda al suo. Il documento intero richiede circa due ore e mezza.
+**Percorso di lettura.** «In breve» (circa 30 minuti di lettura attenta) basta per capire che cosa si sceglie e per rispondere alle undici domande Q1-Q11 con un motivo: contiene la proposta, un esempio completo dai geni all'hash e, per ogni domanda, il problema, le opzioni con il loro effetto, la proposta e un criterio. Il [capitolo 11](#11-domande-per-luca) ha per ogni domanda una tabella degli effetti di ogni opzione. I capitoli 1-8 spiegano le opzioni e danno le prove: sono consultazione, e dove nasce una domanda rimandano a «In breve» e al capitolo 11 invece di ripeterla. Il capitolo 9 contiene gli esempi completi, che servono anche come casi di prova per chi scriverà il codice (E2) e l'evoluzione (E3). Il [capitolo 12](#12-esempi-per-le-scelte) mostra ogni scelta su dati inventati piccoli, un esempio per domanda (Q2 esclusa, 12.10) con tutte le opzioni sugli stessi numeri (circa 25 minuti); ogni domanda di «In breve» rimanda al suo. Il documento intero richiede circa tre ore.
 
 **Segni usati.** `[ipotesi]` marca un giudizio dell'autore o un fatto senza una fonte letta; i numeri tra parentesi quadre, per esempio [3], rimandano ai [Riferimenti](#riferimenti), ognuno con il suo stato (letto, solo abstract, non letto). Decimali con la virgola nel testo, con il punto nel codice. Tutti i numeri vengono da script conservati in `/home/luca/Workspace/swarmtrader-r3-work/` (fuori dal repository; `ref/` gli script, `out/` le uscite). Simboli e sigle sono raccolti nel capitolo 1 ([Sigle](#15-sigle)), i termini nuovi nel [Glossario](#glossario).
 
@@ -28,7 +28,7 @@ Ogni sera i 7 ingressi `x1 … x7`, moltiplicati ciascuno per il suo **peso** `w
 Il genoma ha quindi 7 pesi, le soglie e 7 coefficienti `c`; la forma in cui si scrivono decide tre cose:
 
 1. **Che cosa può andare storto:** `c` tra 0 e 1, la veloce più veloce della lenta, la soglia alta sopra la bassa; un **incrocio** (il figlio prende parti dei due genitori) o una **mutazione** (piccolo cambiamento casuale) può violarlo.
-2. **Quanto pesa un passo di mutazione:** spostare `c` di 0,05 cambia poco una memoria lunga, moltissimo una corta.
+2. **Quanto pesa un passo di mutazione:** lo stesso passo su `c` cambia l'età media di fattori molto diversi secondo la memoria: poco una corta, moltissimo una lunga.
 3. **Quando due genomi sono «lo stesso»:** pesi e soglie per 2 danno le stesse decisioni; Luca ha chiesto di riconoscere questi genomi con un **hash** (un'impronta di 64 caratteri calcolata dai numeri) e di segnalarli, non eliminarli.
 
 **Già deciso** (risposte di Luca del 2026-11-14): i 7 ingressi sono **sempre tutti presenti** e i duplicati si riconoscono per **uguaglianza di comportamento**; se toglierli lo deciderà E3.
@@ -72,23 +72,23 @@ Q5 e Q6 cambiano la forma dei geni e vanno prima; Q1, Q7 e Q8 dipendono dalla fo
 
 **Q5 — Soglie: centro fisso o due soglie libere?** *Problema:* pesi e soglie moltiplicati per lo stesso numero positivo danno le stesse decisioni, ma un passo fisso pesa poco su un genoma «grande» e molto su uno «piccolo». (a) **Proposta:** centro `b`, soglie `b ± 1`: 15 geni, nessuna scala. (b) Due soglie libere: 16 geni, vincolo «alta sopra bassa», la scala resta un passo di mutazione nascosto. (c) Due soglie libere, genitori riportati a semi-ampiezza 1 prima dell'incrocio: 16 numeri, una scala sola. Con (b) e (c) stesso hash dà stesse decisioni quasi sempre. *Per scegliere:* (a) se R4 resterà «omogenea» (nessun termine fisso che non si moltiplica con pesi e soglie); (b) per leggere le soglie come nel catalogo, o se R4 aggiungerà un termine fisso (per esempio un'isteresi in unità assolute); (c) per soglie libere a scala comune. *Esempio:* [12.3](#123-q5-soglie-e-scala-comune).
 
-**Q6 — La memoria: `τ` o `c`?** *Problema:* con `c` come gene lo stesso passo cambia molto una memoria corta e poco una lunga: da `c` = 0,99 a 0,94 l'età media va da 0,01 a 0,06 barre, da 0,10 a 0,05 da 9 a 19. (a) **Proposta:** `τ`: un passo moltiplica l'età media sempre per lo stesso fattore. (b) `c`, con passo lineare come Consilium (il simulatore da cui viene il codice dell'algoritmo genetico); bordi come scelto in Q10. Stessi geni; hash diversi per lo stesso comportamento. *Per scegliere:* (a) per passi proporzionati a ogni memoria; (b) per leggere gli stessi `c` del catalogo e di Consilium. *Esempio:* [12.4](#124-q6-passo-sulla-memoria).
+**Q6 — La memoria: `τ` o `c`?** *Problema:* con `c` come gene lo stesso passo cambia l'età media di fattori molto diversi secondo la memoria: poco una corta, moltissimo una lunga. Con un passo del 5 % dell'intervallo di `c` (0,0328) l'età media 1 diventa 0,88 o 1,14 barre, la 9 diventa 6,53 o 13,9, la 49 scende a 17,9 (l'altro passo esce dall'intervallo). (a) **Proposta:** `τ`: un passo moltiplica l'età media sempre per lo stesso fattore (1,303). (b) `c`, con passo lineare come Consilium (il simulatore da cui viene il codice dell'algoritmo genetico); bordi come scelto in Q10. Stessi geni; hash diversi per lo stesso comportamento. *Per scegliere:* (a) per passi proporzionati a ogni memoria; (b) per leggere gli stessi `c` del catalogo e di Consilium. *Esempio:* [12.4](#124-q6-passo-sulla-memoria).
 
 **Q1 — Senza segnali si può comprare o vendere?** *Problema:* con tutti gli ingressi a 0 il punteggio è 0; la strategia deve restare ferma? (a) **Proposta:** `b` tra -5 e 5: con `b` < -1 compra, con `b` > 1 vende; 5 è il fattore dei limiti dei pesi, cioè quanto un ingresso tipico al limite del suo peso sposta il punteggio `[ipotesi]`. (b) `b` tra -1 e 1: punteggio 0 dà sempre `hold`. Stessi geni. *Per scegliere:* (a) per permettere acquisti o vendite «per default»; (b) se senza segnali non si fa nulla. Con due soglie libere diventa: alta positiva e bassa negativa, o no. *Esempio:* [12.5](#125-q1-decisioni-senza-segnali).
 
 **Q7 — Quanto devono differire le due memorie?** *Problema:* con memorie vicine le due distanze diventano quasi lo stesso ingresso e i loro pesi si compensano. (a) **Proposta:** lenta almeno il doppio della veloce. (b) Nessun margine. (c) Un altro rapporto, per esempio 1,25 o 4. Nessun gene in più. Sulla **serie sintetica** (prezzi casuali del catalogo, senza dati ENI) la correlazione tra le due distanze (1 = identiche) è da 0,99 a 1,00 con rapporto 1,25, da 0,95 a 0,97 con 2, da 0,82 a 0,87 con 4 (3.1); nessuna fonte dice quanta sia troppa, quindi il 2 resta `[ipotesi]`. *Per scegliere:* rapporto grande per due ingressi davvero diversi; piccolo o nullo per non vietare velocità vicine. *Esempio:* [12.6](#126-q7-due-memorie-vicine).
 
-**Q8 — Entro quali limiti?** *Problema:* gli intervalli sono scelti dall'autore senza fonte. (a) **Proposta:** età media da 0,5 a 100 barre per tutti; pesi entro ±W_i, con W_i = 5 diviso il valore tipico dell'ingresso sulla serie sintetica `[ipotesi]`; `b` secondo Q1. (b) Limiti per ingresso, o limite alto della memoria dall'avvio che sceglierà R6 (il protocollo di valutazione). L'**avvio** è il numero di barre iniziali in cui una media dipende dal primo valore per più del 5 % `[ipotesi]` (302 con età media 100); R6 deciderà quante escluderne. Cambiano costanti e versione dello schema, quindi l'hash. *Per scegliere:* (a) se basta un intervallo largo, da rivedere con R6; (b) per memorie diverse già ora, per esempio il volume più corto. *Esempio:* [12.7](#127-q8-limite-alto-della-memoria).
+**Q8 — Entro quali limiti?** *Problema:* gli intervalli sono scelti dall'autore senza fonte. (a) **Proposta:** età media da 0,5 a 100 barre per tutti; pesi entro ±W_i, con W_i = 5 diviso il valore tipico dell'ingresso sulla serie sintetica `[ipotesi]`; `b` secondo Q1. (b) Limiti per ingresso. (c) Limite alto della memoria dall'avvio che sceglierà R6 (il protocollo di valutazione). L'**avvio** è il numero di barre iniziali in cui una media dipende dal primo valore per più del 5 % `[ipotesi]` (302 con età media 100); R6 deciderà quante escluderne. Cambiano costanti e versione dello schema, quindi l'hash. *Per scegliere:* (a) se basta un intervallo largo, da rivedere con R6; (b) per memorie diverse già ora, per esempio il volume più corto; (c) per legare il limite alto all'avvio di R6. *Esempio:* [12.7](#127-q8-limite-alto-della-memoria).
 
-**Q9 — Come si incrociano due genitori?** *Problema:* la grandezza tipica di un ingresso dipende dalla sua memoria (per le distanze varia di circa 26 volte tra memoria corta e lunga, 3.2), quindi un peso va bene solo con la sua memoria. (a) **Proposta:** per blocchi interi (ogni peso con la sua memoria, le due distanze insieme, `b` da solo): nessun figlio da correggere. (b) Gene per gene, come Consilium: 17658 figli su 100000 violano il margine tra le memorie, da correggere o rifiutare. (c) Incrocio intermedio: figlio = media pesata dei genitori, con lo stesso peso α per tutti i geni; 3543 figli su 100000 escono di un'ultima cifra, da riportare dentro. Nessun effetto sull'hash. *Per scegliere:* (a) per tenere ogni peso con la sua memoria; (b) per restare come Consilium; (c) per figli intermedi, sapendo che la media restringe la popolazione verso il centro. *Esempio:* [12.8](#128-q9-figli-di-un-incrocio).
+**Q9 — Come si incrociano due genitori?** *Problema:* la grandezza tipica di un ingresso dipende dalla sua memoria (per le distanze varia di circa 26 volte tra memoria corta e lunga, 3.2), quindi un peso va bene solo con la sua memoria. (a) **Proposta:** per blocchi interi (ogni peso con la sua memoria, le due distanze insieme, `b` da solo): nessun figlio da correggere. (b) Gene per gene, come Consilium: 17658 figli su 100000 violano il margine tra le memorie, da correggere o rifiutare. (c) Incrocio intermedio: figlio = media pesata dei genitori, con lo stesso peso α per tutti i geni; 3543 figli su 100000 escono di un'ultima cifra, da riportare dentro. I due conteggi vengono da una prova con metà dei genitori esattamente sul margine o sui bordi (5.2). Nessun effetto sull'hash. *Per scegliere:* (a) per tenere ogni peso con la sua memoria; (b) per restare come Consilium; (c) per figli intermedi, sapendo che la media restringe la popolazione verso il centro. *Esempio:* [12.8](#128-q9-figli-di-un-incrocio).
 
-**Q10 — Come si muta un gene?** *Problema:* forma del passo e trattamento dei bordi. (a) **Proposta:** passo gaussiano largo il 5 % dell'intervallo; un gene uscito si **riflette** dentro di tanto quanto è uscito (in [0; 10], 10,3 diventa 9,7), quindi nessun valore resta fermo sul bordo; se la veloce supera la lenta si scambiano le due distanze, se manca il margine si ritenta. (b) Passo uniforme con saturazione (il valore uscito si ferma sul bordo), come Consilium: senza selezione il 3,92 % dei `c` finisce esattamente su un bordo. (c) Mutazione polinomiale limitata: il passo si accorcia avvicinandosi al bordo, così il valore non esce mai (descrizione dell'autore, `[ipotesi]`; non provata qui; 5.3). Nessun effetto sull'hash. *Per scegliere:* (a) contro gli accumuli sui bordi; (b) per la regola di Consilium; (c) per una legge che resta nei limiti senza riflessione. *Esempio:* [12.9](#129-q10-una-mutazione-vicino-al-bordo).
+**Q10 — Come si muta un gene?** *Problema:* forma del passo e trattamento dei bordi. (a) **Proposta:** passo gaussiano largo il 5 % dell'intervallo; un gene uscito si **riflette** dentro di tanto quanto è uscito (in [0; 10], 10,3 diventa 9,7), quindi nessun valore resta fermo sul bordo; se la veloce supera la lenta si scambiano le due distanze, se manca il margine si ritenta. (b) Passo uniforme con saturazione (il valore uscito si ferma sul bordo), come Consilium: senza selezione il 3,92 % dei `c` finisce esattamente su un bordo. (c) Mutazione polinomiale limitata: il passo si accorcia avvicinandosi al bordo, così il valore non esce mai (forma letta nel codice di DEAP, 12.9; non provata come operatore del genoma, 5.3). Nessun effetto sull'hash. *Per scegliere:* (a) contro gli accumuli sui bordi; (b) per la regola di Consilium; (c) per una legge che resta nei limiti senza riflessione. *Esempio:* [12.9](#129-q10-una-mutazione-vicino-al-bordo).
 
 **Q2 — Quota investita, stop loss e take profit sono geni?** *Problema:* il motore vuole tre numeri oltre al punteggio (la parte del capitale usata per comprare, la perdita e il guadagno percentuali a cui vende da solo). (a) **Proposta:** contarli a parte: 15 geni ora, forse 18 dopo R4. (b) Geni già ora. (c) Costanti già ora, scritte nella versione del decodificatore e quindi nell'hash. *Per scegliere:* (a) per lasciare la scelta a chi scrive le equazioni di decisione; (b) o (c) se hai già un'idea. *Esempio:* nessuno, perché dipende da R4 ([12.10](#1210-q2-nessun-esempio)).
 
 **Q3 — Che cosa fare dei genomi quasi uguali?** *Problema:* genomi che differiscono nell'ultima cifra di un peso hanno hash diversi anche se decidono uguale (G1 e G5). (a) **Proposta:** solo hash esatto. (b) In più una chiave di quasi-duplicato: lo stesso testo con i numeri arrotondati a circa 7,5 cifre decimali significative (24 bit di frazione della mantissa, 7.4) `[ipotesi]`; unisce anche genomi che possono decidere diversamente e separa sempre qualche coppia vicinissima. (c) Geni su una griglia di interi: hash esatto, ma operatori a passi. *Per scegliere:* (a) se basta sapere quali genomi sono certamente uguali; (b) per contare anche quelli «praticamente» uguali; (c) per un genoma a passi discreti. *Esempio:* [12.11](#1211-q3-due-genomi-quasi-uguali).
 
-**Q4 — Serve anche un'impronta delle decisioni?** *Problema:* genomi che decidono uguale senza una simmetria dimostrata (per esempio con soglie mai raggiunte) hanno hash diversi. (a) **Proposta:** no. (b) Sì: l'hash delle decisioni su un insieme di prova fisso, fuori dai dati di valutazione (dataset inventato più serie sintetica, 3020 barre). Costa una simulazione in più per genoma: se R6 valuterà sullo snapshot ENI (la copia fissa dei 2517 giorni di prezzi ENI usata dal programma), il tempo per genoma circa raddoppia `[ipotesi: dipende dai dati di R6]`. E3 potrebbe trattare le impronte uguali come duplicati, per esempio riducendone la pressione di selezione. *Per scegliere:* (b) per segnalare anche i genomi uguali «in pratica»; (a) se la simulazione in più non vale. *Esempio:* [12.12](#1212-q4-genomi-che-non-decidono-mai).
+**Q4 — Serve anche un'impronta delle decisioni?** *Problema:* genomi che decidono uguale senza una simmetria dimostrata (per esempio con soglie mai raggiunte) hanno hash diversi. (a) **Proposta:** no. (b) Sì: l'hash delle decisioni su un insieme di prova fisso, fuori dai dati di valutazione (dataset inventato più serie sintetica, 3020 barre). Costa una simulazione in più per genoma: se R6 valuterà sullo snapshot ENI (la copia fissa dei 2517 giorni di prezzi ENI usata dal programma), il tempo per genoma circa raddoppia `[ipotesi: dipende dai dati di R6]`. E3 potrebbe trattare le impronte uguali come duplicati, per esempio riducendone la pressione di selezione (quanto spesso un genoma è scelto come genitore). *Per scegliere:* (b) per segnalare anche i genomi uguali «in pratica»; (a) se la simulazione in più non vale. *Esempio:* [12.12](#1212-q4-genomi-che-non-decidono-mai).
 
 **Q11 — Come scrivere i numeri nel testo dell'hash?** *Problema:* il genoma girerà in Node, ma le verifiche indipendenti delle ricerche ricalcolano gli hash in Python, che scrive i decimali in modo diverso (`1e-7` contro `1e-07`). (a) **Proposta:** esadecimale, le 16 cifre dei 64 bit di ogni numero, uguali ovunque. (b) Decimale secondo RFC 8785, leggibile, con una funzione Python scritta apposta; un suo errore darebbe hash diversi senza alcun messaggio. *Per scegliere:* (a) se il testo serve alle macchine; (b) per leggerlo a occhio. *Esempio:* [12.13](#1213-q11-lo-stesso-genoma-in-node-e-in-python).
 
@@ -178,7 +178,7 @@ Una riga per famiglia di sigle: che cosa indica e dove è spiegata.
 | R4-1 … R4-5 | le scelte di R4 che toccano la codifica | capitolo 8 |
 | A, B, C | i tre approcci di partenza alla codifica | 4.1 |
 | G1, P2, F, G3, M, G4, H4, G5, K | i genomi degli esempi | capitolo 9 |
-| Z1-Z11 | i genomi degli esempi su dati inventati | capitolo 12 |
+| Z1-Z12 | i genomi degli esempi su dati inventati | capitolo 12 |
 | T1-T3 | i vettori di prova dell'hash | 7.3 |
 | D3 b, D4 b | due risposte di Luca al catalogo: l'agitazione (ATR normalizzato) esce dalla somma; la distanza dal massimo usa il massimo che dimentica | 1.3, capitolo 9 |
 | N1, N9, N10, N14, N16, N17 | codici delle schede del catalogo per gli ingressi 1-2, 4, 5, 6, 7 | 1.1 |
@@ -298,7 +298,7 @@ Il passaggio da due soglie alla forma proposta è `h = (θ_alta - θ_bassa)/2`, 
 
 ### 4.3 Il gene della memoria: `τ` o `c`
 
-Con `c` come gene e un passo fisso (Consilium: ±0,05 e saturazione in [0,01; 1], `individual_v2.js`, righe 203-214), lo stesso passo vale cose diverse: da `c` = 0,99 a 0,94 l'età media passa da 0,0101 a 0,0638 barre, da 0,10 a 0,05 passa da 9 a 19. Con `τ` un passo moltiplica o divide l'età media sempre per lo stesso fattore: con il passo proposto un passo di ampiezza σ la moltiplica per 1,303. È la mutazione log-normale delle strategie evolutive (una famiglia di algoritmi evolutivi su numeri reali), applicata all'età media: «log-normale» vuol dire che il passo è gaussiano sul logaritmo [2]. Inoltre la saturazione di Consilium ammette `c` = 1 (0,99 + 0,04 diventa 1), che `genome.js` rifiuta.
+Con `c` come gene e un passo fisso (Consilium: ±0,05 e saturazione in [0,01; 1], `individual_v2.js`, righe 203-214), lo stesso passo vale cose diverse: da `c` = 0,99 a 0,94 l'età media passa da 0,0101 a 0,0638 barre, da 0,10 a 0,05 passa da 9 a 19. Con `τ` un passo moltiplica o divide l'età media sempre per lo stesso fattore: con il passo proposto un passo di ampiezza σ la moltiplica per 1,303. È la mutazione log-normale delle strategie evolutive (una famiglia di algoritmi evolutivi su numeri reali), applicata all'età media: «log-normale» vuol dire che il passo è gaussiano sul logaritmo [2]. Il primo caso è fuori dall'intervallo di V1 (`c` da 0,0099 a 0,6667, 2.1): dentro, con un passo del 5 % dell'intervallo, il fattore cambia ancora con la memoria, ma è piccolo sulle memorie corte e grande sulle lunghe (età media 1 → 0,88 o 1,14; 49 → 17,9; 12.4). Inoltre la saturazione di Consilium ammette `c` = 1 (0,99 + 0,04 diventa 1), che `genome.js` rifiuta.
 
 `τ` «per costruzione» non basta: in virgola mobile `1/(1 + e^τ)` vale esattamente 1 già da `τ` = -36,7369 e `e^τ` va in overflow sopra 709,7827 (in Python solleva un errore invece di dare 0). Servono quindi i limiti di V1, ben dentro questi valori, e la forma stabile della formula. La variante `τ2 = τ1 + e^η` (lenta legata alla veloce) è **scartata**: con i limiti di V1 il vincolo torna accoppiato, e un incrocio che cambia `τ1` sposterebbe anche la lenta.
 
@@ -389,7 +389,7 @@ La tabella ha una riga per operatore: dove si trova (in Consilium o in letteratu
 
 **Domanda Q9 — incrocio.** Opzioni, proposta e criterio sono in [«In breve»](#in-breve), gli effetti di ogni opzione nel [capitolo 11](#11-domande-per-luca). Le prove delle tre opzioni sono nella tabella sopra e in 5.2: (b) è seguito da scambio e rifiuto, (c) da riporto nell'intervallo e rifiuto. Il motivo della proposta, cioè che la grandezza tipica di una distanza dipende dal suo `τ`, è in 3.2 («Un limite che resta») e nel catalogo, sezione 5.3.
 
-**Domanda Q10 — mutazione.** Opzioni, proposta e criterio sono in [«In breve»](#in-breve), gli effetti di ogni opzione nel [capitolo 11](#11-domande-per-luca). In più: la regola di Consilium (b) è ±5 % dell'intervallo di ogni parametro in `individual.js` e ±0,05 fissi sui `c` in `individual_v2.js` (circa il 5 % dell'intervallo [0,01; 1]), cioè la stessa regola su intervalli diversi; il 3,92 % di `c` sul bordo viene dalla mutazione di `individual_v2.js` (sopra, «Saturazione contro riflessione»). La mutazione polinomiale limitata (c) estrae il passo da una legge polinomiale scalata sulla distanza del gene da ciascun bordo: il passo verso un bordo non può superare quella distanza e si accorcia avvicinandosi al bordo, così il valore non esce mai, e vicino a un bordo i passi verso l'esterno sono più piccoli di quelli verso l'interno. Stato della fonte: le pagine di DEAP (`mutPolynomialBounded`) [3] e di pymoo [4], lette, danno la firma dell'operatore e dicono che resta nei limiti; la forma del passo descritta qui è dell'autore, dalla formula di Deb non riletta in questa ricerca `[ipotesi]`; l'operatore non è stato provato qui.
+**Domanda Q10 — mutazione.** Opzioni, proposta e criterio sono in [«In breve»](#in-breve), gli effetti di ogni opzione nel [capitolo 11](#11-domande-per-luca). In più: la regola di Consilium (b) è ±5 % dell'intervallo di ogni parametro in `individual.js` e ±0,05 fissi sui `c` in `individual_v2.js` (circa il 5 % dell'intervallo [0,01; 1]), cioè la stessa regola su intervalli diversi; il 3,92 % di `c` sul bordo viene dalla mutazione di `individual_v2.js` (sopra, «Saturazione contro riflessione»). La mutazione polinomiale limitata (c) estrae il passo da una legge polinomiale scalata sulla distanza del gene da ciascun bordo: il passo verso un bordo non può superare quella distanza e si accorcia avvicinandosi al bordo, così il valore non esce mai, e vicino a un bordo i passi verso l'esterno sono più piccoli di quelli verso l'interno. Stato della fonte: le pagine di DEAP (`mutPolynomialBounded`) [3] e di pymoo [4], lette, danno la firma dell'operatore e dicono che resta nei limiti; la forma del passo è stata poi letta nel codice di DEAP (`deap/tools/mutation.py`, ramo `master`; 12.9) e conferma la descrizione: il passo verso un bordo non supera la distanza dal bordo; l'operatore non è stato provato qui come operatore del genoma (con le prove di 5.2).
 
 ## 6. Le simmetrie
 
@@ -732,7 +732,7 @@ Le undici domande di «In breve», nello stesso ordine (prima Q5 e Q6, che cambi
 | (b) due soglie libere, mai rinormalizzate | 16 | V3: soglie invertite scambiate o rifiutate, soglie uguali rifiutate; la scala è un passo di mutazione nascosto | divisione per `h`, poi lo stesso testo di (a); stesso hash, stesse decisioni quasi sempre (non quando il punteggio cade entro un arrotondamento da una soglia, 7.1); senza divisione se R4 aggiunge termini fissi | vuoi le soglie come numeri del catalogo, o R4 aggiungerà termini fissi |
 | (c) due soglie libere, rinormalizzate prima dell'incrocio | 16 salvati; semi-ampiezza riportata a 1 prima di ogni incrocio | come (b), più la rinormalizzazione, che cambia i figli prodotti | come (b) | vuoi soglie libere ma genitori alla stessa scala (solo con regola omogenea) |
 
-**Q6 — Gene della memoria** (4.3; esempio in [12.4](#124-q6-passo-sulla-memoria)). Lo stesso passo su `c` cambia moltissimo una memoria corta e poco una lunga; una riga per opzione:
+**Q6 — Gene della memoria** (4.3; esempio in [12.4](#124-q6-passo-sulla-memoria)). Lo stesso passo su `c` cambia l'età media di fattori molto diversi secondo la memoria, poco una corta e moltissimo una lunga; una riga per opzione:
 
 | Opzione | Geni | Vincoli e operatori | Forma canonica e hash | Scegli se |
 |---|---|---|---|---|
@@ -759,7 +759,8 @@ Le undici domande di «In breve», nello stesso ordine (prima Q5 e Q6, che cambi
 | Opzione | Geni | Vincoli e operatori | Forma canonica e hash | Scegli se |
 |---|---|---|---|---|
 | (a) età media 0,5-100 per tutti, W_i della tabella 3.2 (proposta) | stessi | stessi limiti per le 7 memorie | costanti e versione dello schema | basta un intervallo largo, da rivedere con R6 |
-| (b) limiti per ingresso, o limite alto dall'avvio di R6 | stessi | limiti diversi; le due distanze sempre con lo stesso | altre costanti, altra versione dello schema | vuoi già ora memorie diverse per ingressi diversi |
+| (b) limiti per ingresso | stessi | limiti diversi; le due distanze sempre con lo stesso | altre costanti, altra versione dello schema | vuoi già ora memorie diverse per ingressi diversi |
+| (c) limite alto della memoria dall'avvio di R6 | stessi | limite alto di `τ` uguale per tutti, dall'avvio (12.7) | altre costanti, altra versione dello schema | vuoi legare il limite alto all'avvio di R6 |
 
 **Q9 — Incrocio** (5.3; esempio in [12.8](#128-q9-figli-di-un-incrocio)). Decide se peso e memoria restano insieme e se il figlio va corretto; una riga per opzione:
 
@@ -809,18 +810,18 @@ Le undici domande di «In breve», nello stesso ordine (prima Q5 e Q6, che cambi
 
 ## 12. Esempi per le scelte
 
-Questo capitolo mostra su numeri piccoli che cosa vedrebbe Luca con ciascuna opzione delle domande, nell'ordine di «In breve» e del capitolo 11. I dati sono **inventati** apposta (12.1): non sono prezzi ENI né il dataset di 20 giorni del catalogo. Ogni esempio mette tutte le opzioni di una domanda sugli stessi dati e dice soltanto che cosa cambia; non dice quale opzione sia migliore, e la proposta resta quella di «In breve». I genomi Z1-Z11 sono scelti a mano e i loro nomi servono solo a ritrovarli. Tutti i numeri vengono da `ref/examples-fictitious.mjs` (uscita `out/examples-fictitious.md`) e sono ricontrollati sul testo da `ref/check-examples-fictitious.mjs`.
+Questo capitolo mostra su numeri piccoli che cosa vedrebbe Luca con ciascuna opzione delle domande, nell'ordine di «In breve» e del capitolo 11. I dati sono **inventati** apposta (12.1): non sono prezzi ENI né il dataset di 20 giorni del catalogo. Ogni esempio mette tutte le opzioni di una domanda sugli stessi dati e dice soltanto che cosa cambia; non dice quale opzione sia migliore, e la proposta resta quella di «In breve». I genomi Z1-Z12 sono scelti a mano e i loro nomi servono solo a ritrovarli. Tutti i numeri vengono da `ref/examples-fictitious.mjs` (uscita `out/examples-fictitious.md`) e sono ricontrollati sul testo da `ref/check-examples-fictitious.mjs`.
 
 ### 12.1 I due dataset inventati
 
-**Gradino** (10 barre di prezzo): la chiusura vale 10 per tre giorni e 11 dal giorno 4 in poi; apertura uguale alla chiusura del giorno prima, massimo e minimo a 0,1 dalla chiusura, volume costante. È costruito per vedere come una media esponenziale insegue un salto (12.2) e quanto si somigliano due memorie vicine (12.6). La tabella ha una riga per giorno, con i cinque numeri della barra.
+**Gradino** (10 barre di prezzo): la chiusura vale 10 per tre giorni e 11 dal giorno 4 in poi; apertura uguale alla chiusura del giorno prima ma non fuori da massimo e minimo (il giorno 4 apre in rialzo a 10,9), massimo e minimo a 0,1 dalla chiusura, volume costante. È costruito per vedere come una media esponenziale insegue un salto (12.2) e quanto si somigliano due memorie vicine (12.6). La tabella ha una riga per giorno, con i cinque numeri della barra.
 
 | giorno | apertura | massimo | minimo | chiusura | volume |
 |---|---|---|---|---|---|
 | 1 | 10,0 | 10,1 | 9,9 | 10,0 | 1000 |
 | 2 | 10,0 | 10,1 | 9,9 | 10,0 | 1000 |
 | 3 | 10,0 | 10,1 | 9,9 | 10,0 | 1000 |
-| 4 | 10,0 | 11,1 | 10,9 | 11,0 | 1000 |
+| 4 | 10,9 | 11,1 | 10,9 | 11,0 | 1000 |
 | 5 | 11,0 | 11,1 | 10,9 | 11,0 | 1000 |
 | 6 | 11,0 | 11,1 | 10,9 | 11,0 | 1000 |
 | 7 | 11,0 | 11,1 | 10,9 | 11,0 | 1000 |
@@ -845,7 +846,7 @@ Questo capitolo mostra su numeri piccoli che cosa vedrebbe Luca con ciascuna opz
 
 ### 12.2 Come una EMA insegue un salto
 
-Sul gradino il prezzo passa da 10 a 11 il giorno 4. Con età media 1 (`c` = 0,5) la EMA copre ogni giorno metà della distanza che le resta (10,5; 10,75; 10,875 …); con età media 4 (`c` = 0,2) ne copre un quinto (10,2; 10,36; 10,488 …). Perché «età media»: con `c` = 0,5 i dati di 0, 1, 2 e 3 barre prima pesano 0,5; 0,25; 0,125; 0,0625, e la media delle età con questi pesi è 1 barra; con `c` = 0,2 pesano 0,2; 0,16; 0,128; 0,1024, e la media è 4 barre. L'ingresso `x1 = ln(C/EMA)` il giorno 4 vale 0,0465 con età 1 e 0,0755 con età 4; il giorno 10 vale 0,0007 e 0,0192: la memoria corta ha quasi «dimenticato» il salto, la lunga no. La tabella ha una riga per giorno: la chiusura, le due EMA e i due valori dell'ingresso.
+Sul gradino il prezzo passa da 10 a 11 il giorno 4. Con età media 1 (`c` = 0,5) la EMA copre ogni giorno metà della distanza che le resta (10,5; 10,75; 10,875 …); con età media 4 (`c` = 0,2) ne copre un quinto (10,2; 10,36; 10,488 …). Perché «età media»: con `c` = 0,5 i dati di 0, 1, 2 e 3 barre prima pesano 0,5; 0,25; 0,125; 0,0625, e la media delle età con questi pesi, continuando la serie all'infinito, è 1 barra; con `c` = 0,2 pesano 0,2; 0,16; 0,128; 0,1024, e la media, allo stesso modo, è 4 barre. L'ingresso `x1 = ln(C/EMA)` il giorno 4 vale 0,0465 con età 1 e 0,0755 con età 4; il giorno 10 vale 0,0007 e 0,0192: la memoria corta ha quasi «dimenticato» il salto, la lunga no. La tabella ha una riga per giorno: la chiusura, le due EMA e i due valori dell'ingresso.
 
 | giorno | chiusura | EMA con eta' media 1 | EMA con eta' media 4 | x con eta' media 1 | x con eta' media 4 |
 |---|---|---|---|---|---|
@@ -862,13 +863,13 @@ Sul gradino il prezzo passa da 10 a 11 il giorno 4. Con età media 1 (`c` = 0,5)
 
 ### 12.3 Q5 soglie e scala comune
 
-Due genomi a 16 numeri che decidono sempre uguale, sugli ingressi pronti: Z1 (pesi 20, 10, 1, 10, 1, 1, 1; soglie 1 e -1) e Z2 = 8 × Z1 (pesi 160, 80, 8, 80, 8, 8, 8; soglie 8 e -8).
+Due genomi a 16 numeri che decidono sempre uguale, sugli ingressi pronti: Z1 (pesi 20, 10, 1, 10, 1, 1, 1; soglie 1 e -1; `τ` di G1) e Z2 = 8 × Z1 (pesi 160, 80, 8, 80, 8, 8, 8; soglie 8 e -8).
 
 - **(a)** Z1 e Z2 sono lo stesso genoma: centro `b` = 0 e i pesi di Z1 (Z2 diviso per `h` = 8 dà Z1 nei bit, con lo stesso hash). Un incrocio tra i due dà ancora Z1.
 - **(b)** Restano due genomi diversi. Un figlio che prende i pesi da uno e le soglie dall'altro (succede con ogni incrocio che passa le soglie separate dai pesi) decide in modo diverso dai genitori: in 6 giorni su 10 con i pesi di Z1 e le soglie di Z2 (sempre `hold`), in 2 con l'inverso.
-- **(c)** Prima dell'incrocio Z2 è riportato a semi-ampiezza 1 e diventa Z1: il figlio è Z1, come con (a).
+- **(c)** Prima dell'incrocio Z2 è riportato a semi-ampiezza 1 e diventa Z1: il figlio è Z1, come con (a). La differenza da (a) è altrove: si salvano 16 numeri, tra un incrocio e l'altro la mutazione sposta di nuovo la scala, e vale solo con regola omogenea.
 
-Lo stesso vale per la mutazione finché un genoma resta alla sua scala (con (b) sempre, con (c) fino al suo incrocio successivo): un passo di +25 su `w1` alza il punteggio del giorno 2 di 0,75, cioè di 0,75 semi-ampiezze in Z1 e di 0,0938 in Z2; Z1 cambia decisione in 1 giorno, Z2 in 0. La tabella ha una riga per giorno: i punteggi dei genitori, la loro decisione comune e quella dei due figli misti possibili con (b).
+Lo stesso vale per la mutazione finché un genoma resta alla sua scala (con (b) sempre, con (c) fino al suo incrocio successivo): un passo di +25 su `w1` alza il punteggio del giorno 2 (`x1` = 0,03) di 0,75, cioè di 0,75 semi-ampiezze in Z1 e di 0,0938 in Z2; Z1 cambia decisione in 1 giorno, il 9 (punteggio da 0,72 a 1,51: da `hold` a `buy`), Z2 in 0. La tabella ha una riga per giorno: i punteggi dei genitori, la loro decisione comune e quella dei due figli misti possibili con (b).
 
 | giorno | punteggio di Z1 | punteggio di Z2 | Z1 e Z2 | figlio pesi Z1, soglie Z2 | figlio pesi Z2, soglie Z1 |
 |---|---|---|---|---|---|
@@ -885,16 +886,18 @@ Lo stesso vale per la mutazione finché un genoma resta alla sua scala (con (b) 
 
 ### 12.4 Q6 passo sulla memoria
 
-Tre memorie di partenza (età media 1, 9 e 49 barre) e un passo lungo il 5 % dell'intervallo del gene, in su e in giù: 0,2649 su `τ`, 0,0328 su `c` (intervallo di `c` da 0,0099 a 0,6667). È la σ con Q10 a e il passo massimo con Q10 b.
+Tre memorie di partenza (età media 1, 9 e 49 barre) e un passo lungo il 5 % dell'intervallo del gene, in su e in giù: 0,2649 su `τ`, 0,0328 su `c` (intervallo di `c` con Q8 a, da 0,0099 a 0,6667). È la σ con Q10 a e il passo massimo con Q10 b.
 
 - **(a) `τ`:** ogni passo moltiplica o divide l'età media per 1,303, a qualunque memoria.
-- **(b) `c`:** lo stesso passo sposta poco la memoria corta (da 1 a 0,88 o 1,14 barre) e molto la lunga (da 49 a 17,9 barre). Da 49 il passo in giù porta `c` a -0,0128, fuori dall'intervallo, e il risultato dipende da Q10: 29,6 barre con la riflessione (Q10 a), 100 con la saturazione (Q10 b).
+- **(b) `c`:** lo stesso passo cambia l'età media di fattori diversi secondo la memoria: poco la corta (da 1 a 0,88 o 1,14 barre), di più quella di 9 barre (a 6,53 o 13,9) e molto la lunga (da 49 a 17,9 barre). Da 49 il passo in giù porta `c` a -0,0128, fuori dall'intervallo, e il risultato dipende da Q10: 29,6 barre con la riflessione (Q10 a), 100 con la saturazione (Q10 b).
 
-La tabella ha una riga per memoria di partenza (con il suo `c`) e una colonna per passo; ogni cella è l'età media dopo il passo, in barre.
+Il caso di 4.3, da `c` = 0,99 (età media 0,01) con il passo di Consilium, è fuori dall'intervallo di V1: lì il passo cambia di più la memoria cortissima. La tabella ha una riga per memoria di partenza (con il suo `c`) e una colonna per passo; ogni cella è l'età media dopo il passo, in barre (aumentare `c` accorcia la memoria, diminuirlo la allunga).
 
 | eta' media di partenza (c) | tau + passo | tau - passo | c + passo | c - passo, con Q10 a | c - passo, con Q10 b |
 |---|---|---|---|---|---|
 | 1 (0,50) | 1,30 | 0,77 | 0,88 | 1,14 | 1,14 |
+| 9 (0,10) | 11,7 | 6,91 | 6,53 | 13,9 | 13,9 |
+| 49 (0,02) | 63,9 | 37,6 | 17,9 | 29,6 | 100,0 |
 
 ### 12.5 Q1 decisioni senza segnali
 
@@ -920,9 +923,9 @@ Con entrambe restano ammessi `b` = -1 (5 `buy`, 4 `hold`, 1 `sell`) e `b` = 0 (3
 
 ### 12.6 Q7 due memorie vicine
 
-Sul gradino, la distanza veloce `x1` con età media 1 e la lenta `x2` con età media 1,25, 2 o 4 (rapporto 1,25, 2 o 4; `τ2 - τ1` = 0,2231, 0,6931, 1,3863). Con rapporto 1,25 le due colonne quasi coincidono; con 4 la lenta resta lontana dal prezzo più a lungo. Il genoma Z3 (`w1` = 40, `w2` = -40, gli altri pesi 0, `b` = 0) guarda solo la loro differenza: il suo punteggio arriva al più a -0,22 con rapporto 1,25, a -0,73 con 2 e a -1,48 con 4 (giorno 5), quindi vende in 0, 0 e 5 giorni su 10.
+Sul gradino, la distanza veloce `x1` con età media 1 e la lenta `x2` con età media 1,25, 2 o 4 (rapporto 1,25, 2 o 4; `τ2 - τ1` = 0,2231, 0,6931, 1,3863). Con rapporto 1,25 le due colonne quasi coincidono; con 4 la lenta resta lontana dal prezzo più a lungo. Il genoma Z3 (`w1` = 40, `w2` = -40, gli altri pesi 0, `b` = 0) guarda solo la loro differenza: il suo punteggio arriva al più a -0,22 con rapporto 1,25, a -0,73 con 2 e a -1,48 con 4 (giorno 5), quindi vende in 0, 0 e 5 giorni su 10. Con i pesi al limite di 3.2 (`w1` = 250, `w2` = -250) il punteggio arriva a -1,37 anche con rapporto 1,25 e vende in 3 giorni: pesi grandi compensano memorie vicine, come dice il problema di Q7.
 
-- **(a) rapporto almeno 2:** ammessi i rapporti 2 e 4.
+- **(a) rapporto almeno 2:** ammessi i rapporti 2 e 4; con la veloce a età 1 è vietata ogni lenta sotto età 2, come quella della colonna 1,25.
 - **(b) nessun margine:** ammessi tutti e tre.
 - **(c) un altro rapporto:** con 1,25 ammessi tutti e tre, con 4 solo 4.
 
@@ -945,8 +948,9 @@ La tabella ha una riga per giorno e una colonna per memoria; ogni cella è il va
 
 Quale età media massima ammette ciascuna opzione, secondo l'avvio che sceglierà R6.
 
-- **(a) età media da 0,5 a 100 per tutti:** il limite alto resta 100 barre qualunque avvio R6 scelga; un genoma con età 100 ha un avvio di 302 barre.
-- **(b) limite alto dall'avvio di R6:** il limite è l'età media più lunga il cui valore iniziale pesa meno del 5 % alla fine di quell'avvio: 19,5 barre con un avvio di 60, circa 100 con 302. L'altra forma di (b), limiti diversi per ingresso, non ha un dato da mostrare qui.
+- **(a) età media da 0,5 a 100 per tutti:** il limite alto resta 100 barre qualunque avvio R6 scelga; un genoma con età 100 ha un avvio di 302 barre. Con un avvio di 60, un genoma con età oltre 19,5 sarebbe valutato mentre la sua media dipende ancora dal primo valore per più del 5 %.
+- **(b) limiti per ingresso:** non ha un dato da mostrare qui: dipende da quali memorie si vogliono per quali ingressi.
+- **(c) limite alto dall'avvio di R6:** il limite è l'età media più lunga il cui valore iniziale pesa meno del 5 % (soglia dell'autore, `[ipotesi]`, 3.2) alla fine di quell'avvio: 19,5 barre con un avvio di 60, circa 100 con 302.
 
 La tabella ha una riga per avvio: il `c` minimo, l'età media massima e il `τ` massimo che ne seguono.
 
@@ -959,15 +963,15 @@ La tabella ha una riga per avvio: il `c` minimo, l'età media massima e il `τ` 
 
 ### 12.8 Q9 figli di un incrocio
 
-Due genitori validi: Z4 con memorie delle due distanze di età 1 e 8 (`w1` = 100) e Z5 con età 6 e 30 (`w1` = 30); gli altri geni non contano qui.
+Due genitori validi: Z4 con memorie delle due distanze di età 1 e 8 (`w1` = 100, `w2` = 20) e Z5 con età 6 e 30 (`w1` = 30, `w2` = 60); gli altri geni non contano qui.
 
-- **(a) per blocchi:** il figlio prende entrambe le memorie (e i loro pesi) da un genitore: rapporto 8 o 5, sempre valido.
-- **(b) gene per gene:** delle quattro combinazioni di `τ1` e `τ2` una viola V2: `τ1` da Z5 e `τ2` da Z4 danno età 6 e 8, rapporto 1,33 (`τ2 - τ1` = 0,2877, sotto ln 2 = 0,6931), da scambiare e rifiutare. Lo stesso figlio porta il peso `w1` = 100 di Z4, che stava con una memoria di 1 barra, insieme alla memoria di 6 barre di Z5.
-- **(c) intermedio:** con α = 0,5 ogni gene è la media dei genitori: età 2,45 e 15,49, rapporto 6,32, valido; i pesi diventano `w1` = 65 e `w2` = 40.
+- **(a) per blocchi:** il figlio prende entrambe le memorie (e i loro pesi) da un genitore: rapporto 8 o 5, sempre valido. I figli hanno solo le due coppie di memorie dei genitori, nessuna combinazione nuova delle due memorie.
+- **(b) gene per gene:** delle quattro combinazioni di `τ1` e `τ2` una viola V2 con Q7 a (con Q7 b nessuna): `τ1` da Z5 e `τ2` da Z4 danno età 6 e 8, rapporto 1,33 (`τ2 - τ1` = 0,2877, sotto ln 2 = 0,6931), da rifiutare (lo scambio non serve: la veloce è già prima). Lo stesso figlio porta il peso `w1` = 100 di Z4, che stava con una memoria di 1 barra, insieme alla memoria di 6 barre di Z5. Le altre due combinazioni hanno le memorie delle due righe di (a).
+- **(c) intermedio:** con α = 0,5 ogni gene è la media dei genitori: età 2,45 e 15,49 (la media dei `τ` dà la media geometrica delle età, √(1·6) e √(8·30)), rapporto 6,32, valido con Q7 a; i pesi diventano `w1` = 65 e `w2` = 40. Ogni gene del figlio sta tra quelli dei genitori: ripetuta, la media restringe la popolazione verso il centro.
 
 La tabella ha una riga per figlio possibile: le due età medie, il loro rapporto e se rispetta il margine.
 
-| figlio | eta' media veloce | eta' media lenta | rapporto | rispetta V2 (rapporto almeno 2) |
+| figlio | eta' media veloce | eta' media lenta | rapporto | rispetta V2 con Q7 a (rapporto almeno 2) |
 |---|---|---|---|---|
 | (a) blocco delle distanze da Z4 | 1,00 | 8,00 | 8,00 | sì |
 | (a) blocco delle distanze da Z5 | 6,00 | 30,00 | 5,00 | sì |
@@ -977,13 +981,13 @@ La tabella ha una riga per figlio possibile: le due età medie, il loro rapporto
 
 ### 12.9 Q10 una mutazione vicino al bordo
 
-Un `τ` vicino al bordo alto: 4,5 (età media 90), con il bordo a ln 100 = 4,6052; passo 0,2649; 100000 mutazioni per opzione (seme 1215).
+Con Q6 a e Q8 a, un `τ` vicino al bordo alto: 4,5 (età media 90), con il bordo a ln 100 = 4,6052; passo 0,2649; 100000 mutazioni per opzione (seme 1215).
 
 - **(a) gaussiana con riflessione:** il 34,73 % dei passi esce ed è riflesso dentro; nessun valore resta sul bordo e il 2,80 % finisce a meno di 0,01 da esso. Un passo con `z` = 1,5 arriva a 4,8974 e torna a 4,3130.
-- **(b) uniforme con saturazione:** il 30,03 % dei passi esce e si ferma esattamente sul bordo. Un passo con `u` = 0,9 arriva a 4,7119 e si ferma a 4,6052.
-- **(c) polinomiale limitata:** nessun passo esce; il 3,91 % finisce a meno di 0,01 dal bordo. Con l'estrazione 0,9 il valore va a 4,5805.
+- **(b) uniforme con saturazione:** il 30,03 % dei passi esce e si ferma esattamente sul bordo. Un passo con `u` = 0,9 vale (2u - 1) × 0,2649 = +0,2119, arriva a 4,7119 e si ferma a 4,6052. La regola di Consilium satura `c`; qui la stessa regola è applicata a `τ`.
+- **(c) polinomiale limitata:** nessun passo esce; il 3,91 % finisce a meno di 0,01 dal bordo. Con l'estrazione 0,9 il passo va verso il bordo alto e non può superare la distanza dal bordo (0,1052): il valore va a 4,5805. La formula è quella di `mutPolynomialBounded`, non ripetuta qui.
 
-Per (c) l'esempio usa la formula del codice di DEAP (`mutPolynomialBounded` [3], letto per questo esempio) con l'indice di distribuzione η = 20 `[ipotesi]`; è un calcolo illustrativo, non una prova degli operatori come quelle di 5.2. Lo spostamento medio dipende dalla legge del passo (e da η), quindi non confronta le opzioni a parità di passo. La tabella ha una riga per opzione; le colonne contano i passi usciti, i valori finiti esattamente sul bordo e quelli vicini, e danno lo spostamento medio.
+Per (c) l'esempio usa la formula del codice di DEAP (`mutPolynomialBounded` [3], letto per questo esempio) con l'indice di distribuzione `η_m` = 20 `[ipotesi]` (diverso dall'η di `τ2 = τ1 + e^η`); è un calcolo illustrativo, non una prova degli operatori come quelle di 5.2. Lo spostamento medio dipende dalla legge del passo (e da η), quindi non confronta le opzioni a parità di passo. La tabella ha una riga per opzione; le colonne contano i passi usciti, i valori finiti esattamente sul bordo e quelli vicini, e danno lo spostamento medio.
 
 | opzione | passi usciti dall'intervallo | valori finiti esattamente su ln 100 | spostamento medio | valori a meno di 0,01 da ln 100 |
 |---|---|---|---|---|
@@ -997,18 +1001,19 @@ Le tre opzioni di Q2 cambiano solo se quota investita, stop loss e take profit s
 
 ### 12.11 Q3 due genomi quasi uguali
 
-Sugli ingressi pronti, Z6 ha `w1` = 32 e gli altri pesi 0 (`b` = 0, `τ` di G1); Z7 è uguale con `w1` = 32.0000004. Il giorno 9 (`x1` = 0,03125) il punteggio di Z6 è esattamente 1, uguale alla soglia alta: `hold`; quello di Z7 è 1.0000000125: `buy`. Negli altri 9 giorni decidono uguale.
+Sugli ingressi pronti, Z6 ha `w1` = 32 e gli altri pesi 0 (`b` = 0, `τ` di G1); Z7 è uguale con `w1` = 32.0000004 e Z12 con `w1` = 31.999999999999996, il numero binary64 prima di 32. Il giorno 9 (`x1` = 0,03125) il punteggio di Z6 è esattamente 1, uguale alla soglia alta: `hold`; quello di Z7 è 1.0000000125: `buy`; quello di Z12 è 0.9999999999999999: `hold`. Negli altri 9 giorni decidono tutti e tre uguale. Z7 è costruito mettendo il punteggio di Z6 esattamente sulla soglia: è il caso in cui una differenza minima cambia una decisione (anche il numero binary64 dopo 32 la cambia). Z12 è il caso opposto: decide come Z6 in tutti i 10 giorni.
 
-- **(a) solo hash esatto:** Z6 e Z7 hanno hash diversi e nulla li collega.
-- **(b) chiave a 24 bit:** il `w1` di Z7 arrotondato a 24 bit di frazione è 32, quindi le due chiavi sono uguali e i due genomi sono segnalati come quasi-duplicati, anche se decidono diversamente il giorno 9. Il caso opposto, due numeri vicinissimi con chiavi diverse, è nell'Esempio 5.
-- **(c) griglia:** con una griglia di passo 2^-10 sui pesi (passo scelto per l'esempio, `[ipotesi]`) Z7 non esiste; i valori vicini sono 32 (Z6) e 32.0009765625 (Z8), che il giorno 9 dà 1.000030517578125 e `buy`; Z6 e Z8 hanno hash esatti diversi.
+- **(a) solo hash esatto:** Z6, Z7 e Z12 hanno tre hash diversi e nulla li collega: restano separati Z6 e Z7, che decidono diversamente il giorno 9, e anche Z6 e Z12, che decidono uguale ogni giorno.
+- **(b) chiave a 24 bit:** il `w1` di Z7 e quello di Z12 arrotondati a 24 bit di frazione sono 32, quindi le tre chiavi sono uguali e i tre genomi sono segnalati come quasi-duplicati: Z12 con Z6, che decidono uguale, e anche Z7, che decide diversamente il giorno 9. Il caso opposto, due numeri vicinissimi con chiavi diverse, è nell'Esempio 5.
+- **(c) griglia:** con una griglia di passo 2^-10 sui pesi (passo scelto per l'esempio, `[ipotesi]`) né Z7 né Z12 esistono (Z12 sulla griglia è Z6); i valori vicini sono 32 (Z6) e 32.0009765625 (Z8), che il giorno 9 dà 1.000030517578125 e `buy`; Z6 e Z8 hanno hash esatti diversi, e non restano quasi-duplicati da cercare.
 
-La tabella ha una riga per genoma: `w1`, punteggio e decisione del giorno 9, l'inizio dell'hash e della chiave a 24 bit.
+La tabella ha una riga per genoma: `w1`, punteggio e decisione del giorno 9, l'inizio dell'hash e della chiave a 24 bit. Gli hash sono quelli dello schema attuale: con la griglia (c) testo canonico e schema sarebbero diversi.
 
 | | w1 | giorno 9: punteggio | giorno 9: decisione | hash (prime 8 cifre) | chiave a 24 bit (prime 8 cifre) |
 |---|---|---|---|---|---|
 | Z6 | 32 | 1 | hold | c832e10c | d8e70ca5 |
 | Z7 | 32.0000004 | 1.0000000125 | buy | 3df6fe2d | d8e70ca5 |
+| Z12 | 31.999999999999996 | 0.9999999999999999 | hold | bc2bf9cb | d8e70ca5 |
 | Z8 | 32.0009765625 | 1.000030517578125 | buy | df21c34e | 83534552 |
 
 ### 12.12 Q4 genomi che non decidono mai
@@ -1017,6 +1022,8 @@ Z9 ha solo il peso dell'RSI centrato, `w3` = 0,5, con `b` = 0; Z10 ha `w3` = 0,9
 
 - **(a) nessuna impronta:** Z9 e Z10 hanno hash diversi e nulla li collega.
 - **(b) impronta:** sull'insieme di prova di 3020 barre (dataset di 20 giorni più serie sintetica) Z9 e Z10 hanno la stessa impronta e sono segnalati; costa una simulazione in più per genoma. Z11 (`w3` = 1,5) compra e vende e ha un'impronta diversa.
+
+L'impronta è calcolata da `ref/fingerprint.mjs`, il cui testo non è specificato in questo documento, e i conteggi di Z11 sono propri di questa serie sintetica (generatore mulberry32): prefissi e conteggi non si rifanno quindi dal solo documento.
 
 La tabella ha una riga per genoma: i geni che cambiano, l'inizio di hash e impronta e le decisioni sulle 3020 barre.
 
@@ -1031,7 +1038,7 @@ La tabella ha una riga per genoma: i geni che cambiano, l'inizio di hash e impro
 G1 con `w7` = 1e-7, scritto per l'hash in Node (dove girerà il genoma) e in Python (dove si verifica).
 
 - **(a) esadecimale:** `w7` diventa `3e7ad7f29abcaf48` in entrambi i linguaggi e l'hash è lo stesso: `ee3f420e9e4dfac8d756d2d363faa633cc94d29760dc3d6752d15962bfcfbbc6`.
-- **(b) decimale:** il testo si legge a occhio, ma i pesi diventano `[25,10,0.5,5,1,1,1e-7]` con `JSON.stringify` di Node e `[25.0,10.0,0.5,5.0,1.0,1.0,1e-07]` con `json.dumps` di Python, e gli hash differiscono (`edc7c80e9ebb5564896a2136f4fb62809ba912b2f770301849e12e15ace1fe76` contro `43e81014548fce794257849f92693cc243b426d46db75f14901460fca3409be9`). La funzione Python dedicata di (b) dovrebbe scrivere come Node e dare il primo dei due hash; qui non è scritta.
+- **(b) decimale:** il testo si legge a occhio, ma i pesi diventano `[25,10,0.5,5,1,1,1e-7]` con `JSON.stringify` di Node e `[25.0,10.0,0.5,5.0,1.0,1.0,1e-07]` con `json.dumps` di Python, e gli hash differiscono (`edc7c80e9ebb5564896a2136f4fb62809ba912b2f770301849e12e15ace1fe76` contro `43e81014548fce794257849f92693cc243b426d46db75f14901460fca3409be9`). Qui Python usa `json.dumps`, non la funzione dedicata che (b) prevede: scritta bene, quella scriverebbe come Node e darebbe il primo dei due hash; il rischio di (b) è un suo errore, che darebbe hash diversi senza messaggio, come qui.
 
 Il testo decimale dell'esempio è lo stesso oggetto del testo canonico con i numeri al posto delle stringhe esadecimali, costruito solo per l'esempio `[ipotesi]`.
 
@@ -1084,6 +1091,7 @@ Una riga per termine, con il significato usato in questo documento.
 | neuroevoluzione | evoluzione di reti neurali con algoritmi evolutivi |
 | OBV | *On-Balance Volume*: volume sommato con il segno della variazione del giorno; l'ingresso 7 ne è la forma normalizzata, tra -1 e +1 |
 | peso | numero che moltiplica un ingresso nel punteggio |
+| pressione di selezione | quanto spesso un genoma è scelto come genitore rispetto agli altri (E3) |
 | punteggio | somma pesata degli ingressi, confrontata con le soglie |
 | quantizzazione | arrotondamento dei numeri a una precisione fissa |
 | quota investita | parte del capitale usata per un acquisto (`buyPercent`) |
@@ -1133,7 +1141,7 @@ Consilium è letto sul branch `experiment/lb77`, commit `2ec7237`.
 
 1. K. Deb, R. B. Agrawal, *Simulated Binary Crossover for Continuous Search Space*, Complex Systems 9(2), 115-148, 1995. Letto (sezioni 1-3): https://www.cse.unr.edu/~sushil/class/gas/papers/SimulatedBinaryCrossover.pdf
 2. H.-G. Beyer, H.-P. Schwefel, *Evolution strategies – A comprehensive introduction*, Natural Computing 1, 3-52, 2002, DOI 10.1023/A:1015059928466. Letto (sezioni 4.1, 4.2.2 e ricombinazione): https://gwern.net/doc/reinforcement-learning/model-free/2002-beyer.pdf
-3. DEAP, documentazione degli operatori. Letta: https://deap.readthedocs.io/en/master/api/tools.html
+3. DEAP, documentazione degli operatori. Letta: https://deap.readthedocs.io/en/master/api/tools.html. Codice di `mutPolynomialBounded` letto (`deap/tools/mutation.py`, ramo `master`, per 12.9): https://github.com/DEAP/deap/blob/master/deap/tools/mutation.py
 4. pymoo, *Crossover* e *Mutation*. Lette: https://pymoo.org/operators/crossover.html, https://pymoo.org/operators/mutation.html
 5. K. O. Stanley, R. Miikkulainen, *Evolving Neural Networks through Augmenting Topologies*, Evolutionary Computation 10(2), 99-127, 2002 (convenzioni in competizione, analogo di S2). Letto (sezione 2.2): https://www.cse.unr.edu/~sushil/class/gas/papers/NEAT.pdf
 6. S. Helwig, J. Branke, S. Mostaghim, *Experimental Analysis of Bound Handling Techniques in Particle Swarm Optimization*, IEEE Trans. Evolutionary Computation 17(2), 259-271, 2013, DOI 10.1109/TEVC.2012.2189404. Solo abstract, letto nel repository WRAP dell'Università di Warwick; dati bibliografici confermati da Crossref: https://doi.org/10.1109/TEVC.2012.2189404

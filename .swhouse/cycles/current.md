@@ -1376,3 +1376,67 @@ Letti solo ora `out/examples-fictitious.md` e le parti di `ref/examples-fictitio
 **Recommended action:** proceed with conditions — il coordinatore corregge E1 ed E2 (obbligatorie) ed E3-E4, a scelta E5-E10; rigenerare `out/` con la tabella di Q6 intera e rafforzare il controllo delle tabelle; poi lettura simulata del capitolo 12 e, se serve, aggiornare `last_verified`.
 
 **Prossimo passo:** correzioni del coordinatore sul capitolo 12, poi lettura simulata
+
+## Correzioni dopo la verifica del capitolo 12 e la terza lettura
+
+**Agent:** claude-opus-5-5 (subagent, ruolo BUILDER) — 2026-11-15
+
+**Fonti:** «Verifica indipendente del capitolo 12 (SCIENTIST)» (E1-E10) e `reviews/lettore-indipendente-3.md` (R3.1-R3.17), entrambe sul commit `a476e0e`. **Stato:** Q1-Q11 restano **aperte**; nessuna proposta, criterio o hash preesistente è cambiato. Due eccezioni mirate, ciascuna sul testo oggetto del difetto: il problema di Q6 (E2/R3.1, la descrizione del problema, non opzioni, proposta o criterio) e l'apertura del giorno 4 del gradino (R3.13, 10,0 → 10,9, numero non usato da nessun ingresso). L'opzione (b) di Q8 è separata in (b) e (c) su richiesta dell'operatore (R3.5): stesse due varianti, ora scritte come due opzioni.
+
+### Correzioni applicate
+
+| Difetto | Correzione | Dove |
+|---|---|---|
+| E1 / R3.2 | tabella di 12.4 completata con le righe età 9 (11,7; 6,91; 6,53; 13,9; 13,9) ed età 49 (63,9; 37,6; 17,9; 29,6; 100,0); frase di lettura con «aumentare `c` accorcia la memoria, diminuirlo la allunga». Causa: il generatore scrive le note dopo la tabella, il controllo rifiuta tabelle spezzate o troncate (vedi Controlli) | 12.4; `ref/examples-fictitious.mjs`; `ref/check-examples-fictitious.mjs` |
+| E2 / R3.1 | problema riscritto: «lo stesso passo su `c` cambia l'età media di fattori molto diversi secondo la memoria: poco una corta, moltissimo una lunga»; esempio fuori intervallo (`c` = 0,99) sostituito in «In breve» con numeri di 12.4 dentro V1; in 4.3 i numeri di Consilium restano, con la frase che il primo caso è fuori da V1 e dentro vale il contrario; in 12.4 (b) il passo «di fattori diversi» e il rimando al caso di 4.3. Opzioni, proposta e criterio di Q6 invariati; il criterio («(a) per passi proporzionati a ogni memoria; (b) per leggere gli stessi `c`…») si legge ancora bene | «In breve» punto 2 e Q6; 4.3; capitolo 11 Q6; 12.4 |
+| R3.3 / R3.16 | 12.11: nuovo Z12 (`w1` = 31.999999999999996, binary64 prima di 32): hash diverso da Z6, stessa chiave, stesse decisioni nei 10 giorni; detto che Z7 è costruito con il punteggio sulla soglia (anche il binary64 dopo 32 cambia il giorno 9, quindi non usato); (a), (b), (c) con un pro e un contro ciascuna; riga Z12 in tabella; gli hash sono dello schema attuale, con (c) sarebbero diversi. Sigle e introduzione: Z1-Z12 | 12.11; 1.5; 12 |
+| E3 | colonna «rispetta V2 con Q7 a (rapporto almeno 2)»; (b) «una viola V2 con Q7 a (con Q7 b nessuna)»; (c) «valido con Q7 a» | 12.8 |
+| E4 / R3.8 | stato della fonte: forma del passo letta nel codice di DEAP (`deap/tools/mutation.py`, `master`), conferma la descrizione; `[ipotesi]` tolto dalla sola descrizione del passo; «non provata come operatore del genoma» resta; [3] con il codice letto | 5.3 Domanda Q10; «In breve» Q10 (c); Riferimenti [3] |
+| E5 | «da rifiutare (lo scambio non serve: la veloce è già prima)» | 12.8 (b) |
+| E6 / R3.6 | `w2` dei genitori (20 e 60); media geometrica delle età (√(1·6), √(8·30)); le altre due combinazioni di (b) hanno le memorie di (a); `τ` di G1 per Z1 | 12.8; 12.3 |
+| E7 | impronta da `ref/fingerprint.mjs`, testo non specificato; conteggi di Z11 propri della serie (mulberry32) | 12.12 |
+| E8 | «Con Q6 a e Q8 a» in 12.9; «intervallo di `c` con Q8 a» in 12.4 | 12.9; 12.4 |
+| E9 | «soglia dell'autore, `[ipotesi]`, 3.2» sul 5 % | 12.7 (c) |
+| E10 | (a) e (c) di 12.8 con una frase ciascuna; Percorso «un esempio per domanda (Q2 esclusa, 12.10)» | 12.8; Percorso di lettura |
+| R3.4 | Z3 con pesi al limite ±250: punteggio -1,37 anche con rapporto 1,25, 3 vendite; (a) vieta con veloce a età 1 ogni lenta sotto età 2 | 12.6 |
+| R3.5 | Q8: (b) limiti per ingresso, (c) limite alto dall'avvio di R6, con criterio «(c) per legare il limite alto all'avvio di R6»; riga in più nella tabella del capitolo 11; in 12.7 (b) senza dato e (c) con i numeri; conseguenza di (a) con avvio 60 (età oltre 19,5) | «In breve» Q8; capitolo 11 Q8; 12.7; controllo `OPTS` Q8 = abc |
+| R3.7 | (b): passo (2u - 1) × 0,2649 = +0,2119; la saturazione di Consilium è su `c`, qui su `τ`; (c): passo verso il bordo al più la distanza 0,1052, formula non ripetuta; indice di distribuzione scritto `η_m`, diverso dall'η di `τ2 = τ1 + e^η` | 12.9 |
+| R3.9 | il giorno che cambia è il 9 (0,72 → 1,51, `hold` → `buy`); giorno 2 con `x1` = 0,03 | 12.3 |
+| R3.10 | (c) dà lo stesso figlio di (a); differenza: 16 numeri salvati, la scala torna tra un incrocio e l'altro, solo con regola omogenea | 12.3 (c) |
+| R3.11 | (b) mostrata con `json.dumps`, non con la funzione dedicata; scritta bene darebbe il primo hash; il rischio è un suo errore senza messaggio | 12.13 |
+| R3.12 | «continuando la serie all'infinito» | 12.2 |
+| R3.13 | apertura del giorno 4 portata dentro massimo-minimo (10,9); regola scritta in 12.1 | 12.1 (testo e tabella); generatore |
+| R3.14 | «pressione di selezione» definita in «In breve» Q4 e nel glossario | «In breve» Q4; Glossario |
+| R3.15 | 17658 e 3543 da una prova con metà dei genitori sul margine o sui bordi (5.2) | «In breve» Q9 |
+| R3.17 | «In breve» circa 30 minuti; documento circa tre ore (capitolo 12 lasciato a 25: i 30 del lettore comprendono i ricalcoli a mano) | Percorso di lettura |
+
+### Non applicati
+
+| Difetto | Motivo |
+|---|---|
+| R3.6, ultima parte (quantificare l'effetto di `w1` = 100 con memoria 6 invece di 1) | servirebbe una misura nuova della scala delle distanze a età 1 e 6, non nella tabella 3.2; il testo dice già che il peso va bene solo con la sua memoria (Q9) |
+| R3.11, ultima parte (togliere il `[ipotesi]` finale di 12.13) | per la convenzione del documento `[ipotesi]` marca anche le scelte dell'autore; la forma del testo decimale è una scelta, registrata come tale dall'Optimizer e accettata dallo Scientist |
+| R3.3, variante del lettore (`w1` = binary64 dopo 32 con stesse decisioni) | il calcolo la smentisce: il giorno 9 il punteggio diventa 1.0000000000000002 e la decisione `buy`; usato il binary64 prima di 32 (Z12) |
+| Proposte di accorciamento del lettore («Peso del capitolo»: tabella di 12.2, hash completi di 12.13) | non sono difetti numerati e toglierebbero dati verificati |
+
+### Misure
+- «In breve» (`awk` dalla riga «## In breve» alla riga prima di «## 1.», poi `wc -w`): **2355 → 2425** parole (budget circa 2450).
+- Documento: 1146 → 1154 righe (`wc -l`), 21055 → 21857 parole (`wc -w`); capitolo 12: 3584 → 4175 parole; tabelle 42 (invariate; una riga in più nella tabella di Q8 del capitolo 11, tre righe in 12.4, una in 12.11).
+
+### Script (in `/home/luca/Workspace/swarmtrader-r3-work/`)
+- `ref/examples-fictitious.mjs`: note di Q6 dopo la tabella (E1); apertura del gradino dentro massimo-minimo (R3.13); giorno cambiato in 12.3 (R3.9); Z3 con pesi ±250 (R3.4); intestazione V2 con Q7 a (E3); `w2` dei genitori, medie geometriche, scambio non necessario (E5, E6); passi di (b) e distanza dal bordo in 12.9 (R3.7); Z12 e binary64 dopo 32 (R3.3). `out/examples-fictitious.md` rigenerato; `diff` con la vecchia uscita: solo la cella del giorno 4, le note di Q6 spostate e righe aggiunte.
+- `ref/check-examples-fictitious.mjs`: nuovo controllo «tabelle intere» (separazione, stesso numero di celle, riga vuota dopo ogni tabella) sul ricalcolo e sul capitolo 12; il confronto delle tabelle segnala come «troncata» una tabella del testo che è l'inizio di una del ricalcolo; Q8 con tre opzioni; `0.99` (il caso di 4.3 citato in 12.4) nell'elenco dichiarato; variabile `GEN_OUT` per provare il controllo su un'uscita vecchia (senza salvare).
+- Nuovi valori ricontrollati in Python (`python3 -I`, con la libreria dello Scientist `verify/lib.py`, solo letta): Z12 (punteggio 0.9999999999999999, `hold`, hash `bc2bf9cb`, 24 bit = 32), binary64 dopo 32 (`buy`), Z3 a ±250 (-1,37 e 3; -4,56 e 7; -9,24 e 7), +0,2119 e 0,1052.
+
+### Controlli
+- `node ref/check-examples-fictitious.mjs`: **10 PASS su 10** (nuovo controllo «tabelle intere»; 326 numeri del capitolo 12 nel ricalcolo).
+- **Il controllo corretto fallisce sul testo vecchio:** testo `a476e0e` con la vecchia uscita del generatore (`GEN_OUT`): FAIL «tabelle intere» (tabella di Q6 seguita da «partenza 1: …» senza riga vuota; frammenti 9 e 49 senza separazione); testo `a476e0e` con il generatore corretto: FAIL «tabelle identiche», con «(troncata: 1 righe nel testo)» per 12.4. Sul testo nuovo passa.
+- `node ref/check-doc.mjs`: **17 PASS su 17** (1305 numeri rintracciati, 13 hash, 50 rimandi interni con la regola GFM, Q1-Q11 con problema, proposta e criterio, nessun Liquid).
+- `node ref/check-corrections.mjs`: uscita identica alla precedente (`diff` vuoto).
+- `npm test`: 40/40; `npm run archimate:check`: modello valido (33 elementi, 55 relazioni); recinti di codice 32 (pari); nessun `{{` o `{%`.
+- `verify/examples12.py` dello Scientist: non legge il documento (i valori del testo sono scritti nello script), quindi non si può puntare al testo nuovo. Eseguito da una copia con l'uscita in una cartella temporanea (script e `examples12.txt` originali non toccati): uscita identica, 143 controlli, gli stessi 4 segnalati. Le sue righe calcolate per 12.4 (età 9: 11,73; 6,91; 6,53; 13,89; età 49: 63,86; 37,60; 17,93; 29,64; 100,00) coincidono con le nuove righe del testo arrotondate; E1 ed E5 restano segnalati perché scritti come stringhe fisse nello script.
+- `git diff --word-diff`: le parole tolte sono l'esempio fuori intervallo di Q6 in «In breve», le frasi di Q6 riscritte, «20» e «due ore e mezza», `10,0` del giorno 4, «Z1-Z11», le frasi riscritte di 5.3, 12.4, 12.7, 12.8, 12.11, 12.13 e due `[ipotesi]` sulla descrizione del passo polinomiale (E4); nessun hash e nessun altro numero preesistente.
+
+**File toccati:** `docs/architecture/genome-encoding.md` e questo file (in coda); fuori dal repository `ref/examples-fictitious.mjs`, `ref/check-examples-fictitious.mjs` e le uscite in `out/`. Nessun commit, nessuna modifica a memoria, metriche, `docs/MAP.md`, board.
+
+**Prossimo passo:** decisioni dell'Owner su Q1–Q11, poi Step 11
