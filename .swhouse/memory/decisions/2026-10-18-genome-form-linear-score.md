@@ -4,7 +4,7 @@ cycle: 010
 title: First non-FSM genome form is the linear score with thresholds, memory only in indicators
 status: active
 superseded_by: null
-updated: 2026-10-19 (cycle 011 — R2 constraints linked)
+updated: 2026-11-15 (cycle 012 — R3 Step 1 answers; encoding pending); 2026-10-19 (cycle 011 — R2 constraints linked)
 ---
 
 ## Context
@@ -26,6 +26,7 @@ Fixed-length vector of weights fits the existing crossover/mutation, reads at a 
 - The indicator pool must include several speeds of EMA and volume ratios, since interactions cannot be expressed by the form itself.
 - R2 (cycle 011, issue #6): input constraints (close, counting rule C2, at most 10 inputs or 12 if strategic, evolvable families) in [[2026-10-18-indicator-catalog-constraints]]; the list of inputs is chosen by Luca on `docs/architecture/genome-indicators-catalog.md`.
 - Supersedes the "question 2 pending" note of [[2026-10-11-non-fsm-requirement-reading]].
+- R3 (cycle 012, issue #7): operator answers at Step 1 (2026-11-14): the 7 inputs are **always active** (fixed length, no presence gene; a useless input shows as a small weight); duplicates are recognised **by behaviour** (canonical form removing the symmetries that leave decisions unchanged, hash on it) and **only flagged**, removal left to E3 (#13). The encoding itself is **not decided**: Q1-Q11 of `docs/architecture/genome-encoding.md` are open for Luca, and the document's proposal (15 genes, centre `b` with half-width 1, `τ` = log of mean age, block crossover, Gaussian mutation with reflection, exact hex hash) is a proposal, not a decision. Facts found on the way: [[consilium-duplicate-genomes]], [[float-serialisation-node-python]].
 
 ## Confidence
 High (explicit operator choice). The merit of the form against the FSM is untested.

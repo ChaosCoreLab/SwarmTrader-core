@@ -1,7 +1,7 @@
 ---
 discovered: 2026-10-11
 cycle: 010
-updated: 2026-10-19 (cycle 011 — computation as the check, clean-room recomputation, simulated reading)
+updated: 2026-11-15 (cycle 012 — readers and verifier as one quality loop); 2026-10-19 (cycle 011 — computation as the check, clean-room recomputation, simulated reading)
 applicability: "Research cycles whose product is a document with claims, sources and numbers (no product code), run with role subagents"
 ---
 
@@ -29,6 +29,9 @@ The chain held and was extended:
 - the Scientist recomputed in another language without reading the author's scripts: [[clean-room-recomputation-other-language]] (1,041 table values, 0 differences; undeclared conventions found);
 - readability got its own independent check with an exit threshold: [[two-round-independent-simulated-reading]];
 - all scripts in a persistent folder: [[persistent-research-work-folder]].
+
+## Cycle 012 (R3, genome encoding)
+The chain held with Step 6 omitted by track: the Critic closed an open code question by reading the real database schemas instead of the model ([[consilium-duplicate-genomes]]); the Scientist's clean-room recomputation found 3 Medium defects, all specifications worded wider than they hold ([[clean-room-recomputation-other-language]], cycle 012 section); the two simulated readings (4/5 and 4/5) found what neither verifier looked for, an option borrowing another question's choice ([[two-round-independent-simulated-reading]], cycle 012 section). Verifier and readers ran in parallel without seeing each other's reports.
 
 ## Known limitations
 - All roles ran on the same model; independence is of task and object, not of mind.

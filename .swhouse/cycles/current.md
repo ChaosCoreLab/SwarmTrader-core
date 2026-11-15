@@ -1194,3 +1194,61 @@ Letti solo ora `out/examples.md`, `check-ops.md`, `check-symmetry.md`, `scales.m
 La correzione mirata dopo la lettura che ha superato la soglia è verificata dagli script e dai controlli sopra, **non da una terza lettura** (pattern `two-round-independent-simulated-reading`, punto 5).
 
 **Prossimo step:** Step 10 — LIBRARIAN
+
+## Step 10 — LIBRARIAN: Update Memory
+
+**Agent:** claude-opus-5-5 (subagent)
+
+**Stato del ciclo:** la codifica **non è scelta**. Q1–Q11 sono aperte: Luca sceglie dopo questo step e prima degli Step 11–12 (AC-13). Nessuna voce di memoria registra una di Q1–Q11 come decisa né la proposta del documento (15 geni, centro `b`, `τ`, incrocio per blocchi, gaussiana con riflessione, hash esadecimale esatto) come decisione. Le uniche scelte registrate sono le due risposte dell'operatore dello Step 1 (ingressi sempre attivi; duplicati riconosciuti per comportamento e solo segnalati), già vincoli dell'AC.
+
+**Fonti di questo step:** questo file (Step 1–9, correzioni dopo lo Step 9, seconda lettura); `docs/architecture/genome-encoding.md` (letti «In breve», 1.4, 5.3, 7.2–7.4, Esempio 5, glossario; non modificato); memoria esistente in `.swhouse/memory/`; Step 10 del ciclo 011 (`archive/cycle-011.md`) come modello. Nessun file letto sotto `/var/lib/consilium`: i fatti sugli schemi vengono dallo Step 5 (F-code-4) e dallo Step 9 (sezione 4). Lingua delle voci: inglese, come le voci esistenti.
+
+### Voci aggiunte (4)
+
+| Voce | Tipo | Perché ha valore durevole |
+|---|---|---|
+| `knowledge/consilium-duplicate-genomes.md` | knowledge | Consilium attuale **non** ferma né riconosce i genomi duplicati: `ga_v2.js` salva ogni figlio con `Genoma.create` (330-336); il modello di `db/orm.js` (49-52) non dichiara `unique`; `sync({ force: false })` (591) non aggiunge vincoli; negli schemi reali `UNIQUE` su `genoma` solo nel vecchio `db/database.sqlite`; `SaveGenoma` (454-504, uguaglianza esatta del testo) usata solo in `tests/manual/`. Fonti: Step 3, Step 5 F-code-4 (rinviato qui dallo Step 7), Step 9 sezione 4. Serve a E2/E3 |
+| `knowledge/float-serialisation-node-python.md` | knowledge | (1) Per un hash esatto il JSON decimale non basta: Node e Python scrivono diversamente `1e-7`, `-0.0`, interi grandi, `NaN`, arrotondamenti; i numeri come 16 cifre esadecimali binary64 big-endian (dopo -0 → 0) danno lo stesso testo per costruzione (10 hash e 3 testi riprodotti in Python); la scelta resta **Q11**. (2) `c` da `τ` diverso tra Node e Python nel **7,6 %** dei casi, 0 decisioni cambiate su 1107400 valutazioni, hash indipendente. (3) La chiave «a 24 bit» va definita come **24 bit di frazione** della mantissa (con 23 l'Esempio 5 cambia); la chiave resta **Q3**. Fonti: Step 9 D2, D3; correzioni D2, D3; documento 1.4, 7.2–7.4 |
+| `errors/2026-11-15-summary-grew-past-reading-target.md` | errors | «In breve» 1009 → 2705 → **3381** parole a ogni giro di correzione, tagliato a **2318** dopo la seconda lettura; bersaglio 1500–2000 non raggiunto, con il motivo. Lezione: budget di parole del riassunto fissato presto e misurato a ogni giro, ogni domanda scritta per intero in un posto solo |
+| `errors/2026-11-15-implicit-choice-stated-as-fact.md` | errors | Q6 (b) descritta con «riflessione in [c_min, c_max]», che era una scelta implicita di **Q10** (a), non un fatto di Q6; nessuno script implementava la variante `c` (L2.6, seconda lettura). Lezione: ogni opzione si descrive solo con ciò che quella domanda cambia, e si confronta con il codice che l'ha misurata |
+
+### Voci aggiornate (5)
+
+- `patterns/two-round-independent-simulated-reading.md` — sezione «Cycle 012»: soglia fissata prima in `reviews/reader-brief.md`; lettura 1 **4/5** (8 Q motivabili su 11, 3 in parte; 45/45; L1–L19); lettura 2 **4/5** (45/45; riserve su Q7, Q9, Q10 c; L2.1–L2.21, 5 gravi, tra cui l'errore di Q6); lezione: superare la soglia non chiude il giro. Campo `updated:`.
+- `patterns/clean-room-recomputation-other-language.md` — sezione «Cycle 012»: `python3 -I`, circa 330 valori con 0 differenze, hash e testi canonici byte per byte, 0 figli invalidi; difetti 0 Critici/Alti, **3 Medi (D1–D3)**, **8 Bassi (D4–D11)**; ciò che solo il secondo linguaggio ha mostrato. Campo `updated:`.
+- `patterns/independent-verification-chain-research.md` — sezione «Cycle 012»: verificatore e lettori come un solo ciclo di qualità, ciascuno con un oggetto diverso. Campo `updated:`.
+- `errors/2026-10-18-identity-claims-imprecise.md` — sezione «Recurrence (cycle 012)»: D1 (stesso hash ⇒ stesse decisioni solo con Q5 a), D2, D3 sono la stessa famiglia (affermazioni più larghe di quanto valga); aggiornamento e non voce nuova. Campo `updated:`.
+- `decisions/2026-10-18-genome-form-linear-score.md` — conseguenza R3: le due risposte dello Step 1 e la nota che **la codifica non è decisa** (Q1–Q11 aperte, proposta non decisa). Campo `updated:`.
+
+### Validazione
+
+- `memory/validation/non_regression_checklist.md` — **NRC-H03 esteso** a `docs/architecture/genome-encoding.md` come il ciclo 011 per il catalogo: modulo aggiunto, «open both published pages» → «open the published pages», criterio in più per questo documento (blocchi di pseudocodice e di testo canonico interi, hash di G1 `29ae884b…0a0d` presente in «In breve» e in 7.3, come lo Step 9 sezione 7), colonna «Since» con «encoding document added cycle 012 - PENDING_HUMAN (after merge)»; `last_updated: 2026-11-15 (cycle 012)`. Le parti già VERIFIED restano tali. Si esegue dopo il merge su `main`.
+- **H-item eseguiti in questo ciclo:** nessuno. **Bug segnalati da un umano e corretti:** nessuno (articolo 25 non richiede voci nuove).
+- **Validation matrix:** `last_updated: 2026-10-03`; cicli da allora 009, 010, 011, 012 → 4, entro il limite di 10; nessun target, credenziale o procedura cambiati: **nessuna modifica**. Resta l'osservazione del ciclo 011: lo stato di `github-pages` («first deploy PENDING_HUMAN») è testo decaduto; riformulazione facoltativa allo Step 12.
+
+### Collegamenti
+Ciclo 012 ↔ ciclo 011 (`two-round-independent-simulated-reading`, `clean-room-recomputation-other-language`, `identity-claims-imprecise`, `document-unreadable-first-independent-reading`) e ciclo 010 (`genome-form-linear-score`, `independent-verification-chain-research`, `research-document-conventions`). Voci nuove: `consilium-duplicate-genomes` ↔ `float-serialisation-node-python` ↔ `identity-claims-imprecise`; `implicit-choice-stated-as-fact` ↔ `two-round-independent-simulated-reading` ↔ `identity-claims-imprecise`; `summary-grew-past-reading-target` ↔ `document-unreadable-first-independent-reading`. Tutti i `[[nome]]` scritti in questo step risolvono a un file (controllato con `find`).
+
+### Voci scartate (e perché)
+- **Q1–Q11 e la proposta del documento come decisione:** non decise; registrarle violerebbe AC-13. Vanno nel blocco `## Human Verification` e, dopo la scelta, in una voce `decisions/` (Step 12 o ciclo successivo).
+- **Nuova voce `decisions/` «decisioni in attesa»:** non serve una voce a parte; la nota «encoding not decided» sta nella conseguenza R3 di `genome-form-linear-score`.
+- **Nuovo pattern «verifica in altro linguaggio + due letture»:** coperto da tre pattern esistenti; aggiornati invece di duplicarli.
+- **Voce knowledge su simmetrie S1–S6, operatori, forma canonica:** sono il contenuto del documento, e in parte proposte ancora da scegliere; copiarle duplicherebbe il documento.
+- **Fatto PostgreSQL `VARCHAR(255)`:** `[ipotesi, non verificato]` (Step 5); tenuto solo come riga marcata dentro `consilium-duplicate-genomes`, non come voce.
+- **Errori minori** (D4–D11, L1–L19 tranne i citati, il rimando sbagliato alla «regola C2» L8, «circa 77163»): corretti nel ciclo; elencati come esempi nei pattern aggiornati.
+- **Difetti degli step intermedi** (M1–M16 del Critic, figli fuori intervallo per arrotondamento, riflessione che cambia l'ultima cifra di un valore interno): risolti allo Step 7 e documentati nel documento (5.2, 5.3, 3.1); nessuna lezione nuova oltre a `identity-claims-imprecise`.
+
+### Cosa è ora riutilizzabile
+Per E2/E3: Consilium non riconosce i duplicati (lavoro nuovo); come scrivere i numeri per un hash identico in Node e Python; il limite di `exp` tra i due linguaggi e che cosa cambia (punteggi sì, decisioni e hash no); come specificare una chiave di arrotondamento sui bit. Per i cicli di ricerca: le due letture con soglia trovano difetti anche quando passano; il riassunto va misurato a ogni giro; ogni opzione descritta solo con ciò che la sua domanda cambia.
+
+### Da applicare allo Step 12
+1. `.swhouse/metrics/summary.yaml`: `memory_entries` contati sulle cartelle dopo questo step: `decisions: 9`, `patterns: 9`, `errors: 9`, `knowledge: 10` (oggi 9/9/7/8: +2 errori, +2 knowledge); `total_cycles`, `cycles_by_status`, `last_updated` e riga di commento del ciclo 012 secondo l'esito dell'Arbiter.
+2. `.swhouse/reputation/scores.yaml`: voce del ciclo 012 dopo lo Step 11.
+3. `docs/MAP.md`: riga di `architecture/genome-encoding.md` e `last_verified` (non toccato qui, come da istruzione).
+4. Dopo la scelta di Luca: blocco `## Human Verification` con Q1–Q11 e voce `decisions/` sulla codifica scelta; se cambia un fatto di `float-serialisation-node-python` (ad es. Q11 b), aggiornarla.
+5. Dopo il merge su `main`: i comandi dello Step 9 (sezione 7) e NRC-H03 sul nuovo documento; esito nel ciclo e nella colonna «Since».
+6. Facoltativo: riformulare lo stato `github-pages` nella validation matrix.
+
+**File toccati dal Librarian:** 4 nuovi in `.swhouse/memory/{knowledge,errors}/`, 5 voci aggiornate, `memory/validation/non_regression_checklist.md` (NRC-H03) e questo file (in coda). Nessuna modifica a `docs/`, `_data/`, `metrics/`, `reputation/`, `cycles/archive/`, `validation_matrix.md`, `src/`. Nessun commit.
+
+**Prossimo step:** decisioni dell'Owner su Q1–Q11 (blocco `## Human Verification`), poi Step 11 — EVOLUTION MASTER

@@ -1,6 +1,6 @@
 # Non-Regression Checklist
 
-last_updated: 2026-11-14 (cycle 011)
+last_updated: 2026-11-15 (cycle 012)
 owner: U422756 (VALIDATOR role not configured; Owner acts as validator)
 
 Constitution Article 25. Commands are written as `npm …` (Linux, macOS, Windows `cmd`); in Windows PowerShell use `npm.cmd`. Type-A items must pass before the Arbiter may issue ACCEPTED for any cycle touching the listed modules. The list only grows; duplicates are merged.
@@ -15,7 +15,7 @@ Constitution Article 25. Commands are written as `npm …` (Linux, macOS, Window
 | NRC-A06 | A | `src/engine/strategy.js`, `src/engine/fsmStrategy.js`, `src/engine/fixedGenomeGA.js`, `src/engine/simulationController.js`, `src/engine/fitnessValidator.js` | `npm test` (`tests/strategy.test.js`) | The strategy contract holds: the FSM genome passes through it unchanged and a non-FSM test strategy replays ENI with a valid, deterministic trace | cycle 009 |
 | NRC-H01 | H | UI as a whole | Human session, see procedure below | Owner confirms each point; outcome recorded in the cycle file | cycle 001 — ✅ VERIFIED 2026-09-29 (cycles 001, 002) |
 | NRC-H02 | H | `archimate/**` (any model content change) | Owner model walkthrough, see procedure below | Owner confirms every cell of the published model; outcome recorded in the cycle file | cycle 007 — ✅ VERIFIED 2026-10-11 (cycle 007) |
-| NRC-H03 | H | `docs/architecture/genome-forms-review.md`, `docs/architecture/genome-forms-guide.md`, `docs/architecture/genome-indicators-catalog.md` (page-local style) | After merge to `main`, open both published pages at 1280 and 390 px | Tables scroll inside their box, no horizontal page scroll, style block not shown as text, menu entries present; executor confirms each point; outcome in the cycle file | cycle 010 — ✅ VERIFIED 2026-10-18 (cycle 010; github-pages target of cycle 009 verified in the same session); catalog added cycle 011 - VERIFIED 2026-11-14 (cycle 011) |
+| NRC-H03 | H | `docs/architecture/genome-forms-review.md`, `docs/architecture/genome-forms-guide.md`, `docs/architecture/genome-indicators-catalog.md`, `docs/architecture/genome-encoding.md` (page-local style) | After merge to `main`, open the published pages at 1280 and 390 px | Tables scroll inside their box, no horizontal page scroll, style block not shown as text, menu entries present; for the encoding document also pseudocode and canonical-text blocks shown whole and the G1 hash `29ae884b…0a0d` present in «In breve» and 7.3; executor confirms each point; outcome in the cycle file | cycle 010 — ✅ VERIFIED 2026-10-18 (cycle 010; github-pages target of cycle 009 verified in the same session); catalog added cycle 011 - VERIFIED 2026-11-14 (cycle 011); encoding document added cycle 012 - PENDING_HUMAN (after merge) |
 
 ## NRC-H01 — Human UI validation procedure
 

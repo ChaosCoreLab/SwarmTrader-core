@@ -1,6 +1,7 @@
 ---
 discovered: 2026-10-19
 cycle: 011
+updated: 2026-11-15 (cycle 012 — two passing rounds at 4/5, defects found by each)
 applicability: "A document whose reader must take a decision without the domain knowledge (research documents of the epic for Luca), before it is handed over"
 ---
 
@@ -16,6 +17,14 @@ A document can be correct, verified and still unusable by the person who must de
 
 ## Example
 Cycle 011, `.swhouse/cycles/archive/cycle-011.md`, sections "Lettura simulata indipendente" and "Seconda lettura simulata indipendente"; reports in `/home/luca/Workspace/swarmtrader-r2-work/reviews/`. Error it prevents: [[2026-10-19-document-unreadable-first-independent-reading]].
+
+## Cycle 012 (R3, genome encoding)
+Applied as written, with the threshold fixed in `reviews/reader-brief.md` before the first reading (readability >= 4/5, each of Q1-Q11 answerable and motivable from «In breve» alone, about 85 % comprehension). Both rounds passed, each **at the limit**, and each still found defects worth fixing:
+- **Reading 1: 4/5.** 11/11 questions answerable from the summary, 8 fully motivable, 3 only partly (Q1, Q4, Q8: warm-up, R6, synthetic series and "typical value" not defined; no order of magnitude for the cost of the fingerprint; tie rule and neutral inputs not stated); 45/45 comprehension, 43 sure; no numeric error in its recomputations. Findings L1-L19, among them a wrong cross-reference to a catalog rule (L8). Corrected together with the Scientist's D1-D11.
+- **Reading 2 (new reader): 4/5.** 45/45 (44 sure); reserve on Q7 (no criterion for the value 2), Q9 (criterion relied on a fact explained only in 3.2), Q10 c (operator named, not described). Main finding: summary too long (about 3,400 words) and each question written three times. Findings L2.1-L2.21, 5 serious, including an option of Q6 that silently carried a choice of Q10 ([[2026-11-15-implicit-choice-stated-as-fact]]). Targeted round checked by scripts, no third reading (point 5).
+- Lesson: passing the threshold does not end the loop; the second reader found the most serious content defect of the cycle. The length cost is in [[2026-11-15-summary-grew-past-reading-target]].
+
+Reports: `/home/luca/Workspace/swarmtrader-r3-work/reviews/lettore-indipendente-1.md`, `lettore-indipendente-2.md`; cycle file sections "Correzioni dopo lo Step 9 e la prima lettura simulata" and "Seconda lettura simulata e correzioni mirate".
 
 ## Known limitations
 - The reader is a model: its "memory" and reading times are estimates, it marks deduced answers as uncertain; it is not Luca. Luca's own reading remains the real test.
