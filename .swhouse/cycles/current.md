@@ -1252,3 +1252,61 @@ Per E2/E3: Consilium non riconosce i duplicati (lavoro nuovo); come scrivere i n
 **File toccati dal Librarian:** 4 nuovi in `.swhouse/memory/{knowledge,errors}/`, 5 voci aggiornate, `memory/validation/non_regression_checklist.md` (NRC-H03) e questo file (in coda). Nessuna modifica a `docs/`, `_data/`, `metrics/`, `reputation/`, `cycles/archive/`, `validation_matrix.md`, `src/`. Nessun commit.
 
 **Prossimo step:** decisioni dell'Owner su Q1–Q11 (blocco `## Human Verification`), poi Step 11 — EVOLUTION MASTER
+
+## Terzo giro di leggibilità: esempi su dati fittizi
+
+**Agent:** claude-opus-5-5 (subagent, ruolo OPTIMIZER) — 2026-11-15
+
+**Richiesta dell'operatore (Luca):** «Aumenta la facilità di lettura del documento introducendo esempi basati su qualche set di dati fittizio che puoi autodefinire.»
+
+**Stato:** Q1–Q11 restano **aperte**. Nessun numero, hash, proposta, opzione o criterio esistente è cambiato, e la proposta di ogni domanda è la stessa; gli esempi mostrano ogni opzione sugli stessi dati e non dicono quale sia migliore.
+
+### Dataset definiti (entrambi inventati, nessun dato ENI)
+- **Gradino**: 10 barre di prezzo, chiusura 10 per 3 giorni e 11 dal giorno 4; apertura = chiusura del giorno prima, massimo e minimo a ±0,1, volume 1000. Costruito per vedere come una EMA insegue un salto e quanto si somigliano due memorie vicine. Tabella completa in 12.1.
+- **Ingressi pronti**: 10 giorni con i 7 ingressi già dati (scelti a mano, non calcolati da prezzi); giorni 4 e 5 tutti a 0 («senza segnali»), giorno 9 con `x1` = 0,03125 = 2^-5 (esatto in binario, per mettere un punteggio esattamente su una soglia). Tabella completa in 12.1.
+- Q4 usa l'insieme di prova già definito in 7.4 (dataset di 20 giorni + serie sintetica, 3020 barre); Q6, Q8, Q10 non hanno bisogno di serie (passi su un gene).
+
+### Esempi aggiunti (nuovo capitolo «12. Esempi per le scelte», tra il capitolo 11 e il glossario)
+
+| Sezione | Domanda | Che cosa mostra |
+|---|---|---|
+| 12.1 | - | i due dataset, con tutte le barre |
+| 12.2 | concetto (1.4) | EMA con età media 1 e 4 sul gradino, giorno per giorno; pesi `c(1 - c)^k` e perché la loro media è l'età media |
+| 12.3 | Q5 | Z1 e Z2 = 8 × Z1: con (a) e (c) un solo genoma/figlio, con (b) il figlio misto pesi-soglie cambia 6 o 2 giorni su 10; lo stesso passo su `w1` pesa 0,75 o 0,0938 semi-ampiezze |
+| 12.4 | Q6 | età media dopo un passo del 5 % su `τ` (fattore 1,303) e su `c` (da 49 a 17,9; fuori intervallo: 29,6 con Q10 a, 100 con Q10 b) |
+| 12.5 | Q1 | Z1 con `b` = -1,5, -1, 0, 1,5 giorno per giorno; con (b) le colonne ±1,5 non sono ammesse |
+| 12.6 | Q7 | `x1` e `x2` sul gradino con rapporto 1,25, 2, 4; Z3 (`w1` = 40, `w2` = -40) vende 0, 0, 5 giorni; rapporti ammessi da (a), (b), (c) |
+| 12.7 | Q8 | età media massima per avvio di R6 (30, 60, 120, 302 barre) con (b), contro 100 fisso con (a) |
+| 12.8 | Q9 | figli delle memorie di Z4 e Z5: blocchi validi; gene per gene una combinazione su quattro viola V2 (rapporto 1,33); intermedio rapporto 6,32 |
+| 12.9 | Q10 | 100000 mutazioni da `τ` = 4,5 per opzione: usciti, sul bordo, vicino al bordo (34,73/0,00/2,80 %; 30,03/30,03/31,92 %; 0,00/0,00/3,91 %) |
+| 12.10 | Q2 | **nessun esempio**: l'effetto dipende dalle equazioni di R4, non modellate dagli script; un esempio dovrebbe inventare una regola di R4 |
+| 12.11 | Q3 | Z6 (`w1` = 32) e Z7 (`w1` = 32.0000004): decidono diversamente il giorno 9; (a) hash diversi, (b) stessa chiave a 24 bit, (c) con griglia 2^-10 Z7 non esiste e il vicino Z8 decide `buy` |
+| 12.12 | Q4 | Z9 e Z10 sempre `hold` (soglie mai raggiunte), hash diversi, stessa impronta sulle 3020 barre; Z11 impronta diversa |
+| 12.13 | Q11 | G1 con `w7` = 1e-7: esadecimale uguale in Node e Python; decimale `1e-7` contro `1e-07`, `25` contro `25.0`, hash diversi |
+
+**Rimandi:** ogni domanda di «In breve» termina con `*Esempio:* [12.x](…)` (Q2: «nessuno, perché dipende da R4»); ogni intestazione di domanda del capitolo 11 ha «esempio in [12.x](…)»; 1.4 rimanda a 12.2; «Le undici scelte per Luca» e il «Percorso di lettura» citano il capitolo 12 (che fa da indice degli esempi: il layout `doc` non genera un sommario). Sigle: riga nuova «Z1-Z11». Avvertenza iniziale: cita i due dataset nuovi. Percorso di lettura: capitolo 12 circa 25 minuti, documento «circa due ore e mezza» (prima «circa due ore»). `last_verified` lasciato a 2026-11-14: gli esempi non sono ancora verificati in modo indipendente.
+
+**Scelte dell'autore marcate `[ipotesi]` nel testo:** η = 20 della mutazione polinomiale (12.9), passo 2^-10 della griglia (12.11), forma del testo decimale di Q11 b (12.13). Per 12.9 è stato letto il codice di DEAP `mutPolynomialBounded` (`deap/tools/mutation.py`, ramo `master`) e la formula è riprodotta tale e quale; il testo dice che è un calcolo illustrativo e non una prova degli operatori come quelle di 5.2 (le frasi esistenti «non provata qui» restano, e restano vere per le prove del capitolo 5).
+
+### Misure (prima → dopo)
+- «In breve» (`awk` dalla riga «## In breve» alla riga prima di «## 1.», poi `wc -w`): **2318 → 2355** parole (+37, entro il budget di circa +250).
+- Documento: 917 → 1146 righe (`wc -l`), **17324 → 21055** parole (`wc -w`); capitolo 12: 3584 parole, 12 tabelle; tabelle del documento 30 → 42.
+
+### Script (in `/home/luca/Workspace/swarmtrader-r3-work/`)
+- `ref/examples-fictitious.mjs` (nuovo): definisce i due dataset e calcola tutti gli esempi riusando `indicators.mjs` (ingressi, `cOfTau`), `genome.mjs` (punteggio, decisioni, forma canonica, hash, `roundBits`, `nearKey`), `operators.mjs` (riflessione, incroci, `rngOf`); Q11 chiama `python3 -I`. Uscita `out/examples-fictitious.md`; esporta `build()`.
+- `ref/check-examples-fictitious.mjs` (nuovo): ricalcola con `build()` e confronta con il testo: uscita salvata riproducibile, 12 tabelle identiche, 281 numeri del testo del capitolo 12 presenti nel ricalcolo (controllo stretto: solo questa uscita più un piccolo elenco dichiarato), 3 hash, ogni opzione con la sua voce, rimandi da «In breve» e dal capitolo 11, Q2 motivata, dataset dichiarati inventati, nessuna parola di preferenza. Uscita `out/check-examples-fictitious.md`.
+- `ref/check-doc.mjs` (adattato): (1) i rimandi interni `](#…)` e i vettori JSON tra apici inversi presenti in `out/` non si contano come numeri; i numeri di sezione 12.1-12.13 aggiunti all'elenco dichiarato; (2) **controllo delle ancore corretto**: usava la regola di kramdown senza GFM (cifre iniziali tolte), mentre il sito usa kramdown con input GFM (cifre iniziali tenute, punti tolti), verificato sugli id della pagina pubblicata del catalogo (`1.1 La barra…` → `id="11-la-barra-e-i-suoi-cinque-numeri"`). Con la regola giusta due rimandi **già presenti** erano rotti sul sito: `#domande-per-luca` (12 occorrenze) → `#11-domande-per-luca` e `#sigle` → `#15-sigle`; corretti nel documento (solo l'id del link, nessun testo).
+
+### Verifica eseguita
+- `node ref/examples-fictitious.mjs`: eseguito, `out/examples-fictitious.md` scritto.
+- `node ref/check-examples-fictitious.mjs`: **9 PASS su 9**.
+- `node ref/check-doc.mjs`: **17 PASS su 17** (42 tabelle coerenti e precedute da una frase di lettura, 20 tabelle di dati identiche a `out/`, 13 hash in `out/`, 3 testi canonici, 7 blocchi di geni, 1243 numeri rintracciati, 13 riferimenti, **50 rimandi interni esistenti con la regola GFM**, Q1-Q11 in «In breve» con problema, proposta e criterio, nessun Liquid).
+- `node ref/check-corrections.mjs`: uscita identica alla precedente (`diff` vuoto).
+- Rimandi esterni del documento (`../genome-indicators-catalog/#il-punteggio-lineare-con-soglie`, `#ingresso-parametro-gene`): id presenti nella pagina pubblicata.
+- Recinti di codice 32 (pari); `npm test`: 40/40; `npm run archimate:check`: modello valido (33 elementi, 55 relazioni).
+- `git diff --word-diff`: le sole parole tolte sono id di rimandi, riferimenti di sezione tra parentesi estesi con il link, «ore.» del tempo di lettura, «catalogo» dell'avvertenza e «tabella.» della frase di «Le undici scelte»; nessun numero, hash, proposta, opzione o criterio cambiato.
+- Resa Jekyll non provata qui (Ruby e Jekyll assenti).
+
+**File toccati:** `docs/architecture/genome-encoding.md` e questo file (in coda); fuori dal repository `ref/examples-fictitious.mjs`, `ref/check-examples-fictitious.mjs`, `ref/check-doc.mjs` e le uscite in `out/`. Nessun commit, nessuna modifica a memoria, metriche, `docs/MAP.md`, archivio, board.
+
+**Prossimo passo:** verifica indipendente degli esempi e lettura simulata
