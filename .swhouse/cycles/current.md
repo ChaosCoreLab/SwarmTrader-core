@@ -1143,3 +1143,54 @@ Letti solo ora `out/examples.md`, `check-ops.md`, `check-symmetry.md`, `scales.m
 **Dimensione:** 895 righe, 18251 parole (prima 874 righe e 15748 parole), 107597 byte; «In breve» 3381 parole.
 
 **Prossimo passo:** seconda lettura simulata indipendente (nuovo lettore), poi Step 10 — LIBRARIAN
+
+## Seconda lettura simulata e correzioni mirate
+
+**Agent:** claude-opus-5-5 (subagent)
+
+**Rapporto:** `/home/luca/Workspace/swarmtrader-r3-work/reviews/lettore-indipendente-2.md` (lettore nuovo, senza accesso a versioni e letture precedenti; letti solo `reviews/reader-brief.md` e il documento).
+- **Leggibilità 4 su 5, al limite: soglia raggiunta.** 45/45 domande di comprensione con sezione d'origine (44 sicure, 1 «abbastanza sicura»); Q1-Q11 tutte rispondibili e motivabili dalla sola «In breve», con riserva su **Q7** (nessun criterio per il valore 2), **Q9** (il criterio di (a) usava un fatto spiegato solo in 3.2; «un solo coefficiente» confuso con i `c`) e **Q10 (c)** (mutazione polinomiale limitata nominata ma non descritta). Ricalcoli del lettore: nessuna differenza numerica.
+- Giudizio principale: «In breve» troppo lungo (circa 3400 parole, 35-40 minuti) e ogni domanda scritta tre volte («In breve», blocchi «Domanda Qx», capitolo 11).
+
+**Giro di correzione mirato** (nessun commit; toccati solo il documento, `ref/` e `out/` della cartella di lavoro e questo file, in coda). Proposta, opzioni di Q1-Q11, numeri e hash invariati: nessun numero già pubblicato è cambiato; aggiunto un solo dato nuovo (correlazioni di Q7, script nuovo). Rilievi numerati L2.1-L2.21 come nel rapporto; i 5 gravi sono L2.2, L2.4, L2.5, L2.6, L2.12, gli altri 16 minori.
+
+**Script:** nuovo `ref/check-q7.mjs` → `out/check-q7.md` (correlazione di Pearson tra `x1` e `x2` sulla serie sintetica, 3000 barre, prime 300 escluse, età media veloce 1, 4, 25, rapporti 1,25, 2, 4). `ref/check-corrections.mjs`: una riga in più in «Altri numeri» (20 + 3000 + 2517 = 5537 barre; 200 × 5537 = 1107400 valutazioni). `ref/check-symmetry.mjs`: intestazione della tabella riassuntiva «barre confrontate» → «valutazioni (genoma × barra)»; uscita rigenerata, diff solo su quella riga. `ref/numfmt.mjs`: le righe della seconda tabella nominano le funzioni usate; valori identici. `ref/check-doc.mjs` **non modificato**: nessun controllo era legato a testo spostato (i controlli 11, 14 e 17 trovano ancora «Domanda Qx —» prima del capitolo 11, Q1-Q11 in «In breve» con *Problema*, **Proposta** e *Per scegliere*, avvio, «verifiche indipendenti» e «3020 barre» in «In breve»).
+
+| ID | Correzione | Verifica |
+|---|---|---|
+| L2.2 (grave) | Q9 in «In breve»: il problema dice ora perché conta, senza rimandi necessari (la grandezza tipica di un ingresso dipende dalla memoria; per le distanze circa 26 volte tra memoria corta e lunga, quindi un peso va bene solo con la sua memoria); criterio (a) «tenere ogni peso con la sua memoria» | 26 = 0,1046 / 0,0040 (tabella 3.2, `out/scales.md`) |
+| L2.4 (grave) | Q3 (b): in «In breve» «circa 7,5 cifre decimali significative (24 bit di frazione della mantissa, 7.4)»; in 7.4 l'inciso `float32` riscritto: 24 bit di frazione non sono la precisione di un `float32`, che ne ha 23, e con 23 bit la coppia dell'Esempio 5 avrebbe la stessa chiave | `out/check-corrections.md` D3: 23 bit → chiavi uguali, 24 bit → diverse; 7,53 cifre decimali |
+| L2.5 (grave) | 1107400 descritto come 200 genomi × 5537 barre (dataset inventato 20, serie sintetica 3000, snapshot ENI 2517) alla prima occorrenza (1.4) e nell'intro della tabella S1 (cap. 6); colonna «barre confrontate» → «valutazioni (genoma × barra)»; «18,0 % delle barre» → «delle valutazioni»; tolto da «In breve»; l'avvio del cap. 6 rimanda alle serie descritte in S1 | `check-corrections` (5537, 1107400); `check-symmetry` rigenerato; controllo 4 di `check-doc` (8 tabelle identiche a `out/`) |
+| L2.6 (grave) | Q6 (b) uniformata in «In breve», 4.3 e cap. 11: `c` come gene con passo lineare; il trattamento dei bordi **non è parte di Q6 ma di Q10** (riflessione con Q10 a, saturazione con Q10 b). Verità trovata: nessuno script di `ref/` implementa la variante `c`; l'unica misura su `c` è la passeggiata con la saturazione di Consilium (`check-ops.mjs`), mentre la mutazione proposta riflette (`operators.mjs`, `reflect`). Quindi «riflessione in [c_min, c_max]» era una scelta implicita di Q10 a, non un fatto di Q6; ora detto, con l'intervallo [0,0099; 0,6667] al posto di c_min, c_max | lettura di `ref/operators.mjs` e `ref/check-ops.mjs` |
+| L2.12 (grave) | Garanzia dell'hash in «In breve» riscritta: «Con la proposta, stesso hash vuol dire stesse decisioni su ogni serie, se le calcola lo stesso programma», poi due eccezioni rare in elenco (programmi diversi Node/Python; due soglie libere con la divisione che arrotonda) e «il contrario non vale» | coerente con 7.1 «Che cosa garantisce lo stesso hash» (invariato) e 1.4 |
+| L2.1 | Ripetizione tripla tolta: i blocchi «Domanda Qx» dei capitoli 3-8 sono ora un rimando a «In breve» e al capitolo 11 più le sole informazioni che non stanno altrove (Q5: conversione a 16 geni; Q6: intervallo di `c` e bordi; Q7: tabella delle correlazioni; Q8: stesso intervallo per le due distanze; Q9: dove sono le prove; Q10: file di Consilium e descrizione di (c); Q11: [11]; Q3: calcolo della chiave; Q4: definizione, versione, uso, prove; Q2: riga R4-1). Il capitolo 11 tiene le tabelle | controlli 11 e 14 di `check-doc`; 26 ancore interne esistenti |
+| L2.3 | «un solo coefficiente α» → «lo stesso peso α per tutti i geni» in «In breve», tabella 5.3 e capitolo 11 | `grep` «un solo α», «un solo coefficiente»: nessuna riga |
+| L2.7 | Q1: tolto il rimando «(Q8)»; la frase sul fattore 5 è intera in Q1 | - |
+| L2.8 | Q10 (c) descritta in una frase in «In breve» e per esteso in 5.3: il passo si accorcia avvicinandosi al bordo e non lo supera; vicino a un bordo i passi verso l'esterno sono più piccoli. Stato della fonte dichiarato: le pagine di DEAP [3] e pymoo [4] lette allo Step 4 danno solo la firma e il «resta nei limiti»; la forma del passo è dell'autore (formula di Deb non riletta), `[ipotesi]`; operatore non provato. Anche intro di 5.3, cap. 11 e glossario | Step 4, B3 e [F4]: letta la firma di `mutPolynomialBounded`, non la formula |
+| L2.9 | Q4: che cosa farebbe E3 con l'impronta (controllo «stesso hash, stessa impronta»; trattare le impronte uguali come duplicati, per esempio riducendone la pressione di selezione, `[ipotesi]`), in «In breve» e 7.4 | - |
+| L2.10 | Q7: dato quantitativo nuovo. Correlazione tra `x1` e `x2` sulla serie sintetica: da 0,99 a 1,00 con rapporto 1,25, da 0,95 a 0,97 con 2, da 0,82 a 0,87 con 4; tabella in 3.1; il 2 resta `[ipotesi]` (nessuna fonte dice quanta somiglianza sia troppa) | `out/check-q7.md`; controllo 4 (tabella identica) e 8 di `check-doc` |
+| L2.11 | Nomi di file e dettagli di prova fuori da «In breve» (`individual.js`, `individual_v2.js`, 1107400, «va versionata», «E2, in Node; 1.4»): ora in 5.3 (Q10) e 7.4 (Q4) | `grep` sulla sezione: nessun `individual*.js`, nessun `ref/*.mjs`, nessun 1107400 |
+| L2.13 | 1.3: la formula diretta di N10 in un paragrafo a parte «Per chi verifica»; nel testo solo «controllato contro una formula diretta (scarto 1,5e-13)» | - |
+| L2.14 | 1.4 «Limite»: elenco puntato (che cosa differisce, come si è misurato, che cosa non cambia, che cosa può cambiare, che cosa fare) | numeri invariati (10,1 %, 7,6 %, 18,0 %) |
+| L2.15 | V3 uniformato (tabella 3.1 e cap. 11 Q5 b): con due soglie libere soglie invertite scambiate (cambia il comportamento) o rifiutate, soglie uguali rifiutate (semi-ampiezza nulla) | - |
+| L2.16 | 4.2: prima il risultato in parole, poi i numeri, poi il metodo in una frase a parte, con rimando a 5.3 per i nomi degli incroci | numeri invariati (16247/16326, 20000/20000, 14607/14607) |
+| L2.17 | S1: il paragrafo apre con il messaggio (con `k` non potenza di 2 una decisione cambia solo a ridosso di una soglia), poi il caso costruito e i numeri | numeri invariati (44132 su 200000) |
+| L2.18 | 7.2, seconda tabella: ogni riga nomina le funzioni (`toPrecision(2)` / `format(x, ".1e")`, `Math.round` / `round`, …); frase di lettura aggiornata | `out/numfmt.md` rigenerato, valori identici; controllo 4 |
+| L2.19 | Cap. 11: tolta la frase sul registro di lavoro e il blocco `## Human Verification` | - |
+| L2.20 | «Il problema»: il dato di `k` barre prima pesa `c(1 - c)^k`, la media di `k` con questi pesi è `(1 - c)/c` | identità della EMA (somma geometrica) |
+| L2.21 | Definiti alla prima occorrenza in «In breve»: snapshot ENI (copia fissa dei 2517 giorni, in Q4 e nel glossario, voce nuova), Consilium (in Q6), E2 (nella garanzia dell'hash), R4 e R6 (in «La proposta» e in Q8). E3 resta definito nel «Percorso di lettura» | - |
+
+**Altre modifiche:** il paragrafo «Operatori proposti» di «In breve» è confluito in Q9 (a) e Q10 (a) (blocchi, passo, riflessione con l'esempio 10,3 → 9,7, scambio e ritento); la sezione si chiama ora «L'hash». «Percorso di lettura»: «In breve» circa 20 minuti, documento circa due ore. Q1 in «In breve» non ripete più le classi di hash dei genomi a pesi nulli e Q5 non ripete la conversione a 16 geni: entrambe restano nel capitolo 11 e nei blocchi di 3.2 e 4.2.
+
+**Dimensioni** (`wc`): documento da 895 righe e 18251 parole a 917 righe e 17324 parole (102335 byte); «In breve» da 3381 a 2318 parole (-31 %). Il bersaglio indicativo di 1500-2000 parole non è raggiunto: la parte restante è l'esempio completo (circa 240 parole con i numeri), la tabella della proposta e, per ognuna delle 11 domande, problema, opzioni con effetto, proposta e criterio (circa 1300 parole in tutto); togliere altro avrebbe tolto effetti delle opzioni o criteri.
+
+**Verifica eseguita:**
+- `node ref/check-doc.mjs`: 17 PASS su 17 (30 tabelle coerenti e precedute da una frase di lettura, 8 tabelle di dati identiche a `out/`, 10 hash in `out/`, 3 testi canonici, 7 blocchi di geni, 918 numeri del testo rintracciati, 13 riferimenti, 26 ancore, Q1-Q11 nella sezione d'origine, nell'elenco finale e in «In breve», nessun Liquid);
+- `node ref/check-corrections.mjs`: uscita uguale alla precedente più la riga 5537/1107400; `node ref/check-symmetry.mjs` e `node ref/numfmt.mjs`: diff solo sulle etichette cambiate; `node ref/check-q7.mjs`: nuovo;
+- hash: gli stessi 10 del documento precedente, nessuno cambiato;
+- recinti di codice 32 (pari); `npm test`: 40/40; `npm run archimate:check`: modello valido (33 elementi, 55 relazioni);
+- `git status --short`: solo il documento (più questo file).
+
+La correzione mirata dopo la lettura che ha superato la soglia è verificata dagli script e dai controlli sopra, **non da una terza lettura** (pattern `two-round-independent-simulated-reading`, punto 5).
+
+**Prossimo step:** Step 10 — LIBRARIAN
